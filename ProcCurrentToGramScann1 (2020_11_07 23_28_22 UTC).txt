@@ -13164,14 +13164,12 @@ connectNodeToAttrOverride("LIVEsurfaceslambert",   "XplaneShape.instObjGroups[0]
 
 }
 
-
 if (( `objExists ZCURVEModelingCAM` == 1  )&& (   `objExists layerCurvesINRange1` == 1 )) {
 if ( `objExists CamConeLocatorSet` == 1  ) {
 eval( "global string $CamConeLocator[];");
 eval( "$CamConeLocator= `sets -q   CamConeLocatorSet`;");
 }
 }
-
 */
 
 //ONE or the other Below -
