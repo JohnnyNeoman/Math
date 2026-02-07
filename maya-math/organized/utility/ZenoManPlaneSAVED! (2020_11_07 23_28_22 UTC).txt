@@ -1,0 +1,123 @@
+
+string $CRV_Item[] =`ls -sl`;
+string $myCurvex= $CRV_Item[0];
+
+
+	float $step,$values[],$a, $t,$distance,$smallest,$FactorX ;
+$CurveSelection = `ls -fl  ($myCurvex+".ep[0:*]")`; 
+		$CurveEPzCount = size($CurveSelection);
+		$numEPs = size ($CurveSelection);
+		$numEPrealNum2 = ( $numEPs -1 ) * 2; 
+float $numEPrealNum3 = ( $numEPs -1 );
+	string $myCPOC = `pointOnCurve  -ch on -pr 0.0 -p $myCurvex`;
+float $ArcL=`arclen $myCurvex`;
+
+		$step = $numEPrealNum2;
+$step = $numEPrealNum3;
+vector $PointCRV;
+float $findPointU;
+$a =0;
+//$t =  $a/$step; 
+$t =0;
+
+for($a = 0; $t <= 1.0;$a++){
+		
+			setAttr ($myCPOC +  ".parameter") $t ;
+			$PointCRV  = `getAttr  ($myCPOC + ".position")`;
+Loc $PointCRV;
+		$distance=PtDist_to_Plane({$PointCRV},$AXIS_XZY);
+
+
+
+if($distance<$ArcL){
+float $ArcLT= $ArcL;
+float $Steps_toG = $ArcLT/$distance;
+float $Steps_toC =PercentofN($ArcL,$distance);
+float $Steps_toD =((100.0-$Steps_toC)/100.0)/2.0;
+$t += $Steps_toD;
+}
+print $distance;
+if($distance<0.0008){
+$findPointU = $t;
+print ("steps Taken : "+$a+"\n");
+break;
+}
+if($a>900){break;}
+
+}
+
+
+proc float PtDist_to_Plane(vector $V[],vector $VecN[]){
+	vector $p =  $VecN[0];
+vector $n1 = $VecN[1];
+	float $D, $D1;	
+	vector $F, $e, $M, $F1, $P, $F2, $P1, $F3, $F4, $O[]; 	 
+$F = $n1;
+$e = $V[0];		
+		$P1 = ClosestPoint2LineVec($n1, $p, $e);		
+		$D1 = distance2Pts($P1, $p); 
+	return $D1;
+}
+
+
+
+
+
+
+int $m_Or_e[];
+				float $TempU[];
+				int $Tsize=`size($iU)`;							
+				if($Tsize!= 1){
+					
+					float $MperS= ($Arc*($iU[0]));
+					float $MperE= ($Arc*(1-$iU[$SizeCuts-1]));
+					if( $MperS >= 5.5){
+						$TempU[`size($TempU)`]=0.0;
+						$m_Or_e[`size($m_Or_e)`]=1;
+						}
+					for($iC=0; $iC<$SizeCuts; $iC++){
+						$TempU[`size($TempU)`]=$iU[$iC];
+					}
+					for($iC=0; $iC<$SizeCuts-1; $iC++){
+						$m_Or_e[`size($m_Or_e)`]=0;
+					}
+					if($MperE>=5.5){
+						$TempU[`size($TempU)`]=1.0;
+						$m_Or_e[`size($m_Or_e)`]=2;
+						}
+					$iU=$TempU;
+				}
+
+				if($Tsize== 1){
+					float $TempU[];
+					float $TempUi[];
+					$TempUi[0]=0.0;
+					$TempUi[1]=$iU[0];
+					$TempUi[2]=1.0;
+					$iU=$TempUi;
+					float $MperS= (100*($iU[1]));
+					float $MperE= (100*(1-$iU[1]));
+					if( $MperS >= 15){$TempU[`size($TempU)`]=0.0; $m_Or_e[`size($m_Or_e)`]=1;  }
+					$TempU[`size($TempU)`]=$iU[1];
+					if($MperE>=15){$TempU[`size($TempU)`]=1.0; $m_Or_e[`size($m_Or_e)`]=2; }
+					clear $iU;
+					$iU=$TempU; 
+				}
+
+
+
+
+				string $NewCutCRVs[];
+				vector $CRVSEG_A[];
+				float $Hsize= `size($iU)`;
+				$Hsize-=1;
+
+				for($iC=0; $iC<$Hsize; $iC++){
+					clear $CRVSEG_A;
+					float $CrvTSi = $iU[$iC];
+					float $CrvTEi = $iU[$iC+1];
+					float $Mper= ($Arc*($iU[$iC+1]-$iU[$iC]));
+					vector $CRVSEG_A[];
+					$CRVSEG_A=RenderCurveSeg($Sel[0],12,$CrvTSi,$CrvTEi);
+					$NewCutCRVs[`size($NewCutCRVs)`]=VecArrayToCurveB($CRVSEG_A);
+				}
