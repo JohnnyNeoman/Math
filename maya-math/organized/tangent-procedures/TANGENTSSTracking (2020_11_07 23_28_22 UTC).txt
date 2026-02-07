@@ -1,0 +1,509 @@
+	proc vector [] TANGENTSS(){
+
+string $circles[] = `ls -sl`;
+string $circlesShape[];
+clear $circlesShape;
+vector $TangZ[];
+vector $TangMidZ[];
+for ($eachCir in $circles){
+$circlesShape[`size($circlesShape)`]  = stringArrayToString( `listRelatives $eachCir` , " ");
+}
+print $circlesShape;
+ float $normalAxis[] = CircNormal($circles[0]);
+
+ResetTransEachSL;
+vector $directionABs[];
+vector $PosABs[];
+clear $PosABs;
+float $ObjsCircles[] = CirclesRadiiPos($circles, $PosABs);
+
+
+	int $ArrayIndexTracki[] = CreateIntIndex(`size($circles)`);
+	string $stringIndexTracki[]= IntArrayToStringArray($ArrayIndexTracki);
+
+
+int $CirA;
+int $CirB;
+
+string $itemA[] = $circles;
+string $itemEach[], $diff[];
+string $itemBackUp[] = $itemA; 
+int $indexNumberZ[];
+string $TwoItemsZ[];
+for($each in $itemBackUp){
+//isolate one from list remove from list
+//itemA will be reduced to zero
+
+	string $itemEach[] = { $itemA[0] };
+	$diff = stringArrayRemoveExact($itemEach, $itemA);
+for($eachOther in $diff){
+playButtonStepForward;
+// $eachOther $itemEach;
+
+
+$TwoItemsZ  = {$eachOther, $itemEach[0]};
+$indexNumberZ= stringArrayGmatchArrayIndex($TwoItemsZ, $circles);
+
+$CirA = $indexNumberZ[0];
+$CirB = $indexNumberZ[1];
+
+float $R1=$ObjsCircles[$CirA];
+float $R2=$ObjsCircles[$CirB];
+if($R1<$R2){$CirA = $indexNumberZ[1]; $CirB = $indexNumberZ[0];
+ $R1=$ObjsCircles[$CirA];
+ $R2=$ObjsCircles[$CirB];}
+
+////////
+playButtonStepForward;
+select -r $circles[$CirA]; select -r $circles[$CirB];
+///////
+
+float $FloatDirXn[] = DirectionF($PosABs[$CirA], $PosABs[$CirB]);
+float $R1=$ObjsCircles[$CirA];
+float $R2=$ObjsCircles[$CirB];
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+$R1 = $R1+1.0;
+$R2 =$R2+1.0;
+float $Rn1 =  (1.0/(`sqrt $R1`)) + (1.0/(`sqrt $R2` ));
+float $Rn = 1.0/$Rn1;
+float $R = `pow $Rn 2`;
+float $xc = `sqrt (4*$R1*$R)`;
+float $yc = `sqrt (4*$R2*$R)`;
+float $CurveL = $xc+$yc;
+float $pi = 3.1415926535;
+
+float $r1 = $R1;
+float $r2 = $R2;
+
+// P is the distance between 2 circles
+float $P = distance2Pts($PosABs[$CirA], $PosABs[$CirB]);
+float $FloatDirXn[] = DirectionF($PosABs[$CirA], $PosABs[$CirB]);
+
+
+
+float $DiCircleInBetween = `abs ($P -($R1 + $R2))`;
+float $RadiCircleInBetween = $DiCircleInBetween/2;
+float $DisCircBetweenFromR1 = $R1+$RadiCircleInBetween ;
+//mult Direction Circ1 to Circ 2 by distance DisCircBetweenFromR1 
+//add to Pos Circ R1 
+
+float $MultDirMLine[] = multiplyFloat($R2-1.0,  $FloatDirXn);
+float $AddMultMLine[] = AddFloats($PosABs[$CirA], $MultDirMLine);
+float $MultDirMLinei[] = multiplyFloat($RadiCircleInBetween,  $FloatDirXn);
+float $AddMultMLinei[] = AddFloats($AddMultMLine, $MultDirMLinei);
+
+curve2points($AddMultMLine, $AddMultMLinei);
+
+float $MultDirM[] = multiplyFloat($DisCircBetweenFromR1,  $FloatDirXn);
+float $AddMultM[] = AddFloats($PosABs[$CirA], $MultDirM);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultM);
+string $circlesM = Circles_Direction($AddMultM,$normalAxis, $RadiCircleInBetween);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+float $ts = acos ( (`abs ($r1 - $r2)`) /$P);
+float $tsD = (`rad_to_deg $ts`);
+float $tsDA = (`rad_to_deg $ts`)*1;
+float $tsDB = (`rad_to_deg $ts`)*-1;
+float $tsDAR = ( $ts)*1;
+float $tsDBR = ( $ts)*-1;
+
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+
+
+float $rotatsA[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1, $normalAxis, $tsDAR);
+float $rotatsB[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1, $normalAxis, $tsDBR);
+float $rotatsC[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2, $normalAxis, $tsDBR);
+float $rotatsD[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2, $normalAxis, $tsDAR);
+
+
+float $rotatsAi[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1-1.0, $normalAxis, $tsDAR);
+float $rotatsBi[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1-1.0, $normalAxis, $tsDBR);
+float $rotatsCi[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2-1.0, $normalAxis, $tsDBR);
+float $rotatsDi[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2-1.0, $normalAxis, $tsDAR);
+
+
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsA);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsB);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsC);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsD);
+
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsAi);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsBi);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsCi);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsDi);
+
+curve2points($rotatsA, $rotatsAi);
+curve2points($rotatsB, $rotatsBi);
+curve2points($rotatsC, $rotatsCi);
+curve2points($rotatsD, $rotatsDi);
+
+
+
+float $mid1[] = MidPoint($rotatsA, $rotatsD);
+float $mid2[] = MidPoint($rotatsB, $rotatsC);
+
+Loc $mid1;
+Loc $mid2;
+curve2points($AddMultM, $mid1);
+curve2points($AddMultM, $mid2);
+
+float $midAD3[] = MidPoint($rotatsA, $mid1);
+float $midAD4[] = MidPoint($rotatsD, $mid1);
+
+float $midBC3[] = MidPoint($rotatsB, $mid2);
+float $midBC4[] = MidPoint($rotatsC, $mid2);
+
+float $FloatDirCentMidZ[] = DirectionF($PosABs[$CirA], $midAD3);
+
+float $MultDirMidzCirc[] = multiplyFloat($r1-1.0, $FloatDirCentMidZ);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirA]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midAD3);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+
+float $FloatDirCentMidZi[] = DirectionF($PosABs[$CirA], $midBC3);
+
+float $MultDirMidzCirc[] = multiplyFloat($r1-1.0, $FloatDirCentMidZi);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirA]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midBC3);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+
+float $FloatDirCentMidZii[] = DirectionF($PosABs[$CirB], $midAD4);
+
+float $MultDirMidzCirc[] = multiplyFloat($r2-1.0, $FloatDirCentMidZii);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirB]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midAD4);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+float $FloatDirCentMidZiii[] = DirectionF($PosABs[$CirB], $midBC4);
+
+float $MultDirMidzCirc[] = multiplyFloat($r2-1.0, $FloatDirCentMidZiii);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirB]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midBC4);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+//ClosestPoint2Line($FloatDirCentMidZiii, $PosABs[$CirB], $PosABs[$CirA]);
+//ClosestPoint2Line($FloatDirCentMidZii, $PosABs[$CirB], $PosABs[$CirA]);
+
+Loc $midAD3;
+Loc $midAD4;
+
+Loc $midBC3;
+Loc $midBC4;
+
+$TangMidZ[`size($TangMidZ)`]= FloatToVec($mid1);
+$TangMidZ[`size($TangMidZ)`]= FloatToVec($mid2);
+
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsA);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsB);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsC);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsD);
+
+
+curve2points($rotatsA, $rotatsD);
+curve2points($rotatsB,$rotatsC);
+
+playButtonStepForward;
+}
+$itemA = $diff;
+
+}
+return $TangZ;
+}
+
+
+////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int $ArrayIndexTrack[] = CreateIntIndex(`size($allFloatToSort)`);
+int $OriginalIndexTrack[] = $ArrayIndexTrack;
+float $Floatlist[] = $allFloatToSort;
+	string $stringFloat[]= FloatArrayToStringArray($Floatlist);
+	string $stringIndexTrack[]= IntArrayToStringArray($ArrayIndexTrack);
+
+
+proc vector [] TANGENTSS(){
+
+string $circles[] = `ls -sl`;
+string $circlesShape[];
+clear $circlesShape;
+vector $TangZ[];
+vector $TangMidZ[];
+for ($eachCir in $circles){
+$circlesShape[`size($circlesShape)`]  = stringArrayToString( `listRelatives $eachCir` , " ");
+}
+print $circlesShape;
+ float $normalAxis[] = CircNormal($circles[0]);
+
+ResetTransEachSL;
+vector $directionABs[];
+vector $PosABs[];
+clear $PosABs;
+float $ObjsCircles[] = CirclesRadiiPos($circles, $PosABs);
+
+int $CirA;
+int $CirB;
+
+string $itemA[] = $circles;
+string $itemEach[], $diff[];
+string $itemBackUp[] = $itemA; 
+int $indexNumberZ[];
+string $TwoItemsZ[];
+for($each in $itemBackUp){
+//isolate one from list remove from list
+//itemA will be reduced to zero
+
+	string $itemEach[] = { $itemA[0] };
+	$diff = stringArrayRemoveExact($itemEach, $itemA);
+for($eachOther in $diff){
+playButtonStepForward;
+// $eachOther $itemEach;
+
+
+$TwoItemsZ  = {$eachOther, $itemEach[0]};
+$indexNumberZ= stringArrayGmatchArrayIndex($TwoItemsZ, $circles);
+
+$CirA = $indexNumberZ[0];
+$CirB = $indexNumberZ[1];
+
+float $R1=$ObjsCircles[$CirA];
+float $R2=$ObjsCircles[$CirB];
+if($R1<$R2){$CirA = $indexNumberZ[1]; $CirB = $indexNumberZ[0];
+ $R1=$ObjsCircles[$CirA];
+ $R2=$ObjsCircles[$CirB];}
+
+////////
+playButtonStepForward;
+select -r $circles[$CirA]; select -r $circles[$CirB];
+///////
+
+float $FloatDirXn[] = DirectionF($PosABs[$CirA], $PosABs[$CirB]);
+float $R1=$ObjsCircles[$CirA];
+float $R2=$ObjsCircles[$CirB];
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+$R1 = $R1+1.0;
+$R2 =$R2+1.0;
+float $Rn1 =  (1.0/(`sqrt $R1`)) + (1.0/(`sqrt $R2` ));
+float $Rn = 1.0/$Rn1;
+float $R = `pow $Rn 2`;
+float $xc = `sqrt (4*$R1*$R)`;
+float $yc = `sqrt (4*$R2*$R)`;
+float $CurveL = $xc+$yc;
+float $pi = 3.1415926535;
+
+float $r1 = $R1;
+float $r2 = $R2;
+
+// P is the distance between 2 circles
+float $P = distance2Pts($PosABs[$CirA], $PosABs[$CirB]);
+float $FloatDirXn[] = DirectionF($PosABs[$CirA], $PosABs[$CirB]);
+
+
+
+float $DiCircleInBetween = `abs ($P -($R1 + $R2))`;
+float $RadiCircleInBetween = $DiCircleInBetween/2;
+float $DisCircBetweenFromR1 = $R1+$RadiCircleInBetween ;
+//mult Direction Circ1 to Circ 2 by distance DisCircBetweenFromR1 
+//add to Pos Circ R1 
+
+float $MultDirMLine[] = multiplyFloat($R2-1.0,  $FloatDirXn);
+float $AddMultMLine[] = AddFloats($PosABs[$CirA], $MultDirMLine);
+float $MultDirMLinei[] = multiplyFloat($RadiCircleInBetween,  $FloatDirXn);
+float $AddMultMLinei[] = AddFloats($AddMultMLine, $MultDirMLinei);
+
+curve2points($AddMultMLine, $AddMultMLinei);
+
+float $MultDirM[] = multiplyFloat($DisCircBetweenFromR1,  $FloatDirXn);
+float $AddMultM[] = AddFloats($PosABs[$CirA], $MultDirM);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultM);
+string $circlesM = Circles_Direction($AddMultM,$normalAxis, $RadiCircleInBetween);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+float $ts = acos ( (`abs ($r1 - $r2)`) /$P);
+float $tsD = (`rad_to_deg $ts`);
+float $tsDA = (`rad_to_deg $ts`)*1;
+float $tsDB = (`rad_to_deg $ts`)*-1;
+float $tsDAR = ( $ts)*1;
+float $tsDBR = ( $ts)*-1;
+
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+
+
+float $rotatsA[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1, $normalAxis, $tsDAR);
+float $rotatsB[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1, $normalAxis, $tsDBR);
+float $rotatsC[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2, $normalAxis, $tsDBR);
+float $rotatsD[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2, $normalAxis, $tsDAR);
+
+
+float $rotatsAi[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1-1.0, $normalAxis, $tsDAR);
+float $rotatsBi[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1-1.0, $normalAxis, $tsDBR);
+float $rotatsCi[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2-1.0, $normalAxis, $tsDBR);
+float $rotatsDi[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2-1.0, $normalAxis, $tsDAR);
+
+
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsA);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsB);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsC);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsD);
+
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsAi);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsBi);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsCi);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsDi);
+
+curve2points($rotatsA, $rotatsAi);
+curve2points($rotatsB, $rotatsBi);
+curve2points($rotatsC, $rotatsCi);
+curve2points($rotatsD, $rotatsDi);
+
+
+
+float $mid1[] = MidPoint($rotatsA, $rotatsD);
+float $mid2[] = MidPoint($rotatsB, $rotatsC);
+
+Loc $mid1;
+Loc $mid2;
+curve2points($AddMultM, $mid1);
+curve2points($AddMultM, $mid2);
+
+float $midAD3[] = MidPoint($rotatsA, $mid1);
+float $midAD4[] = MidPoint($rotatsD, $mid1);
+
+float $midBC3[] = MidPoint($rotatsB, $mid2);
+float $midBC4[] = MidPoint($rotatsC, $mid2);
+
+float $FloatDirCentMidZ[] = DirectionF($PosABs[$CirA], $midAD3);
+
+float $MultDirMidzCirc[] = multiplyFloat($r1-1.0, $FloatDirCentMidZ);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirA]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midAD3);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+
+float $FloatDirCentMidZi[] = DirectionF($PosABs[$CirA], $midBC3);
+
+float $MultDirMidzCirc[] = multiplyFloat($r1-1.0, $FloatDirCentMidZi);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirA]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midBC3);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+
+float $FloatDirCentMidZii[] = DirectionF($PosABs[$CirB], $midAD4);
+
+float $MultDirMidzCirc[] = multiplyFloat($r2-1.0, $FloatDirCentMidZii);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirB]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midAD4);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+float $FloatDirCentMidZiii[] = DirectionF($PosABs[$CirB], $midBC4);
+
+float $MultDirMidzCirc[] = multiplyFloat($r2-1.0, $FloatDirCentMidZiii);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirB]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midBC4);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+//ClosestPoint2Line($FloatDirCentMidZiii, $PosABs[$CirB], $PosABs[$CirA]);
+//ClosestPoint2Line($FloatDirCentMidZii, $PosABs[$CirB], $PosABs[$CirA]);
+
+Loc $midAD3;
+Loc $midAD4;
+
+Loc $midBC3;
+Loc $midBC4;
+
+$TangMidZ[`size($TangMidZ)`]= FloatToVec($mid1);
+$TangMidZ[`size($TangMidZ)`]= FloatToVec($mid2);
+
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsA);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsB);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsC);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsD);
+
+
+curve2points($rotatsA, $rotatsD);
+curve2points($rotatsB,$rotatsC);
+
+playButtonStepForward;
+}
+$itemA = $diff;
+
+}
+return $TangZ;
+}
