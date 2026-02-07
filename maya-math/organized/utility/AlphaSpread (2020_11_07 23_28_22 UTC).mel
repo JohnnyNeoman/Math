@@ -1,0 +1,119 @@
+/*
+
+ AlphaSpread by  Varun Bundel
+
+This melScript spread randomly objects particles on Poly Surface based on Aplha map you defined on color.
+You can Hide the geometery after that.
+
+ Notes 
+How TO Use.
+1):	Create Poly Surface and connect any alpha(Black $ White image) image.
+2):	Create Particle System.
+3):	Source AlphaSpread mel file.
+4):	Select Particle System first then PolySurface.
+5):	Type "AlphaSpread;" in Command Line and hit enter to your numeric keypad.
+USE OR MODIFY THIS SCRIPT AT YOUR OWN RISK .
+
+*/
+
+global proc AlphaSpread(){
+	string $geoShape[],$parShape[],$list[],$geoShaderSG[1],$geoShader[1],$geoTransform[1],$list[];
+	global string $colorMap[];
+	//We should define $colorMap[] gllobaly bcoz we going to use this variable in goalU & goalV Expresion
+	//Otherwise it shows error "$colorMap is undefined variable".
+
+	//Check for any poly surface selected
+	$geoShape = `ls -sl -long -dag -lf -type mesh`;
+
+	if(size($geoShape)!=1){
+		error("please select one Poly Surface.") ;
+	}
+	//Checking for connection surface Shader
+	else{//1(else inside above if)
+        	$geoTransform = `listRelatives -f -p $geoShape[0]` ;
+
+	        $geoShaderSG = `listConnections -destination on ($geoShape[0]+".instObjGroups[0]")` ;
+        	if(size($geoShaderSG)!=1){
+	        	error("selected plane must had been assigned some shader.");
+        	}
+
+	        else{//2(else inside else 1)
+        	        $geoShader = `listConnections -destination on ($geoShaderSG[0]+".surfaceShader")` ;
+                	if(size($geoShader)!=1){
+	                	error("selected plane must had been assigned some shader.");
+                	}
+	                else{//3(else inside else 2)
+                
+                	        	int $isColor = `attributeExists "color" $geoShader[0]` ;
+                        	//no color map
+	                        if($isColor==0){
+        	                	error("NO Color atrridute Exists");                        	
+                	       	}
+        	                //check color map connection
+					else{//4(else inside else 3)
+	                          	 $colorMap = `listConnections -destination on($geoShader[0]+".color")` ;
+        	                    	 if(size($colorMap)==0){
+                	             		error("Please Assign Color Map");  
+                        	   	  }
+					}//End of else 4
+				}//End of else 3
+			}//End of else 2
+		}//End of else 1
+
+	$list=`ls -sl`;	//Put selected item in list array.
+
+
+	$parShape = `ls -sl -long -dag -lf -type particle` ;	//check for particle system
+
+	if(size($parShape)!=1){
+		error("please select Particle.") ;
+	}
+
+	goal -w 0.8 -utr 0   -g $list[1]  $list[0];
+	$shapeNode=`listRelatives -c $list[0]`;	// This gives $shapeNode = particleShape1(Child node of particle1).
+
+	//Adding goalU and goalV attribute in particleShape1.
+	addAttr -ln goalU -dt doubleArray $shapeNode[0];
+	addAttr -ln goalU0 -dt doubleArray $shapeNode[0];
+	addAttr -ln goalV -dt doubleArray  $shapeNode[0];
+	addAttr -ln goalV0 -dt doubleArray $shapeNode[0];
+	
+	
+
+/*This is the actual Script randomly spread the Goaled particle system on Black or White texture 
+mapped on color, transparency, etc of Poly Surface(Particle go on Black area).
+
+*/
+
+		//Texture File
+		//threshold : a value between 0 and 0.99 (Determines the contrast).
+		//As you increase threshold particle go on grey shades.
+		string $dynGoal="float $threshold=0.05; \n";
+
+		$dynGoal+="int $flag=1; \n";
+		$dynGoal+="global string $colorMap[]; \n";
+		$dynGoal+="while($flag) { \n";
+
+		$dynGoal+="// Get random values for placement. \n";
+		$dynGoal+="float $randomU = `rand 0 1`; \n";
+		$dynGoal+="float $randomV = `rand 0 1`; \n";
+
+		$dynGoal+="// Analyse the map color at this point \n";
+		$dynGoal+="float $alphaLevelAtPoint[] = `colorAtPoint -o A -u $randomU -v $randomV $colorMap[0]`; \n";
+
+		$dynGoal+="if($alphaLevelAtPoint[0] < $threshold) { \n";
+
+		$dynGoal+="	// Particle can be placed here. So place it. \n";
+		$dynGoal+="float $x = $randomU; \n";
+		$dynGoal+="float $z = $randomV; \n";
+
+		$dynGoal+="goalU = $x; \n";
+		$dynGoal+="goalV = $z; \n";
+		$dynGoal+="$flag=0; \n";
+		
+		$dynGoal+="} \n";
+		$dynGoal+="} \n";
+		$dynGoal+="//dynExpression command use to put string stored in variable $dynGoal \n"; 
+		$dynGoal+="//as a code in goalU & goalV Expression.\n";
+		dynExpression -s $dynGoal -c $shapeNode[0];  
+}
