@@ -1,0 +1,2665 @@
+proc float [] xyzRotation( float $theta, float $axis[] ){
+
+//
+//	Description:
+//		Given an angle for rotation (in radians) and an axis about which to 
+//		do the rotation, return the rotation about the X,Y,Z axes (in $rotation).
+//
+
+float $rotation[];
+	// set up the xyzw quaternion values
+	 
+	$theta *= 0.5;
+	float $w = cos($theta);
+	float $factor = sin($theta);
+	float $axisLen2 = dotProduct( $axis, $axis, 0 );
+	if ( $axisLen2 != 1.0 && $axisLen2 != 0.0 ) $factor /= sqrt($axisLen2);
+	float $x = $factor * $axis[0];
+	float $y = $factor * $axis[1];
+	float $z = $factor * $axis[2];
+
+	// setup rotation in a matrix
+	//
+	float $matrix[];
+	float $ww = $w*$w;
+	float $xx = $x*$x;
+	float $yy = $y*$y;
+	float $zz = $z*$z;
+	float $s = 2.0 / ($ww + $xx + $yy + $zz);
+	float $xy = $x*$y;
+	float $xz = $x*$z;
+	float $yz = $y*$z;
+	float $wx = $w*$x;
+	float $wy = $w*$y;
+	float $wz = $w*$z;
+	$matrix[0] = 1.0 - $s * ($yy + $zz);
+	$matrix[1] = $s * ($xy + $wz);
+	$matrix[2] = $s * ($xz - $wy);
+	$matrix[5] = 1.0 - $s * ($xx + $zz);
+	$matrix[6] = $s * ($yz + $wx);
+	$matrix[9] = $s * ($yz - $wx);
+	$matrix[10] = 1.0 - $s * ($xx + $yy);
+
+	// get x,y,z values for rotation
+	//
+	float $solution1[];
+	float $solution2[];
+	float $cosB = sqrt($matrix[0]*$matrix[0] + $matrix[1]*$matrix[1]);
+	if ( $cosB > 1.0e-10 )
+	{
+		float $a, $b, $c;
+		float $pi = 3.14159265;
+ 
+		$solution1[0] = $a = atan2( $matrix[6], $matrix[10]);
+		$solution1[1] = $b = atan2(-$matrix[2], $cosB);
+		$solution1[2] = $c = atan2( $matrix[1], $matrix[0]);
+
+		$solution2[0] = $a + (($a < $pi) ? $pi : -$pi);
+		$solution2[1] = (($b > -$pi) ? $pi : -$pi) - $b;
+		$solution2[2] = $c + (($c < $pi) ? $pi : -$pi);    
+
+		if ( abs($solution2[0]) + abs($solution2[1]) + abs($solution2[2]) <
+			abs($solution1[0]) + abs($solution1[1]) + abs($solution1[2]) )
+		{
+			$rotation = $solution2;
+		}
+		else 
+		{
+			$rotation = $solution1;
+		}
+	}
+	else
+	{
+		$rotation[0] = atan2(-$matrix[9], $matrix[5]);
+		$rotation[1] = atan2(-$matrix[2], $cosB);
+		$rotation[2] = 0.0;
+	}
+
+return $rotation;
+
+}
+
+
+
+  proc wincStraighten(int $reverse, int $rotateX, int $rotateY, int $rotateZ, int $rotateParent){
+
+
+	int $reverse;
+	int $rotateParent;
+	int $rotateX;
+	int $rotateY;
+	int $rotateZ;
+
+int $reverse =0; 
+int $rotateX =1; 
+int $rotateY=1; 
+int $rotateZ=1; 
+int $rotateParent=0;
+
+
+string $curves[];
+	$curves = `ls-sl`;
+	$i=0;
+	float $point0[];
+	float $point1[];
+	float $point0a[];
+	float $point1a[];
+	float $pointFinal[];
+       float $pointFinala[];
+
+	string $oneItemzi[] = `ls -sl -fl`;
+$curves[0] = $oneItemzi[0];
+vector $VVecAa[];
+ 
+ $VVecAa = PointArrayT($oneItemzi);
+$point0a = $VVecAa[1];
+$point1a = $VVecAa[2];
+
+
+	if ($reverse == 0){
+		$point0 = `pointPosition ($curves[$i] + ".u[0]")`;
+		$point1 = `pointPosition ($curves[$i] + ".u[1]")`;
+		}
+	else if ($reverse == 1){
+		$point1 = `pointPosition ($curves[$i] + ".u[0]")`;
+		$point0 = `pointPosition ($curves[$i] + ".u[1]")`;
+		}
+
+
+	$pointFinal[0] = $point0[0] - $point1[0];
+	$pointFinal[1] = $point0[1] - $point1[1];
+	$pointFinal[2] = $point0[2] - $point1[2];
+
+	$pointFinala[0] = $point0a[0] - $point1a[0];
+	$pointFinala[1] = $point0a[1] - $point1a[1];
+	$pointFinala[2] = $point0a[2] - $point1a[2];
+
+float	 $rotateAngleCurv[] = `angleBetween -euler -v1 $pointFinal[0] $pointFinal[1] $pointFinal[2] -v2 0 0 1`;
+float	$rotateAngle[] = `angleBetween -euler -v1 $pointFinala[0] $pointFinala[1] $pointFinala[2] -v2 0 0 1`;
+ 
+		select $curves[$i];
+
+SetCurveRotation($curves[0]);
+
+ float $rotateAngle[] =  `EulerAngleofCurve`;
+	 
+$rotateX = $rotateAngleCurv[0];
+$rotateY = $rotateAngleCurv[1];
+$rotateZ = $rotateAngleCurv[2];
+	rotate -ws ($rotateAngle[0]+$rotateX) ($rotateAngle[1]+$rotateY) ($rotateAngle[2]+$rotateZ);
+
+	rotate -r (($rotateAngle[0]-$rotateX)*-1.0) (($rotateAngle[1]-$rotateY)*-1.0) (($rotateAngle[2]-$rotateZ)*-1.0); 
+
+	rotate -ws ($rotateAngle[0]*$rotateX) ($rotateAngle[1]*$rotateY) ($rotateAngle[2]*$rotateZ);
+	rotate -r (0) (90.5) (0);
+
+rotate -ws ($rotateAngle[0]) ($rotateAngle[1]) ($rotateAngle[2]);
+	
+rotate -r ($rotateAngle[0]) ($rotateAngle[1]) ($rotateAngle[2]);
+rotate -r (($rotateAngle[0])*-1.0) (($rotateAngle[1])*-1.0) (($rotateAngle[2])*-1.0); 
+
+
+	
+
+}
+
+
+
+
+  proc wincStraighten(int $reverse, int $rotateX, int $rotateY, int $rotateZ, int $rotateParent){
+	print $rotateX;
+	int $reverse;
+	int $rotateParent;
+	int $rotateX;
+	int $rotateY;
+	int $rotateZ;
+string $curves[];
+	$curves = `ls-sl`;
+	$i=0;
+	float $point0[];
+	float $point1[];
+	float $point0a[];
+	float $point1a[];
+	float $pointFinal[];
+       float $pointFinala[];
+
+	string $oneItemzi[] = `ls -sl -fl`;
+$curves[0] = $oneItemzi[0];
+vector $VVecAa[];
+ 
+ $VVecAa = PointArrayT($oneItemzi);
+$point0a = $VVecAa[1];
+$point1a = $VVecAa[2];
+
+
+	if ($reverse == 0){
+		$point0 = `pointPosition ($curves[$i] + ".u[0]")`;
+		$point1 = `pointPosition ($curves[$i] + ".u[1]")`;
+		}
+	else if ($reverse == 1){
+		$point1 = `pointPosition ($curves[$i] + ".u[0]")`;
+		$point0 = `pointPosition ($curves[$i] + ".u[1]")`;
+		}
+	$pointFinal[0] = $point0[0] - $point1[0];
+	$pointFinal[1] = $point0[1] - $point1[1];
+	$pointFinal[2] = $point0[2] - $point1[2];
+
+	$pointFinala[0] = $point0a[0] - $point1a[0];
+	$pointFinala[1] = $point0a[1] - $point1a[1];
+	$pointFinala[2] = $point0a[2] - $point1a[2];
+
+	//$rotateAngle = `angleBetween -euler -v1 $pointFinal[0] $pointFinal[1] $pointFinal[2] -v2 0 1 0`;
+	$rotateAngle = `angleBetween -euler -v1 $pointFinala[0] $pointFinala[1] $pointFinala[2] -v2 0 1 0`;
+	if ($rotateParent == 1){
+		string $parent[] = `listRelatives -p $curves[$i]`;
+		select -r $parent[0];
+		}else{
+		select $curves[$i];
+		}
+	rotate -r ($rotateAngle[0]*$rotateX) ($rotateAngle[1]*$rotateY) ($rotateAngle[2]*$rotateZ);
+	}
+
+global proc wincStraightenInterface(){
+	global int $reverse = 0;
+	global int $rotateParent = 0;
+	global int $rotateX = 0;
+	global int $rotateY = 0;
+	global int $rotateZ = 0;
+	
+	window -title "rotate to plane" -rtf 1 -wh 10 10 wincStraightenPallette;
+        columnLayout;
+
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "rotate x-axis:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$rotateX = `checkBox -q -v xAxisValue`" xAxisValue;
+            setParent ..;
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "rotate y-axis:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$rotateY = `checkBox -q -v yAxisValue`" yAxisValue;
+            setParent ..;
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "rotate z-axis:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$rotateZ = `checkBox -q -v zAxisValue`" zAxisValue;
+            setParent ..;
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "rotate parent:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$rotateParent = `checkBox -q -v parentValue`" parentValue;
+            setParent ..;
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "reverse:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$reverse = `checkBox -q -v reverseValue`" reverseValue;
+            setParent ..;
+        
+	$buttonCmd = "wincStraighten($reverse, $rotateX, $rotateY, $rotateZ, $rotateParent)";
+        button -c $buttonCmd -label "Apply";
+    showWindow wincStraightenPallette;
+
+}
+wincStraightenInterface;
+
+
+
+	string $oneItemzi[] = `ls -sl -fl`;
+vector $FixVecAa[];
+clear $FixVecAa;
+vector $FixVecAa[] = PointArrayT($oneItemzi);
+float $MidPt[] = MidPoint($FixVecAa[0], $FixVecAa[1]);
+ // select -r $oneItemzi[0];	
+ // Loc $FixVecAa[0];
+DirectionF($FixVecAa[0], $FixVecAa[1]);
+
+
+vector $LineAMain = PositiveDirectionLine($FixVecAa[0], $FixVecAa[1]);
+
+vector $DirMTestVec;
+int $CombA =0;
+vector $eachPointVd;
+int $CountIndexV=0;
+for ($eachPointVd in $FixVecAa){
+ $DirMTestVec = FloatToVec (DirectionF($eachPointVd, $MidPt));
+ $CombA = PointsEquivalentTol ($DirMTestVec, $LineAMain);
+if($CombA == 3){break;}else{
+ $CountIndexV++;}
+}
+
+//print $FixVecAa;
+if($CountIndexV == 1){
+$FixVecAa = ReverseVectorArray($FixVecAa);
+}
+
+float $MidPtA[];
+ $MidPtA = $MidPt;
+vector $FixVecAaAA[];
+ $FixVecAaAA = $FixVecAa;
+float $LengthAi = distance2Pts ($FixVecAa[0], $FixVecAa[1]);
+
+
+
+///////////////////////////////////////////////////
+
+///////////////////////////////////////////////////
+//vector $LineAMainT;
+//$LineAMainT = <<0.991104, 0, 0.133087>> ;
+/*
+ print  $LineAMainT;
+
+// created two cubes moved and rotated one 
+//placed curve from normal at each cube at same face
+//rotated cube is item one non rotated item 2 its curve item three rotated cube curve item 4
+
+string $ObjAselect[];
+ $ObjAselect = `ls -sl`;
+
+ matrix $mDiv[4][4] = << 1.0, 0.0, 0.0, 0.0;
+                       0.0, 1.0, 0.0, 0.0;
+                       0.0, 0.0, 1.0, 0.0;
+                       0.0, 0.0, 0.0, 1.0 >>;
+
+ matrix $mIA[4][4] = << 1.0, 0.0, 0.0, 0.0;
+                       0.0, 1.0, 0.0, 0.0;
+                       0.0, 0.0, 1.0, 0.0;
+                       0.0, 0.0, 0.0, 1.0 >>;
+
+$mIA = GetworldMatrix($ObjAselect[0]);
+
+ matrix $mIB[4][4] = << 1.0, 0.0, 0.0, 0.0;
+                       0.0, 1.0, 0.0, 0.0;
+                       0.0, 0.0, 1.0, 0.0;
+                       0.0, 0.0, 0.0, 1.0 >>;
+
+ matrix $mIB[4][4] = << 0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0 >>;
+
+ matrix $mIC[4][4] = << 0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0 >>;
+ matrix $mICc[4][4] = << 0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0 >>;
+ matrix $mICb[4][4] = << 0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0 >>;
+
+$mIC = GetworldMatrix($ObjAselect[2]);
+$mICc = GetworldMatrix($ObjAselect[3]);
+
+$mIB = GetworldMatrix($ObjAselect[1]);
+
+matrix MatrixTimesFloat($mIA, float $X);
+ 
+$mDiv = MatrixDivide($mIB, $mIA);
+
+
+SetCurveRotation($ObjAselect[3]);
+
+TransformItemByMatrixXform($mIA, $ObjAselect[2]);
+
+TransformItemByMatrixXform($mDiv, $ObjAselect[2]);
+
+//////////// Curve direction ////////////////##
+
+// not rotated - -
+vector $FixVeciC[] = VecCurveEps($ObjAselect[2]);
+vector $LineAMainC;
+$LineAMainC =FloatToVec (DirectionF($FixVeciC[0], $FixVeciC[1]));
+// Result: << 1, 0, 0 >>  // 
+
+// rotated - - 45 degree I think
+vector $FixVeciCc[] = VecCurveEps($ObjAselect[3]);
+vector $LineAMainCc;
+$LineAMainCc =FloatToVec (DirectionF($FixVeciCc[0], $FixVeciCc[1]));
+// Result: << 0.707107, 0, -0.707107 >>  // 
+
+///////////////////
+string $ObjAselectB[];
+ $ObjAselectB = `ls -sl`;
+
+SetCurveRotation($ObjAselectB[0]);
+ResetTransEachSL;
+vector $FixVeciCb[] = VecCurveEps($ObjAselectB[0]);
+vector $LineAMainCb;
+$LineAMainCb =FloatToVec (DirectionF($FixVeciCb[0], $FixVeciCb[1]));
+// Result: <<0.707107, 0, 0.707107>>  // 
+$mICb = GetworldMatrix($ObjAselectB[0]);
+
+//////////// Curve direction ////////////////##
+
+//PrintMatrix($mDiv , 4);
+PrintMatrix($mIA , 4);
+PrintMatrix($mIB , 4);
+PrintMatrix($mIC , 4);
+PrintMatrix($mICc , 4);
+PrintMatrix($mICb , 4);
+PrintMatrix($mI , 4);
+
+float $NumMatrix = $mI[1][0];
+
+// MATRIX Referance _____________________________________//
+// $mI =    << ($n.x), ($n.y), ($n.z), 0.0;     // X axis
+//             ($b.x), ($b.y), ($b.z), 0.0;     // Y axis
+//             ($t.x), ($t.y), ($t.z), 0.0;     // Z axis
+//                0.0,    0.0,    0.0, 1.0 >>;  // Position
+//_______________________________________________________//
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//CURVE
+// not rotated - -
+// mIC    // Result: <<1, 0, 0>>  // 
+
+|             0             1             0             0| // X axis
+|             0             0             1             0| // Y axis
+|             1             0             0             0| // Z axis
+|   35.26971479             0  -15.73215358             1|
+
+
+//CURVE
+// Rotated - - 
+// mICc  // Result: <<0.707107, 0, -0.707107>>  //
+
+|  -0.7071067812              0  -0.7071067812              0|
+|              0              1              0              0|
+|   0.7071067812              0  -0.7071067812              0|
+|    42.67229316    2.492974302   -23.50211068              1|
+//------------------------------------------------------------
+
+
+// mICb // Result: <<0.707107, 0, 0.707107>>  // 
+// Point Mult Rotated Cube matrix to un-rotated curve gives you
+
+|   0.7071067812              0  -0.7071067812              0|
+|              0              1              0              0|
+|   0.7071067812              0   0.7071067812              0|
+|    41.96518638    2.492974302    -22.7950039              1|
+
+
+
+//------------------------------------------------------------
+//CUBE
+//------------------------------------------------------------
+
+// rotated Cube - -
+// mIA 
+ 
+|   0.7071067812              0  -0.7071067812              0|
+|              0              1              0              0|
+|   0.7071067812              0   0.7071067812              0|
+|    41.96518638    2.492974302    -22.7950039              1|
+//COmpare
+
+PrintMatrix($mI , 4);
+|   0.7071067812              0  -0.7071067812              0|
+|              0              1              0              0|
+|   0.7071067812              0   0.7071067812              0|
+|              0              0              0              1|
+
+// not rotated Cube - -
+// mIB 
+|             1             0             0             0|
+|             0             1             0             0|
+|             0             0             1             0|
+|   34.26971479             0  -15.73215358             1|
+
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+float $DeterminantA = DoubleDeterminant($mIA);
+float $DeterminantB 
+//= DoubleDeterminant($mIB);
+float $DeterminantD = DoubleDeterminant($mDiv);
+
+vector $DirecABD = <<$DeterminantA, $DeterminantB, $DeterminantD>>;
+$DirecABD = `unit $DirecABD`;
+float $newLocP[];
+$newLocP = pointMatrixMult($LineAMainC, $MatrizFloati );
+float $MatrizFloatiB[] = MatrixToFloat($mIB);
+
+// matrix of first curve times point direction
+// matrix of second curve times New point direction
+float $newLocPi[];
+$newLocPi = pointMatrixMult($LineAMainC, $MatrizFloatiB );
+float $newLocP[];
+$newLocP = pointMatrixMult($newLocPi, $MatrizFloati );
+// Result: 0.707107 0 -0.707107 // 
+
+//CURVE
+// Rotated - - 
+// mICc  // Result: <<0.707107, 0, -0.707107>>  //
+
+float $MidPt[];
+clear $MidPt;
+$MidPt = MidPoint($FixVeci[0], $FixVeci[1]);
+
+
+
+
+// MATRIX Referance _____________________________________//
+// $mI =    << ($n.x), ($n.y), ($n.z), 0.0;     // X axis
+//             ($b.x), ($b.y), ($b.z), 0.0;     // Y axis
+//             ($t.x), ($t.y), ($t.z), 0.0;     // Z axis
+//                0.0,    0.0,    0.0, 1.0 >>;  // Position
+//_______________________________________________________//
+
+
+
+
+
+string $CurveItemAa[] = `ls -sl`;
+vector $AllPositionsZai[];
+clear $AllPositionsZai;
+//$AllPositionsZai = VecCurveEps($CurveItemAa[0] );
+$AllPositionsZai = VecCurveCvs($CurveItemAa[0] );
+
+
+
+string $oneItemzi[];
+clear $oneItemzi;
+string $oneItemzi[] = `ls -sl -fl`;
+
+vector $FixVeci[];
+clear $FixVeci;
+vector $FixVeci[] = PointArrayT($oneItemzi);
+
+float $MidPt[];
+clear $MidPt;
+$MidPt = MidPoint($FixVeci[0], $FixVeci[1]);
+vector $LineAMain;
+$LineAMain =$LineAMain = PositiveDirectionLine($FixVeci[0], $FixVeci[1]);
+
+float $Lengthi = distance2Pts ($FixVeci[0], $FixVeci[1]);
+float $FloatDirMajor[] = $LineAMain;
+
+//float $MatrizFloati[] = MatrixToFloat($mI);
+
+ matrix $mi[4][4] = << 0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0 >>;
+ matrix $mj[4][4] = << 0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0 >>;
+
+$mi = TwoPointMatrix($FixVeci);
+
+float $MatrizFloati[] = MatrixToFloat($mi);
+
+
+/////////////////////////// Original curve end points
+string $oneItemA[];
+clear $oneItemA;
+string $oneItemA[] = `ls -sl -fl`;
+
+vector $BVec[];
+clear $BVec;
+vector $BVec[] = PointArrayT($oneItemA);
+float $MidPtA[];
+clear $MidPtA;
+$MidPtA = MidPoint($BVec[0], $BVec[1]);
+vector $LineAMainA;
+$LineAMainA =$LineAMainA = PositiveDirectionLine($BVec[0], $BVec[1]);
+float $LengthAi = distance2Pts ($BVec[0], $BVec[1]);
+float $FloatDirMajorA[] = $LineAMainA;
+
+ matrix $mj[4][4] = << 0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0;
+                       0.0, 0.0, 0.0, 0.0 >>;
+
+$mj = TwoPointMatrix($BVec);
+
+float $MatrizFloatiA[] = MatrixToFloat($mj);
+
+
+
+float $newLocP[];
+$newLocP = pointMatrixMult($DirecABD, $MatrizFloati );
+
+
+
+
+float $MidTwoDtoElPoint[];
+float $FloatDirEpoint[];
+float $MidTwoDtoElPointV;
+float $newLocP[];
+float $MultDii[];
+float $AddMepi[];
+string $curvei = "curve -d 1";
+vector $eachCurveVec;
+int $sizeCpts = `size($AllPositionsZai)`-1;
+
+float $LengthAB = $Lengthi/$LengthAi;
+int $CountCpts =0;
+vector $VperpC;
+
+for($eachCurveVec in $AllPositionsZai){
+
+ $MidTwoDtoElPointV  = distance2Pts ( $MidPtA, $eachCurveVec);
+ $MidTwoDtoElPointV = $LengthAB*$MidTwoDtoElPointV;
+ // $FloatDirEpoint = DirectionF( $eachCurveVec, $MidPtA );
+ $FloatDirEpoint = DirectionF( $MidPtA, $eachCurveVec );
+
+ $FloatDirEpoint = `unit << ($FloatDirEpoint[0]), ($FloatDirEpoint[1]), ($FloatDirEpoint[2]) >>`;
+
+
+ $newLocP = pointMatrixMult($FloatDirEpoint, $MatrizFloatiA );
+ $newLocP = pointMatrixMult( $newLocP, $MatrizFloati );
+ $newLocP = pointMatrixMult( $newLocP, $MatrizFloatiA );
+ $newLocP = pointMatrixMult( $newLocP, $MatrizFloati );
+ $newLocP = pointMatrixMult( $newLocP, $MatrizFloatiA );
+ $newLocP = pointMatrixMult( $newLocP, $MatrizFloati );
+ $newLocP = pointMatrixMult( $newLocP, $MatrizFloatiA );
+ $newLocP = pointMatrixMult( $newLocP, $MatrizFloatiA );
+
+
+ $newLocP = `unit << ($newLocP[0]), ($newLocP[1]), ($newLocP[2]) >>`;
+
+ $MultDii = multiplyFloat($MidTwoDtoElPointV, $newLocP);
+ $AddMepi = AddFloats($MidPt, $MultDii);
+$curvei += " -p "+$AddMepi[0]+" "+$AddMepi[1]+" "+$AddMepi[2];
+curve2points($AddMepi, $MidPt);
+PAUSE; PAUSE; PAUSE;
+delete;
+PAUSE;
+$CountCpts++;
+}
+
+  eval($curvei);
+ResetTransEachSL;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ $LineAMain = PositiveDirectionLine($FixVeci[0], $FixVeci[1]);
+vector $DirMTestVec;
+int $CombA =0;
+vector $eachPointVd;
+int $CountIndexV = 0;
+for ($eachPointVd in $FixVeci){
+ $DirMTestVec = FloatToVec (DirectionF($eachPointVd, $MidPt));
+ $CombA = PointsEquivalentTol ($DirMTestVec, $LineAMain);
+if($CombA == 3){break;}else{
+ $CountIndexV++;}
+}
+
+if($CountIndexV == 1){
+$FixVeci = ReverseVectorArray($FixVeci);
+}
+
+vector $ZeroA = <<0.0, 0.0, 0.0>>;
+float $Va[] = $FixVeci[0];
+float $Vb[] = $FixVeci[1];
+vector $FixVecB[1];
+$FixVecB[0]= << $Va[0], 0.0, $Va[2] >>;
+$FixVecB[1]= << $Vb[0], 0.0, $Vb[2] >>;
+
+
+
+vector $LineA = PositiveDirectionLine($FixVecB[0], $FixVecB[1]);
+vector $pointYVec = ClosestPoint2LineVec($LineA, $FixVecB[0], $ZeroA);
+vector $LineDirYT = PositiveDirectionLine($pointYVec, $ZeroA);
+vector $DirLine = PositiveDirectionLine($FixVeci[0], $FixVeci[1]);	
+	vector $Vperp = crossProduct( $DirLine, $LineDirYT, 0, 0 );
+
+vector $BInomalV = FloatToVec(MultLenToDirAddToPoint(2, $Vperp, $FixVeci[0]));
+vector $BInomalVDirLine = PositiveDirectionLine($FixVeci[0], $BInomalV);
+       $BInomalV = FloatToVec(MultLenToDirAddToPoint(4, $BInomalVDirLine, $FixVeci[0]));
+vector $TangentV = FloatToVec(MultLenToDirAddToPoint(4, $LineDirYT, $FixVeci[0]));
+
+
+
+
+
+float $Lengthi = distance2Pts ($FixVeci[0], $FixVeci[1]);
+float $FloatDirMajor[] = $DirLine;
+float $Lengthiii = distance2Pts ($MidPt,  $TangentV);
+
+float $FDirNorAi[] = $LineDirYT;
+vector $DirNormi = $LineDirYT;
+float $normal[3];
+	$normal = $BInomalVDirLine;
+
+ $mI = << 1.0, 0.0, 0.0, 0.0;
+          0.0, 1.0, 0.0, 0.0;
+          0.0, 0.0, 1.0, 0.0;
+          0.0, 0.0, 0.0, 1.0 >>;
+
+vector $norm, $bi, $tan;
+
+ $norm = FloatToVec($FDirNorAi);
+ $bi = FloatToVec($BInomalVDirLine);
+ $tan = FloatToVec($FloatDirMajor);
+    $tan  = `unit << ($tan.x), ($tan.y), ($tan.z) >>`;
+    $norm = `unit << ($norm.x), ($norm.y), ($norm.z) >>`;
+    $bi = `unit $bi`;
+
+$tan = FloatToVec(MakeCleanFloatsZ($tan));
+$norm = FloatToVec(MakeCleanFloatsZ($norm));
+$bi = FloatToVec(MakeCleanFloatsZ($bi));
+
+
+
+
+///////////////////////////////////////###
+// I dont understand it //pretty weird
+
+    $mI = << ($norm.x), ($norm.y), ($norm.z), 0.0;     // X axis
+             ($bi.x), ($bi.y), ($bi.z),  0.0;     // Y axis
+             ($tan.x), ($tan.y), ($tan.z), 0.0;     // Z axis
+             0.0, 0.0, 0.0, 1.0  >>;  // Position
+
+$mI = MatrixCleanNegZero($mI);
+
+float $MatrizFloati[] = MatrixToFloat($mI);
+
+
+
+
+float $MidTwoDtoElPoint[];
+float $FloatDirEpoint[];
+float $MidTwoDtoElPointV;
+float $newLocP[];
+float $MultDii[];
+float $AddMepi[];
+string $curvei = "curve -d 1";
+vector $eachCurveVec;
+int $sizeCpts = `size($AllPositionsZai)`-1;
+float $LengthB = distance2Pts ($MidPt,  $TangentV);
+float $LengthAB = $Lengthi/$LengthAi;
+
+vector $VperpC;
+
+
+ $MidTwoDtoElPointV  = distance2Pts ( $MidPtA, $eachCurveVec);
+ $MidTwoDtoElPointV = $LengthAB*$MidTwoDtoElPointV;
+  $FloatDirEpoint = DirectionF( $eachCurveVec, $MidPtA );
+//$FloatDirEpoint = DirectionF( $MidPtA, $eachCurveVec );
+ $FloatDirEpoint = `unit << ($FloatDirEpoint[0]), ($FloatDirEpoint[1]), ($FloatDirEpoint[2]) >>`;
+ $newLocP = pointMatrixMult($FloatDirEpoint, $MatrizFloati );
+
+
+
+
+*/
+
+
+// Result: <<0.991104, 0, 0.133087>>  // 
+// Result: <<0.991104, 0, 0.133087>>  // 
+
+///////////////////////////////////////////////////
+
+string $CurveItemAa[] = `ls -sl`;
+vector $AllPositionsZai[];
+clear $AllPositionsZai;
+//$AllPositionsZai = VecCurveEps($CurveItemAa[0] );
+$AllPositionsZai = VecCurveCvs($CurveItemAa[0] );
+
+
+string $oneItemzi[];
+clear $oneItemzi;
+string $oneItemzi[] = `ls -sl -fl`;
+
+
+vector $FixVeci[];
+clear $FixVeci;
+
+vector $FixVeci[] = PointArrayT($oneItemzi);
+float $MidPt[];
+clear $MidPt;
+$MidPt = MidPoint($FixVeci[0], $FixVeci[1]);
+vector $LineAMain;
+$LineAMain =FloatToVec (DirectionF($FixVeci[0], $FixVeci[1]));
+
+
+/*
+ $LineAMain = PositiveDirectionLine($FixVeci[0], $FixVeci[1]);
+vector $DirMTestVec;
+int $CombA =0;
+vector $eachPointVd;
+int $CountIndexV = 0;
+for ($eachPointVd in $FixVeci){
+ $DirMTestVec = FloatToVec (DirectionF($eachPointVd, $MidPt));
+ $CombA = PointsEquivalentTol ($DirMTestVec, $LineAMain);
+if($CombA == 3){break;}else{
+ $CountIndexV++;}
+}
+
+if($CountIndexV == 1){
+$FixVeci = ReverseVectorArray($FixVeci);
+}
+*/
+
+
+Loc $FixVeci[0];
+$LineAMain =FloatToVec (DirectionF($FixVeci[0], $FixVeci[1]));
+DirectionF($FixVecAa[0], $FixVecAa[1]);
+
+
+vector $ZeroA = <<0.0, 0.0, 0.0>>;
+float $Va[] = $FixVeci[0];
+float $Vb[] = $FixVeci[1];
+vector $FixVecB[1];
+$FixVecB[0]= << $Va[0], 0.0, $Va[2] >>;
+$FixVecB[1]= << $Vb[0], 0.0, $Vb[2] >>;
+
+
+/*
+
+vector $LineA = PositiveDirectionLine($FixVecB[0], $FixVecB[1]);
+vector $pointYVec = ClosestPoint2LineVec($LineA, $FixVecB[0], $ZeroA);
+vector $LineDirYT = PositiveDirectionLine($pointYVec, $ZeroA);
+vector $DirLine = PositiveDirectionLine($FixVeci[0], $FixVeci[1]);	
+	vector $Vperp = crossProduct( $DirLine, $LineDirYT, 0, 0 );
+vector $BInomalV = FloatToVec(MultLenToDirAddToPoint(2, $Vperp, $FixVeci[0]));
+vector $BInomalVDirLine = PositiveDirectionLine($FixVeci[0], $BInomalV);
+       $BInomalV = FloatToVec(MultLenToDirAddToPoint(4, $BInomalVDirLine, $FixVeci[0]));
+vector $TangentV = FloatToVec(MultLenToDirAddToPoint(4, $LineDirYT, $FixVeci[0]));
+
+*/
+
+vector $BInomalVDirLine;
+vector $LineA =  DirectionF($FixVecB[0], $FixVecB[1]);
+vector $pointYVec = ClosestPoint2LineVec($LineA, $FixVecB[0], $ZeroA);
+vector $LineDirYT = DirectionF($pointYVec, $ZeroA);
+vector $DirLine = DirectionF($FixVeci[0], $FixVeci[1]);	
+	vector $Vperp = crossProduct( $DirLine, $LineDirYT, 1, 1 );
+vector $BInomalV = FloatToVec(MultLenToDirAddToPoint(2, $Vperp, $FixVeci[0]));
+
+// $BInomalVDirLine = PositiveDirectionLine($FixVeci[0], $BInomalV);
+
+$BInomalVDirLine = DirectionF($FixVeci[0], $BInomalV);
+
+ 
+      $BInomalV = FloatToVec(MultLenToDirAddToPoint(4, $BInomalVDirLine, $FixVeci[0]));
+vector $TangentV = FloatToVec(MultLenToDirAddToPoint(4, $LineDirYT, $FixVeci[0]));
+
+float $Lengthi = distance2Pts ($FixVeci[0], $FixVeci[1]);
+float $FloatDirMajor[] = $DirLine;
+float $Lengthiii = distance2Pts ($MidPt,  $TangentV);
+
+float $FDirNorAi[] = $LineDirYT;
+vector $DirNormi = $LineDirYT;
+float $normal[3];
+	$normal = $BInomalVDirLine;
+
+
+
+  matrix $mI[4][4] = << 1.0, 0.0, 0.0, 0.0;
+                       0.0, 1.0, 0.0, 0.0;
+                       0.0, 0.0, 1.0, 0.0;
+                       0.0, 0.0, 0.0, 1.0 >>;
+vector $norm, $bi, $tan;
+
+ $norm = FloatToVec($FDirNorAi);
+ $bi = FloatToVec($BInomalVDirLine);
+ $tan = FloatToVec($FloatDirMajor);
+
+/*
+
+float $FDirNorAi[] = Normal3Points($FixVeci[0], $FixVeci[1], $TangentV);
+vector $DirNormi = FloatToVec ($FDirNorAi);
+float $normal[3];
+	$normal = crossProduct( $FloatDirMajor, $FDirNorAi, 0, 0 );
+
+  matrix $mI[4][4] = << 1.0, 0.0, 0.0, 0.0;
+                       0.0, 1.0, 0.0, 0.0;
+                       0.0, 0.0, 1.0, 0.0;
+                       0.0, 0.0, 0.0, 1.0 >>;
+  vector $norm = FloatToVec($FloatDirMajor);
+  vector $bi = FloatToVec($FDirNorAi);
+  vector $tan = FloatToVec( $normal);
+
+
+
+*/
+
+
+
+
+    $tan  = `unit << ($tan.x), ($tan.y), ($tan.z) >>`;
+    $norm = `unit << ($norm.x), ($norm.y), ($norm.z) >>`;
+    $bi = `unit $bi`;
+
+
+
+
+///////////////////////////////////////###
+// I dont understand it //pretty weird
+
+    $mI = << ($norm.x), ($norm.y), ($norm.z), 0.0;     // X axis
+            ($bi.x), ($bi.y), ($bi.z),  0.0;     // Y axis
+            ($tan.x), ($tan.y), ($tan.z), 0.0;     // Z axis
+             0.0, 0.0, 0.0, 1.0  >>;  // Position
+float $MatrizFloati[] = MatrixToFloat($mI);
+
+
+
+
+float $MidTwoDtoElPoint[];
+float $FloatDirEpoint[];
+float $MidTwoDtoElPointV;
+float $newLocP[];
+float $MultDii[];
+float $AddMepi[];
+string $curvei = "curve -d 1";
+vector $eachCurveVec;
+int $sizeCpts = `size($AllPositionsZai)`-1;
+float $LengthB = distance2Pts ($MidPt,  $TangentV);
+float $LengthAB = $Lengthi/$LengthAi;
+int $CountCpts =0;
+vector $VperpC;
+
+for($eachCurveVec in $AllPositionsZai){
+
+ $MidTwoDtoElPointV  = distance2Pts ( $MidPtA, $eachCurveVec);
+ $MidTwoDtoElPointV = $LengthAB*$MidTwoDtoElPointV;
+  $FloatDirEpoint = DirectionF( $eachCurveVec, $MidPtA );
+// $FloatDirEpoint = DirectionF( $MidPtA, $eachCurveVec );
+
+ $FloatDirEpoint = `unit << ($FloatDirEpoint[0]), ($FloatDirEpoint[1]), ($FloatDirEpoint[2]) >>`;
+ $newLocP = pointMatrixMult($FloatDirEpoint, $MatrizFloati );
+ $newLocP = `unit << ($newLocP[0]), ($newLocP[1]), ($newLocP[2]) >>`;
+ $VperpC = `unit << ($newLocP[0]), ($newLocP[1]), ($newLocP[2]) >>`;
+
+//$VperpC = torqueQuant($VperpC);
+
+
+// $VperpC = crossProduct( $newLocP, $bi, 1, 1 );
+// $VperpC = cross( FloatToVec($newLocP), $bi);
+
+// $MultDii = multiplyFloat($MidTwoDtoElPointV, $VperpC);
+ $MultDii = multiplyFloat($MidTwoDtoElPointV, $newLocP);
+ $AddMepi = AddFloats($MidPt, $MultDii);
+$curvei += " -p "+$AddMepi[0]+" "+$AddMepi[1]+" "+$AddMepi[2];
+curve2points($AddMepi, $MidPt);
+PAUSE; PAUSE; PAUSE;
+delete;
+PAUSE;
+$CountCpts++;
+}
+
+  eval($curvei);
+ResetTransEachSL;
+/////////////////////////////////////
+
+
+
+
+    $tan  = `unit << ($tan.x), ($tan.y), ($tan.z) >>`;
+    $norm = `unit << ($norm.x), ($norm.y), ($norm.z) >>`;
+    $bi = `unit $bi`;
+
+
+vector $qtan = torqueQuant($tan );
+vector $qnorm = torqueQuant($norm);
+vector $qbi = torqueQuant($bi );
+
+    $mI = << ($qnorm.x), ($qnorm.y), ($qnorm.z), 0.0;     // X axis
+            ($qbi.x), ($qbi.y), ($qbi.z),  0.0;     // Y axis
+            ($qtan.x), ($qtan.y), ($qtan.z), 0.0;     // Z axis
+             0.0, 0.0, 0.0, 1.0  >>;  // Position
+float $MatrizFloati[] = MatrixToFloat($mI);
+
+
+
+float $MidTwoDtoElPoint[];
+float $FloatDirEpoint[];
+float $MidTwoDtoElPointV;
+float $newLocP[];
+float $MultDii[];
+float $AddMepi[];
+string $curvei = "curve -d 1";
+vector $eachCurveVec;
+int $sizeCpts = `size($AllPositionsZai)`-1;
+float $LengthB = distance2Pts ($MidPt,  $TangentV);
+float $LengthAB = $Lengthi/$LengthAi;
+int $CountCpts =0;
+vector $VperpC;
+
+for($eachCurveVec in $AllPositionsZai){
+
+ $MidTwoDtoElPointV  = distance2Pts ( $MidPtA, $eachCurveVec);
+ $MidTwoDtoElPointV = $LengthAB*$MidTwoDtoElPointV;
+  $FloatDirEpoint = DirectionF( $eachCurveVec, $MidPtA );
+// $FloatDirEpoint = DirectionF( $MidPtA, $eachCurveVec );
+
+ $FloatDirEpoint = `unit << ($FloatDirEpoint[0]), ($FloatDirEpoint[1]), ($FloatDirEpoint[2]) >>`;
+ $newLocP = pointMatrixMult($FloatDirEpoint, $MatrizFloati );
+ $newLocP = `unit << ($newLocP[0]), ($newLocP[1]), ($newLocP[2]) >>`;
+
+// $VperpC = crossProduct( $newLocP, $bi, 1, 1 );
+// $VperpC = cross( FloatToVec($newLocP), $bi);
+
+ //$MultDii = multiplyFloat($MidTwoDtoElPointV, $VperpC);
+ $MultDii = multiplyFloat($MidTwoDtoElPointV, $newLocP);
+ $AddMepi = AddFloats($MidPt, $MultDii);
+$curvei += " -p "+$AddMepi[0]+" "+$AddMepi[1]+" "+$AddMepi[2];
+curve2points($AddMepi, $MidPt);
+PAUSE; PAUSE; PAUSE;
+delete;
+PAUSE;
+$CountCpts++;
+}
+
+  eval($curvei);
+ResetTransEachSL;
+
+
+
+
+
+ vector $norm = FloatToVec($FloatDirMajor);
+  vector $bi = FloatToVec($BInomalVDirLine);
+  vector $tan = FloatToVec($FDirNorAi );
+
+  vector $norm = FloatToVec($BInomalVDirLine);
+  vector $bi = FloatToVec($FloatDirMajor);
+  vector $tan = FloatToVec($FDirNorAi );
+
+  vector $norm = FloatToVec($FDirNorAi);
+  vector $bi = FloatToVec($FloatDirMajor);
+  vector $tan = FloatToVec($BInomalVDirLine );
+
+
+  vector $norm = FloatToVec($FloatDirMajor );
+  vector $bi = FloatToVec($FDirNorAi);
+  vector $tan = FloatToVec($BInomalVDirLine );
+
+
+  vector $norm = FloatToVec($BInomalVDirLine );
+  vector $bi = FloatToVec($FDirNorAi);
+  vector $tan = FloatToVec($FloatDirMajor );
+
+
+ $norm = FloatToVec($FDirNorAi);
+ $bi = FloatToVec($BInomalVDirLine);
+ $tan = FloatToVec($FloatDirMajor);
+
+
+
+
+    $tan  = `unit << ($tan.x), ($tan.y), ($tan.z) >>`;
+    $norm = `unit << ($norm.x), ($norm.y), ($norm.z) >>`;
+    $bi = `unit $bi`;
+
+vector $qtan = torqueQuant($tan );
+vector $qnorm = torqueQuant($norm);
+vector $qbi = torqueQuant($bi );
+
+    $mI = << ($qnorm.x), ($qnorm.y), ($qnorm.z), 0.0;     // X axis
+            ($qbi.x), ($qbi.y), ($qbi.z),  0.0;     // Y axis
+            ($qtan.x), ($qtan.y), ($qtan.z), 0.0;     // Z axis
+             0.0, 0.0, 0.0, 1.0  >>;  // Position
+float $MatrizFloati[] = MatrixToFloat($mI);
+
+
+    $mI = << ($qnorm.x), ($qnorm.y), ($qnorm.z), 0.0;     // X axis
+            ($bi.x), ($bi.y), ($bi.z),  0.0;     // Y axis
+            ($qtan.x), ($qtan.y), ($qtan.z), 0.0;     // Z axis
+             0.0, 0.0, 0.0, 1.0  >>;  // Position
+float $MatrizFloati[] = MatrixToFloat($mI);
+
+
+
+
+// $VperpC = dotProduct( $newLocP, $norm, 0 );
+ $VperpC = cross( FloatToVec($newLocP), $norm);
+
+//Loc $MidPtA;
+
+float $MidTwoDtoElPoint[];
+float $FloatDirEpoint[];
+float $MidTwoDtoElPointV;
+float $newLocP[];
+float $MultDii[];
+float $AddMepi[];
+string $curvei = "curve -d 1";
+vector $eachCurveVec;
+int $sizeCpts = `size($AllPositionsZai)`-1;
+float $LengthB = distance2Pts ($MidPt,  $TangentV);
+float $LengthAB = $Lengthi/$LengthAi;
+int $CountCpts =0;
+vector $VperpC;
+
+for($eachCurveVec in $AllPositionsZai){
+
+ $MidTwoDtoElPointV  = distance2Pts ( $MidPtA, $eachCurveVec);
+ $MidTwoDtoElPointV = $LengthAB*$MidTwoDtoElPointV;
+  $FloatDirEpoint = DirectionF( $eachCurveVec, $MidPtA );
+// $FloatDirEpoint = DirectionF( $MidPtA, $eachCurveVec );
+
+ $FloatDirEpoint = `unit << ($FloatDirEpoint[0]), ($FloatDirEpoint[1]), ($FloatDirEpoint[2]) >>`;
+ $newLocP = pointMatrixMult($FloatDirEpoint, $MatrizFloati );
+ $newLocP = `unit << ($newLocP[0]), ($newLocP[1]), ($newLocP[2]) >>`;
+ $VperpC = `unit << ($newLocP[0]), ($newLocP[1]), ($newLocP[2]) >>`;
+
+$VperpC = torqueQuant($VperpC);
+
+
+// $VperpC = crossProduct( $newLocP, $bi, 1, 1 );
+// $VperpC = cross( FloatToVec($newLocP), $bi);
+
+ $MultDii = multiplyFloat($MidTwoDtoElPointV, $VperpC);
+// $MultDii = multiplyFloat($MidTwoDtoElPointV, $newLocP);
+ $AddMepi = AddFloats($MidPt, $MultDii);
+$curvei += " -p "+$AddMepi[0]+" "+$AddMepi[1]+" "+$AddMepi[2];
+curve2points($AddMepi, $MidPt);
+PAUSE; PAUSE; PAUSE;
+delete;
+PAUSE;
+$CountCpts++;
+}
+
+  eval($curvei);
+ResetTransEachSL;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    $mI = << ($norm.x), ($norm.y), ($norm.z), 0.0;     // X axis
+            ($bi.x), ($bi.y), ($bi.z),  0.0;     // Y axis
+            ($tan.x+0.072), ($tan.y), ($tan.z), 0.0;     // Z axis
+            $MidPt[0], $MidPt[1], $MidPt[2], 0.0 >>;  // Position
+float $MatrizFloati[] = MatrixToFloat($mI);
+
+
+//Loc $MidPtA;
+
+float $MidTwoDtoElPoint[];
+float $FloatDirEpoint[];
+float $MidTwoDtoElPointV;
+float $newLocP[];
+float $MultDii[];
+float $AddMepi[];
+string $curvei = "curve -d 1";
+vector $eachCurveVec;
+int $sizeCpts = `size($AllPositionsZai)`-1;
+
+float $LengthB = distance2Pts ($MidPt,  $TangentV);
+float $LengthAB = $Lengthi/$LengthAi;
+
+int $CountCpts =0;
+
+for($eachCurveVec in $AllPositionsZai){
+
+ $MidTwoDtoElPointV  = distance2Pts ( $MidPtA, $eachCurveVec);
+ $MidTwoDtoElPointV = $LengthAB*$MidTwoDtoElPointV;
+ $FloatDirEpoint = DirectionF( $eachCurveVec, $MidPtA );
+ $FloatDirEpoint = `unit << ($FloatDirEpoint[0]), ($FloatDirEpoint[1]), ($FloatDirEpoint[2]) >>`;
+ $newLocP = pointMatrixMult($FloatDirEpoint, $MatrizFloati );
+ $newLocP = `unit << ($newLocP[0]), ($newLocP[1]), ($newLocP[2]) >>`;
+
+PAUSE;
+ $MultDii = multiplyFloat($MidTwoDtoElPointV, $newLocP);
+ $AddMepi = AddFloats($MidPt, $MultDii);
+$curvei += " -p "+$AddMepi[0]+" "+$AddMepi[1]+" "+$AddMepi[2];
+curve2points($AddMepi, $MidPt);
+PAUSE; PAUSE; PAUSE;
+delete;
+PAUSE;
+$CountCpts++;
+}
+
+  eval($curvei);
+ResetTransEachSL;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+string $curveAxis ="";
+$curveAxis += makeCurvePointDirectionLength(($Lengthi/2), $FloatDirMajor, $MidPt);
+$curveAxis += makeCurvePointDirectionLength(($Lengthi/2), $FDirNorAi, $MidPt);
+$curveAxis += makeCurvePointDirectionLength(($Lengthi/2), $normal, $MidPt);
+
+
+
+
+
+proc float findParamAtDistance( string $curve, string $arcLD, float $distance, float $epsilon ){
+  float $u = 0.0;  
+  float $min = `getAttr ( $curve + ".minValue" )`;
+  float $max = `getAttr ( $curve + ".maxValue" )`;
+  setAttr ( $arcLD + ".uParamValue" ) $max;
+  float $arcLength = `getAttr ( $arcLD + ".arcLength" )`;
+  if ( $distance <= 0.0 ) return 0.0;
+  if ( $distance >= $arcLength ) return $max;
+  int $pass = 1;
+
+  while( true ){
+    $u = ( $min + $max ) / 2.0;
+    setAttr ( $arcLD + ".uParamValue" ) $u;
+    $arcLength = `getAttr ( $arcLD + ".arcLength" )`;
+    if ( abs( $arcLength - $distance ) < $epsilon ) break;
+    if ( $arcLength > $distance ) $max = $u;
+    else $min = $u;
+    $pass++;
+  }  
+  return $u;
+}
+
+proc string plotLocator( string $curve, float $uParam ){
+  float $p[3] = `pointOnCurve -pr $uParam -p $curve`;
+  string $locator[] = `spaceLocator -p $p[0] $p[1] $p[2]`;  
+  return $locator[0];
+}
+
+proc vector plotLocVec( string $curve, float $uParam ){
+  vector $pV = FloatToVec( `pointOnCurve -pr $uParam -p $curve`);
+  return $pV;
+}
+
+
+
+proc vector [] plotVecEquidistLocOnCurve( string $curve, float $count ){
+  vector $AllPoints[];
+
+ // if ( $count < 2 ) error( "Must plot at least two equidistant locators." );  
+  float $maxU = `getAttr ( $curve + ".maxValue" )`;
+  string $arcLD = `arcLengthDimension ( $curve + ".u[" + $maxU + "]" )`;  
+  float $arcLength = `getAttr ( $arcLD + ".arcLength" )`;
+  float $span = $arcLength / ( $count - 1 ); 
+  $AllPoints[`size($AllPoints)`]= plotLocVec( $curve, 0.0 ); 
+  float $epsilon = 0.0001;
+  int $i;
+  for ( $i = 1; $i < ( $count - 1 ); $i++ ){
+	float $distance = $span * $i;
+	float $uParam = findParamAtDistance( $curve, $arcLD, $distance, $epsilon );
+	$AllPoints[`size($AllPoints)`]= plotLocVec( $curve, $uParam );
+  }
+ $AllPoints[`size($AllPoints)`]= plotLocVec( $curve, $maxU );
+    delete `listRelatives -fullPath -parent $arcLD`;
+return $AllPoints;
+}
+
+
+
+global proc plotEquidistantLocatorsOnCurve( string $curve, int $count ){
+  
+  if ( $count < 2 ) error( "Must plot at least two equidistant locators." );  
+  float $maxU = `getAttr ( $curve + ".maxValue" )`;
+  string $arcLD = `arcLengthDimension ( $curve + ".u[" + $maxU + "]" )`;  
+  float $arcLength = `getAttr ( $arcLD + ".arcLength" )`;
+  float $span = $arcLength / ( $count - 1 ); 
+  plotLocator( $curve, 0.0 ); 
+  float $epsilon = 0.0001;
+  int $i;
+  for ( $i = 1; $i < ( $count - 1 ); $i++ ){
+	float $distance = $span * $i;
+	float $uParam = findParamAtDistance( $curve, $arcLD, $distance, $epsilon );
+	plotLocator( $curve, $uParam );
+  }
+  plotLocator( $curve, $maxU );
+    delete `listRelatives -fullPath -parent $arcLD`;
+}
+
+
+
+
+/*
+Example usage:
+string $curve1Z[]=`ls -sl`;
+
+plotEquidistantLocatorsOnCurve( $curve1Z[0], 10 );
+
+*/
+
+
+
+//whatIs createCrv
+
+string $CurveItemZ[]=`ls -sl`;
+
+vector $threeVec[];
+clear $threeVec;
+$threeVec = PointArrayT($CurveItemZ);
+
+float $rotation = RatioFourS($threeVec);
+float $rotR = `rad_to_deg $rotation`;
+float $Roti = (( 360 - $rotR)*1.0)/2.0;
+setAttr "pCube1.rotateX" $Roti;
+
+51.022 
+12.053 
+-12.712 
+
+float $matthh= sqrt (`hypot 18.949663   4.353121 `);
+
+proc float RatioFourS(vector $VecF[]){
+
+vector $ma= $VecF[0];
+vector $mb= $VecF[1];
+vector $mc= $VecF[2];
+vector $md= $VecF[3];
+
+
+
+
+float $whRatio =  (((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/avoidZero(($mb.y -
+    $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)* 
+( avoidZero ( `pow ((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/avoidZero
+(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) 2`/avoidZero(((($ma.y - $md.y)*$mb.x -
+    ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x -
+    $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+    $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/avoidZero(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
+    + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+    $ma.x*$md.y - $ma.y*$md.x)*$mc.x/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+    - $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)*$mb.x/avoidZero(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+    - $ma.x)) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/avoidZero(($mb.y -
+    $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)*
+( avoidZero ( `pow((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.x/avoidZero(($mb.y - $md.y)*$mc.x
+    - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - $ma.x) 2`))/avoidZero(((($ma.y - $md.y)*$mb.x -
+    ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x -
+    $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+    $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/avoidZero(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
+    + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+    $ma.x*$md.y - $ma.y*$md.x)*$mc.x/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+    - $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)*$mb.x/avoidZero(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+    - $ma.x)) - ( avoidZero ( `pow ((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)/avoidZero(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) -
+    1) 2`)))/avoidZero(((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/avoidZero(($mb.y -
+    $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)* ( avoidZero ( `pow ((($ma.y -
+    $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/avoidZero(($mc.y - $md.y)*$mb.x
+    - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y) 2`))/avoidZero(((($ma.y - $md.y)*$mb.x -
+    ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x -
+    $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+    $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/avoidZero(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
+    + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+    $ma.x*$md.y - $ma.y*$md.x)*$mc.x/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+    - $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)*$mb.x/avoidZero(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+    - $ma.x)) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/avoidZero(($mb.y -
+    $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)* ( avoidZero ( `pow ((($ma.y -
+    $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.x/avoidZero
+(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.x) 2`))/avoidZero(((($ma.y - $md.y)*$mb.x -
+    ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x -
+    $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+    $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/avoidZero(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
+    + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+    $ma.x*$md.y - $ma.y*$md.x)*$mc.x/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+    - $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)*$mb.x/avoidZero(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+    - $ma.x)) - ( avoidZero ( `pow ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/avoidZero(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1) 2`)))));
+print $whRatio;
+float $whRatioS =  sqrt( abs ($whRatio));
+
+return $whRatioS;
+}
+
+
+
+
+proc float RatioFourS(vector $VecF[]){
+
+vector $ma= $VecF[0];
+vector $mb= $VecF[1];
+vector $mc= $VecF[2];
+vector $md= $VecF[3];
+
+
+float $whRatio =  sqrt((((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/(($mb.y -
+    $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)* 
+( avoidZero ( `pow ((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/
+(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) 2`/(((($ma.y - $md.y)*$mb.x -
+    ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/(($mc.y - $md.y)*$mb.x - ($mc.x -
+    $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+    $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
+    + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+    $ma.x*$md.y - $ma.y*$md.x)*$mc.x/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+    - $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)*$mb.x/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+    - $ma.x)) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/(($mb.y -
+    $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)*
+( avoidZero ( `pow((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.x/(($mb.y - $md.y)*$mc.x
+    - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - $ma.x) 2`))/(((($ma.y - $md.y)*$mb.x -
+    ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/(($mc.y - $md.y)*$mb.x - ($mc.x -
+    $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+    $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
+    + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+    $ma.x*$md.y - $ma.y*$md.x)*$mc.x/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+    - $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)*$mb.x/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+    - $ma.x)) - ( avoidZero ( `pow ((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) -
+    1) 2`)))/(((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/(($mb.y -
+    $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)* ( avoidZero ( `pow ((($ma.y -
+    $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/(($mc.y - $md.y)*$mb.x
+    - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y) 2`))/(((($ma.y - $md.y)*$mb.x -
+    ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/(($mc.y - $md.y)*$mb.x - ($mc.x -
+    $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+    $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
+    + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+    $ma.x*$md.y - $ma.y*$md.x)*$mc.x/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+    - $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)*$mb.x/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+    - $ma.x)) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/(($mb.y -
+    $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)* ( avoidZero ( `pow ((($ma.y -
+    $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.x/
+(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.x) 2`))/(((($ma.y - $md.y)*$mb.x -
+    ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/(($mc.y - $md.y)*$mb.x - ($mc.x -
+    $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+    $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
+    + $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+    $ma.x*$md.y - $ma.y*$md.x)*$mc.x/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+    - $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+    $ma.y*$md.x)*$mb.x/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+    - $ma.x)) - ( avoidZero ( `pow ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+    $ma.y*$md.x)/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+    1) 2`))))));
+
+
+return $whRatio;
+}
+
+
+
+
+float $Math = 3.0 /2.0;
+
+float $Math = 3.0*0.5;
+
+float $Math = 0.5/2.0;
+
+float $Math = 0.25*2.0;
+
+float $NearZ = avoidZero(0.0)
+
+proc float avoidZero(float $N){
+float $NearZero;
+if($N == 0){
+$NearZero = 0.00000001;
+return $NearZero;
+}else{ return $N;}
+}
+
+
+proc float RatioFour(vector $VecF[]){
+
+vector $ma= $VecF[0];
+vector $mb= $VecF[1];
+vector $mc= $VecF[2];
+vector $md= $VecF[3];
+
+float $whRatio =sqrt((((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+$ma.y*$md.x)/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/(($mb.y -
+$md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)*((($ma.y -
+$md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/Power(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - $ma.y))
+/(((($ma.y - $md.y)*$mb.x -($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/(($mc.y - $md.y)*$mb.x - ($mc.x -
+$md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+$md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
++ $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+$ma.x*$md.y - $ma.y*$md.x)*$mc.x/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+- $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+$ma.y*$md.x)*$mb.x/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+- $ma.x)) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+$ma.y*$md.x)/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/(($mb.y -
+$md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)*((($ma.y -
+$md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.x/Power(($mb.y - $md.y)*$mc.x
+- ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - $ma.x))/(((($ma.y - $md.y)*$mb.x -
+($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/(($mc.y - $md.y)*$mb.x - ($mc.x -
+$md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+$md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
++ $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+$ma.x*$md.y - $ma.y*$md.x)*$mc.x/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+- $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+$ma.y*$md.x)*$mb.x/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+- $ma.x)) - ((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/
+(Power(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1.0)))/(((($ma.y
+- $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)/(($mc.y - $md.y)*$mb.x -
+($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/(($mb.y -
+$md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)*((($ma.y -
+$md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/Power(($mc.y - $md.y)*$mb.x
+- ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y))/(((($ma.y - $md.y)*$mb.x -
+($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/(($mc.y - $md.y)*$mb.x - ($mc.x -
+$md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+$md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
++ $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+$ma.x*$md.y - $ma.y*$md.x)*$mc.x/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+- $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+$ma.y*$md.x)*$mb.x/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+- $ma.x)) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -$ma.y*$md.x)/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+1)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)/(($mb.y -
+$md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x) - 1)*((($ma.y -$md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.x/Power(($mc.y - $md.y)*$mb.x
+- ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.x))/(((($ma.y - $md.y)*$mb.x -
+($ma.x - $md.x)*$mb.y + $ma.x*$md.y - $ma.y*$md.x)*$mc.y/(($mc.y - $md.y)*$mb.x - ($mc.x -
+$md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) - $ma.y)*((($ma.y - $md.y)*$mc.x - ($ma.x -
+$md.x)*$mc.y + $ma.x*$md.y - $ma.y*$md.x)*$mb.y/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y
++ $mb.x*$md.y - $mb.y*$md.x) - $ma.y) + ((($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y +
+$ma.x*$md.y - $ma.y*$md.x)*$mc.x/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y
+- $mc.y*$md.x) - $ma.x)*((($ma.y - $md.y)*$mc.x - ($ma.x - $md.x)*$mc.y + $ma.x*$md.y -
+$ma.y*$md.x)*$mb.x/(($mb.y - $md.y)*$mc.x - ($mb.x - $md.x)*$mc.y + $mb.x*$md.y - $mb.y*$md.x)
+- $ma.x)) - (Power(($ma.y - $md.y)*$mb.x - ($ma.x - $md.x)*$mb.y + $ma.x*$md.y -
+$ma.y*$md.x)/(($mc.y - $md.y)*$mb.x - ($mc.x - $md.x)*$mb.y + $mc.x*$md.y - $mc.y*$md.x) -
+1))));
+
+return $whRatio;
+}
+
+float $pow = (2+4);
+
+proc float Power(float $N){
+float $P = `pow $N 2.0`;
+return $P;
+}
+
+
+proc float RatioFour(vector $VecF[]){
+
+vector $m1= $VecF[0];
+vector $m2= $VecF[1];
+vector $m3= $VecF[2];
+vector $m4= $VecF[3];
+
+float $whRatio =  sqrt((((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)/(($m2.y -
+    $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - 1)*((($m1.y -
+    $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/
+Power(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y))
+
+/(((($m1.y - $m4.y)*$m2.x -
+    ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/(($m3.y - $m4.y)*$m2.x - ($m3.x -
+    $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y)*((($m1.y - $m4.y)*$m3.x - ($m1.x -
+    $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y
+    + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y +
+    $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y
+    - $m3.y*$m4.x) - $m1.x)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)*$m2.x/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x)
+    - $m1.x)) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)/(($m2.y -
+    $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - 1)*((($m1.y -
+    $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.x/
+
+Power(($m2.y - $m4.y)*$m3.x
+    - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.x))
+
+
+/(((($m1.y - $m4.y)*$m2.x -
+    ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/(($m3.y - $m4.y)*$m2.x - ($m3.x -
+    $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y)*((($m1.y - $m4.y)*$m3.x - ($m1.x -
+    $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y
+    + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y +
+    $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y
+    - $m3.y*$m4.x) - $m1.x)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)*$m2.x/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x)
+    - $m1.x)) - ((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/
+
+Power(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) -
+    1)))
+
+
+
+/(((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)/(($m2.y -
+    $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - 1)*((($m1.y -
+    $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/
+
+Power(($m3.y - $m4.y)*$m2.x
+    - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y))
+
+/(((($m1.y - $m4.y)*$m2.x -
+    ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/(($m3.y - $m4.y)*$m2.x - ($m3.x -
+    $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y)*((($m1.y - $m4.y)*$m3.x - ($m1.x -
+    $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y
+    + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y +
+    $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y
+    - $m3.y*$m4.x) - $m1.x)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)*$m2.x/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x)
+    - $m1.x)) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)/(($m2.y -
+    $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - 1)*((($m1.y -
+    $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/
+
+Power(($m3.y - $m4.y)*$m2.x
+    - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.x))
+
+
+/(((($m1.y - $m4.y)*$m2.x -
+    ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/(($m3.y - $m4.y)*$m2.x - ($m3.x -
+    $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y)*((($m1.y - $m4.y)*$m3.x - ($m1.x -
+    $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y
+    + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y +
+    $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y
+    - $m3.y*$m4.x) - $m1.x)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)*$m2.x/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x)
+    - $m1.x)) - 
+
+(Power(($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)))
+
+);
+
+
+return $whRatio;
+}
+
+
+
+proc float RatioFour(vector $VecF[]){
+
+vector $m1= $VecF[0];
+vector $m2= $VecF[1];
+vector $m3= $VecF[2];
+vector $m4= $VecF[3];
+
+float $whRatio =  sqrt((((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)/(($m2.y -
+    $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - 1)*((($m1.y -
+    $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/(($m2.y - $m4.y)*$m3.x
+    - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y)
+
+/(((($m1.y - $m4.y)*$m2.x -
+    ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/(($m3.y - $m4.y)*$m2.x - ($m3.x -
+    $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y)*((($m1.y - $m4.y)*$m3.x - ($m1.x -
+    $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y
+    + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y +
+    $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y
+    - $m3.y*$m4.x) - $m1.x)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)*$m2.x/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x)
+    - $m1.x)) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)/(($m2.y -
+    $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - 1)*((($m1.y -
+    $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.x/
+
+(`pow (($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.x) 2`)
+
+
+/(((($m1.y - $m4.y)*$m2.x -
+    ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/(($m3.y - $m4.y)*$m2.x - ($m3.x -
+    $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y)*((($m1.y - $m4.y)*$m3.x - ($m1.x -
+    $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y
+    + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y +
+    $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y
+    - $m3.y*$m4.x) - $m1.x)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)*$m2.x/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x)
+    - $m1.x)) - ((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/
+
+`pow(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) -
+    1)2`)
+
+
+
+/(((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)/(($m2.y -
+    $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - 1)*((($m1.y -
+    $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/
+
+`pow(($m3.y - $m4.y)*$m2.x
+    - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y)2`
+
+/(((($m1.y - $m4.y)*$m2.x -
+    ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/(($m3.y - $m4.y)*$m2.x - ($m3.x -
+    $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y)*((($m1.y - $m4.y)*$m3.x - ($m1.x -
+    $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y
+    + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y +
+    $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y
+    - $m3.y*$m4.x) - $m1.x)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)*$m2.x/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x)
+    - $m1.x)) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)/(($m2.y -
+    $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x) - 1)*((($m1.y -
+    $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/
+
+`pow(($m3.y - $m4.y)*$m2.x
+    - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.x)2`
+
+
+/(((($m1.y - $m4.y)*$m2.x -
+    ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m3.y/(($m3.y - $m4.y)*$m2.x - ($m3.x -
+    $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) - $m1.y)*((($m1.y - $m4.y)*$m3.x - ($m1.x -
+    $m4.x)*$m3.y + $m1.x*$m4.y - $m1.y*$m4.x)*$m2.y/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y
+    + $m2.x*$m4.y - $m2.y*$m4.x) - $m1.y) + ((($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y +
+    $m1.x*$m4.y - $m1.y*$m4.x)*$m3.x/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y
+    - $m3.y*$m4.x) - $m1.x)*((($m1.y - $m4.y)*$m3.x - ($m1.x - $m4.x)*$m3.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)*$m2.x/(($m2.y - $m4.y)*$m3.x - ($m2.x - $m4.x)*$m3.y + $m2.x*$m4.y - $m2.y*$m4.x)
+    - $m1.x)) - 
+
+(`pow(($m1.y - $m4.y)*$m2.x - ($m1.x - $m4.x)*$m2.y + $m1.x*$m4.y -
+    $m1.y*$m4.x)/(($m3.y - $m4.y)*$m2.x - ($m3.x - $m4.x)*$m2.y + $m3.x*$m4.y - $m3.y*$m4.x) -
+    1)2`));
+
+
+return $whRatio;
+}
+
+
+
+
+
+
+
+
+
+proc float RatioFour(vector $VecF[]){
+
+vector $m1=$VecF[0];
+vector $m2=$VecF[1];
+vector $m3=$VecF[2];
+vector $m4=$VecF[3];
+
+float $whRatio = `sqrt ((((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-1)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-1)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m2.y/`pow(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-$m1.y))2`)/(((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.y/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-$m1.y)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m2.y/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-$m1.y)+((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.x/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-$m1.x)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m2.x/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-m1.x))+((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-1)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-1)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m2.x/`pow(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-$m1.x))2`)/(((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.y/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-$m1.y)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m2.y/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-$m1.y)+((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.x/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-$m1.x)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m2.x/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-$m1.x))-((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)/`pow(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-1))2`))/(((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-1)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-1)*((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.y/`pow(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-$m1.y))2`)/(((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.y/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-$m1.y)*((($m1.y-$m4.y)*$m3.x-($m1.x-
+$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m2.y/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-$m1.y)+((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+
+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.x/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-$m1.x)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-
+$m1.y*$m4.x)*$m2.x/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-$m1.x))+((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-
+$m1.y*$m4.x)/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-1)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)/(($m2.y-
+$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)-1)*((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.x/
+`pow(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-$m1.x))2`)/(((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.y/(($m3.y-$m4.y)*$m2.x-($m3.x-
+$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-$m1.y)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m2.y/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y
++$m2.x*$m4.y-$m2.y*$m4.x)-$m1.y)+((($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m3.x/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y
+-$m3.y*$m4.x)-$m1.x)*((($m1.y-$m4.y)*$m3.x-($m1.x-$m4.x)*$m3.y+$m1.x*$m4.y-$m1.y*$m4.x)*$m2.x/(($m2.y-$m4.y)*$m3.x-($m2.x-$m4.x)*$m3.y+$m2.x*$m4.y-$m2.y*$m4.x)
+-$m1.x))-(`pow(($m1.y-$m4.y)*$m2.x-($m1.x-$m4.x)*$m2.y+$m1.x*$m4.y-$m1.y*$m4.x)/(($m3.y-$m4.y)*$m2.x-($m3.x-$m4.x)*$m2.y+$m3.x*$m4.y-$m3.y*$m4.x)-
+1))2`))) `;
+return $whRatio;
+}
+
+
+
+
+
+
+
+
+proc float RatioFour(vector $VecF[]){
+
+vector $m1= $VecF[0];
+vector $m2= $VecF[1];
+vector $m3= $VecF[2];
+vector $m4= $VecF[3];
+
+float $whRatio =  sqrt((((($m1.y - $m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y -
+$m1.y * $m4.x)/(($m3.y - $m4.y) * $m2.x - ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) -
+1) * ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y - $m1.y * $m4.x)/(($m2.y -
+$m4.y) * $m3.x -($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x) - 1) * ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y
+- $m1.y * $m4.x) * $m2.y/(`pow(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x) - $m1.y)2`)/(((( $m1.y
+- $m4.y) * $m2.x -($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m3.y/(($m3.y - $m4.y) * $m2.x - ($m3.x -
+$m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) - $m1.y) * ((($m1.y - $m4.y) * $m3.x - ($m1.x -
+$m4.x) * $m3.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m2.y/(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y
++ $m2.x * $m4.y - $m2.y * $m4.x) - $m1.y) + ((($m1.y - $m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y +
+$m1.x * $m4.y - $m1.y * $m4.x) * $m3.x/(($m3.y - $m4.y) * $m2.x - ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y
+- $m3.y * $m4.x) - $m1.x) * ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y -
+$m1.y * $m4.x) * $m2.x/(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x)
+- $m1.x)) + ((($m1.y - $m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y -
+$m1.y * $m4.x)/(($m3.y - $m4.y) * $m2.x - ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) -
+1) * ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y - $m1.y * $m4.x)/(($m2.y -
+$m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x) - 1) * ((($m1.y -
+$m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m2.x/`pow(($m2.y - $m4.y) * $m3.x
+- ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x) - $m1.x)2`)/(((($m1.y - $m4.y) * $m2.x -
+($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m3.y/(($m3.y - $m4.y) * $m2.x - ($m3.x -
+$m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) - $m1.y) * ((($m1.y - $m4.y) * $m3.x - ($m1.x -
+$m4.x) * $m3.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m2.y/(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y
++ $m2.x * $m4.y - $m2.y * $m4.x) - $m1.y) + ((($m1.y - $m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y +
+$m1.x * $m4.y - $m1.y * $m4.x) * $m3.x/(($m3.y - $m4.y) * $m2.x - ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y
+- $m3.y * $m4.x) - $m1.x) * ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y -
+$m1.y * $m4.x) * $m2.x/(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x)
+- $m1.x)) - ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y -
+$m1.y * $m4.x)/`pow(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x) -
+1)2`))/(((($m1.y - $m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y -
+$m1.y * $m4.x)/(($m3.y - $m4.y) * $m2.x - ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) -
+1) * ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y - $m1.y * $m4.x)/(($m2.y -
+$m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x) - 1) * ((($m1.y -
+$m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m3.y/`pow(($m3.y - $m4.y) * $m2.x
+- ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) - $m1.y)2`)/(((($m1.y - $m4.y) * $m2.x -
+($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m3.y/(($m3.y - $m4.y) * $m2.x - ($m3.x -
+$m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) - $m1.y) * ((($m1.y - $m4.y) * $m3.x - ($m1.x -
+$m4.x) * $m3.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m2.y/(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y
++ $m2.x * $m4.y - $m2.y * $m4.x) - $m1.y) + ((($m1.y - $m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y +
+$m1.x * $m4.y - $m1.y * $m4.x) * $m3.x/(($m3.y - $m4.y) * $m2.x - ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y
+- $m3.y * $m4.x) - $m1.x) * ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y -
+$m1.y * $m4.x) * $m2.x/(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x)
+- $m1.x)) + ((($m1.y - $m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y -
+$m1.y * $m4.x)/(($m3.y - $m4.y) * $m2.x - ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) -
+1) * ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y - $m1.y * $m4.x)/(($m2.y -
+$m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x) - 1) * ((($m1.y -
+$m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m3.x/`pow(($m3.y - $m4.y) * $m2.x
+- ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) - $m1.x)2`)/(((($m1.y - $m4.y) * $m2.x -
+($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m3.y/(($m3.y - $m4.y) * $m2.x - ($m3.x -
+$m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) - $m1.y) * ((($m1.y - $m4.y) * $m3.x - ($m1.x -
+$m4.x) * $m3.y + $m1.x * $m4.y - $m1.y * $m4.x) * $m2.y/(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y
++ $m2.x * $m4.y - $m2.y * $m4.x) - $m1.y) + ((($m1.y - $m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y +
+$m1.x * $m4.y - $m1.y * $m4.x) * $m3.x/(($m3.y - $m4.y) * $m2.x - ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y
+- $m3.y * $m4.x) - $m1.x) * ((($m1.y - $m4.y) * $m3.x - ($m1.x - $m4.x) * $m3.y + $m1.x * $m4.y -
+$m1.y * $m4.x) * $m2.x/(($m2.y - $m4.y) * $m3.x - ($m2.x - $m4.x) * $m3.y + $m2.x * $m4.y - $m2.y * $m4.x)
+- $m1.x)) - (`pow(($m1.y - $m4.y) * $m2.x - ($m1.x - $m4.x) * $m2.y + $m1.x * $m4.y -
+$m1.y * $m4.x)/(($m3.y - $m4.y) * $m2.x - ($m3.x - $m4.x) * $m2.y + $m3.x * $m4.y - $m3.y * $m4.x) -
+1)2`)));
+
+
+return $whRatio;
+}
+
+
+
+
+
+proc int FindifFourCurvesShareSurface(string $Foundboundarycurves[]){
+
+string $Intersectboundarycurves[];
+string $myIntersector = `stringArrayIntersector`;
+
+for ( $eachboundry in $Foundboundarycurves ) {
+
+string $selectedCurve[];
+clear $selectedCurve;
+$selectedCurve[0] = $eachboundry;
+string $firstcurveRelatives[];
+$firstcurveRelatives = `listRelatives -shapes  $selectedCurve`;
+string $firstcurveConnectionsz[];
+$firstcurveConnectionsz = ` listHistory -future  true -pruneDagObjects true $firstcurveRelatives`;
+int $historyShapes = `size($firstcurveConnectionsz)`;
+if ($historyShapes > 0){
+
+string $firstcurveshapes[];
+$firstcurveshapes = `listConnections -shapes 1 - type nurbsSurface $firstcurveConnectionsz`;
+stringArrayIntersector -edit -allowDuplicates  false -intersect $firstcurveshapes  $myIntersector;
+}
+
+}
+$Intersectboundarycurves =  `stringArrayIntersector -query $myIntersector`;
+
+stringArrayIntersector -edit -reset  $myIntersector;
+int $trueorFalse=0;
+if (size($Intersectboundarycurves) == 0){
+$trueorFalse=0;}else{$trueorFalse=1;}
+
+return $trueorFalse;
+
+}
+
+
+
+proc int NumberOFSurf(string $Zeachboundry){
+
+int $XnumOFcurveConnections;
+string $ZfirstcurveRelatives[];
+$ZfirstcurveRelatives = `listRelatives -shapes $Zeachboundry`;
+string $ZfirstcurveConnectionsz[];
+$ZfirstcurveConnectionsz = ` listHistory -future  true -pruneDagObjects true  $ZfirstcurveRelatives`;
+int $historyShapes = `size($ZfirstcurveConnectionsz)`;
+if ($historyShapes > 0){
+
+string $Zfirstcurveshapes[];
+$ZfirstcurveshapesA = `listConnections -shapes 1  -type nurbsSurface $ZfirstcurveConnectionsz`;
+$ZfirstcurveshapesB = `listConnections -shapes 1  -type mesh $ZfirstcurveConnectionsz`;
+$XnumOFcurveConnections = (`size($ZfirstcurveshapesA)`) + (`size($ZfirstcurveshapesB)`) ;
+}else{ $XnumOFcurveConnections = 0;}
+
+return $XnumOFcurveConnections;
+}
+
+
+
+
+
+
+
+proc string[] ForAllCurvesFindSurfaceEdges(string $newallCurves[]){
+string $ZnewfoundEdge[];
+for ( $Zeachboundry in $newallCurves ) {
+string $ZselectedCurve[];
+$ZselectedCurve[0] = $Zeachboundry;
+int $Zfirstcurveshapesi = `NumberOFSurf($Zeachboundry)`;
+if ($Zfirstcurveshapesi == 1){
+ appendStringArray($ZnewfoundEdge, $ZselectedCurve, 1);
+}
+if ($Zfirstcurveshapesi == 0){
+ appendStringArray($ZnewfoundEdge,  $ZselectedCurve, 1);
+}
+}
+return $ZnewfoundEdge;
+}
+
+
+proc int FindNumOfConnectionsToCurveRemove(string $boundaryCurves[], int $XiC, string $everyFirstCurveShapeset[]){
+string $selectedCurve[];
+int $numberofconnections;
+for ( $eachboundry in $boundaryCurves ) {
+$selectedCurve[0] = $eachboundry;
+$numberofconnections += NumberOFSurf($eachboundry);
+if ( $numberofconnections == $XiC ) {
+string $firstcurveConn[] = stringArrayRemove ($selectedCurve, $everyFirstCurveShapeset);
+$everyFirstCurveShapeset = $firstcurveConn;
+}
+}
+return  $numberofconnections;
+}
+
+
+proc vector[] GetVectorArrayBetweenCurveEnds(string $CurveItem[]){
+string $CurveSelection[];
+int $numCVs = `getAttr -size ($CurveItem[0] +  ".controlPoints")`;
+int $numCVrealNum = ( $numCVs -1 );
+$CurveSelection[0] = ($CurveItem[0] + ".cv[0]") ;	 		
+$CurveSelection[1] = ($CurveItem[0] + ".cv[" +  $numCVrealNum + "]") ;
+float $EACHCVposAZ[]; float $EACHCVposBZ[]; int $numIntZB = 0; string $MakeXBetweenB[];
+for ($eachZA in $CurveSelection) {
+        float $eachCVpos[];	 $eachCVpos = `pointPosition -w ( $eachZA   )`;
+$numIntZB = $numIntZB + 1;
+if ( $numIntZB == 1 ){$EACHCVposAZ = $eachCVpos;}
+if ( $numIntZB == 2 ){$EACHCVposBZ = $eachCVpos;}
+}
+vector $CurveA = << $EACHCVposAZ[0], $EACHCVposAZ[1], $EACHCVposAZ[2] >>;
+vector $CurveB = << $EACHCVposBZ[0], $EACHCVposBZ[1], $EACHCVposBZ[2] >>;	
+vector $CurveAB[]; $CurveAB[0] = $CurveA; $CurveAB[1] = $CurveB;
+return $CurveAB; 
+}
+
+
+
+proc int  PointsEquivalentTol( float $posA[],  float $posB[]){
+int $pX = equivalentTol($posA[0], $posB[0],  0.01);
+int $pY = equivalentTol($posA[1], $posB[1],  0.01);
+int $pZ = equivalentTol($posA[2], $posB[2],  0.01);
+int $addedResults = $pX + $pY + $pZ;
+return $addedResults;
+}
+
+
+proc int FindifCurveEndsMeet(vector $CurveA1[], vector $CurveA2[]){
+int $CurveMeetsTrue = 0;
+int $indexN = 0;
+int $indexN2 = 0;
+while ($indexN < 2){
+float $firstC[];
+$firstC = $CurveA1[$indexN];
+float $SecondCA[];
+$SecondC = $CurveA2[0];
+float $SecondCA[];
+$SecondCA = $CurveA2[1];
+int $NumberE = PointsEquivalentTol( $firstC, $SecondC);
+int $NumberE2 = PointsEquivalentTol( $firstC, $SecondCA);
+if (($NumberE == 3)||($NumberE2 == 3)){$CurveMeetsTrue = $CurveMeetsTrue +1; }
+if ($indexN==1){$indexN1 = 1;}
+$indexN++;
+}
+return $CurveMeetsTrue;
+}
+
+
+
+proc int IfCurvesTouch(string $curveA, string $curveB){
+string $Acurve[];
+$Acurve = {$curveA};
+string $Bcurve[];
+$Bcurve = {$curveB};
+vector $CurveOne[] = GetVectorArrayBetweenCurveEnds($Acurve);
+vector $CurveTwo[] = GetVectorArrayBetweenCurveEnds($Bcurve);
+int $intIfTrue = FindifCurveEndsMeet($CurveOne, $CurveTwo);
+return $intIfTrue;
+}
+
+
+///////////////
+
+
+proc string [] GetSurfConnectNameIfexists(string $Zeachboundry){
+//string $Zeachboundry = $first[0];
+string $connectionSurfaceName[];
+int $XnumOFcurveConnections;
+int $XnumConnectionsM;
+int $XnumConnectionsN;
+string $ZfirstcurveRelatives[];
+$ZfirstcurveRelatives = `listRelatives -shapes $Zeachboundry`;
+string $ZfirstcurveConnectionsz[];
+$ZfirstcurveConnectionsz = ` listHistory -future  true -pruneDagObjects true  $ZfirstcurveRelatives`;
+int $historyShapes = `size($ZfirstcurveConnectionsz)`;
+if ($historyShapes > 0){
+string $ZfirstcurveshapesA[];
+string $ZfirstcurveshapesB[];
+$ZfirstcurveshapesA = `listConnections -shapes 1  -type nurbsSurface $ZfirstcurveConnectionsz`;
+$ZfirstcurveshapesB = `listConnections -shapes 1  -type mesh $ZfirstcurveConnectionsz`;
+$XnumConnectionsN = `size($ZfirstcurveshapesA)`;
+$XnumConnectionsM = `size($ZfirstcurveshapesB)`;
+$XnumOFcurveConnections = (`size($ZfirstcurveshapesA)`) + (`size($ZfirstcurveshapesB)`) ;
+if($XnumConnectionsN > 0){$connectionSurfaceName[size($connectionSurfaceName)] = $ZfirstcurveshapesA[0] ;}
+if($XnumConnectionsM > 0){$connectionSurfaceName[size($connectionSurfaceName)] = $ZfirstcurveshapesB[0] ;}
+} 
+
+return $connectionSurfaceName;
+
+}
+
+
+proc RemoveCurvesThatshareNamedSurface(string $ConnectingA[], string $foundFirstSurface){
+
+string $ConnectingZ[] = $ConnectingA;
+string $ConnectingB[] = $ConnectingA;
+string $connectionSurfaceName[];
+string $connectSur;
+for($Zeachboundry in $ConnectingZ){
+
+int $XnumOFcurveConnections;
+int $XnumConnectionsM;
+int $XnumConnectionsN;
+string $ZfirstcurveRelatives[];
+$ZfirstcurveRelatives = `listRelatives -shapes $Zeachboundry`;
+string $ZfirstcurveConnectionsz[];
+$ZfirstcurveConnectionsz = ` listHistory -future  true -pruneDagObjects true  $ZfirstcurveRelatives`;
+int $historyShapes = `size($ZfirstcurveConnectionsz)`;
+if ($historyShapes > 0){
+string $ZfirstcurveshapesA[];
+string $ZfirstcurveshapesB[];
+$ZfirstcurveshapesA = `listConnections -shapes 1  -type nurbsSurface $ZfirstcurveConnectionsz`;
+$ZfirstcurveshapesB = `listConnections -shapes 1  -type mesh $ZfirstcurveConnectionsz`;
+$XnumConnectionsN = `size($ZfirstcurveshapesA)`;
+$XnumConnectionsM = `size($ZfirstcurveshapesB)`;
+$XnumOFcurveConnections = (`size($ZfirstcurveshapesA)`) + (`size($ZfirstcurveshapesB)`) ;
+if($XnumConnectionsN > 0){$connectSur = $ZfirstcurveshapesA[0] ;}
+if($XnumConnectionsM > 0){$connectSur = $ZfirstcurveshapesB[0] ;}
+
+if($XnumOFcurveConnections > 0){
+string $SurfC = $connectSur;
+int $True = `gmatch $SurfC $foundFirstSurface`;
+if($True == 1){
+$ConnectingB = stringArrayRemoveExact({$Zeachboundry}, $ConnectingB);
+}
+}
+}
+} 
+
+$ConnectingA = $ConnectingB;
+
+}
+
+
+
+
+
+//FindNumOfConnectionsToCurveRemove($boundaryCurves , 2, $everyFirstCurveShapeset);
+
+
+////////////////////////
+
+
+
+string $everyCurve[] = $everyFirstCurveShapeset;
+
+string $AllCur[] = $everyFirstCurveShapeset;
+string $first[0] = {$AllCur[0]};
+
+$AllCur = $everyCurve;
+$first[0] = {$AllCur[0]};
+  stringArrayRemoveAtIndex(0, $AllCur);
+
+
+int $IsInBetweenSurfaces = FindNumOfConnectionsToCurveRemove($first, 2, $everyFirstCurveShapeset);
+
+if( $IsInBetweenSurfaces >0){
+
+
+}
+
+//select -r $AllCur $first[0];
+
+string $Connecting[];
+int $intIfTrue;
+for ($each in $AllCur){
+$intIfTrue = IfCurvesTouch($each, $first[0]);
+if($intIfTrue==1){
+string $EachCurve[0];
+$EachCurve = {$each};
+appendStringArray($Connecting, $EachCurve,  1);
+}
+}
+
+ string $ConnectMinusRemaining[] = stringArrayRemoveExact($Connecting, $AllCur);
+string $ConnAndFirst[] = $ConnectMinusRemaining;
+stringArrayInsertAtIndex(size($ConnAndFirst), $ConnAndFirst, $first[0]);
+string $NearestToFirst[] = NearestObjectArray(size($ConnAndFirst), $ConnAndFirst);
+
+//select -r $first   find what curves that are connected share a surface if any.. that way you 
+//remove alot and make the script much much faster
+
+//Remove Connecting curves to first curve that share and make up a surface
+ string $SurfaceName[] = GetSurfConnectNameIfexists($first[0]);
+if(`size($SurfaceName)` >0){
+RemoveCurvesThatshareNamedSurface($Connecting, $SurfaceName[0]);
+}
+
+
+
+string $ConnectPatch[];
+//string $Connecting[];
+int $intIfTrueA;
+int $intIfTrueB;
+int $intIfTrueC;
+string $diffeachConnected[];
+clear $diffeachConnected;
+int $intIfTrueB;
+int $ifFalseBound;
+
+for ($each in $NearestToFirst){
+
+for ($eachConnected in $Connecting){
+
+$intIfTrueA = IfCurvesTouch($eachConnected,$each);
+
+	if($intIfTrueA==1){
+$diffeachConnected = stringArrayRemoveExact({$eachConnected}, $Connecting);
+	for ($eachdiff in $diffeachConnected){
+
+$intIfTrueB = IfCurvesTouch($eachdiff,$each);
+if(($intIfTrueA == 1)&&( $intIfTrueB == 1)){
+
+$intIfTrueC = IfCurvesTouch($eachdiff,$eachConnected);
+if($intIfTrueC == 0){
+
+appendStringArray($ConnectPatch, {$each},  1);
+appendStringArray($ConnectPatch, {$eachdiff},  1);
+appendStringArray($ConnectPatch, {$eachConnected},  1);
+break;
+}
+		    }
+						   }
+
+			}
+
+}
+
+if(($intIfTrueA == 1)&&( $intIfTrueB == 1)&&($intIfTrueC==0)){
+break; }
+
+}
+
+///////////
+
+//select -r $ConnectPatch $first;
+
+$ifFalseBound = FindifFourCurvesShareSurface($ConnectPatch);
+if($ifFalseBound>0){
+
+}
+
+if($ifFalseBound==0){
+
+boundary -ch 1 -or 0 -ep 0 -rn 0 -po 1 -ept 0.01 $ConnectPatch[0] $ConnectPatch[1] $ConnectPatch[2] $first ;
+
+FindNumOfConnectionsToCurveRemove($ConnectPatch, 2, string $everyFirstCurveShapeset[])
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+//clear $ConnectPatch;
+
+select -r $ConnectPatch;
+select -r $Connecting;
+select -r $first;
+select -r $ConnectMinusRemaining;
+
+// find the name of surface connection
+
+
+
+print $connectionSurfaceName;
+
+
+select -r $Connecting;
+
+ string $ConnectingOld[] = $Connecting;
+
+//Remove Connecting curves to first curve that share and make up a surface
+ string $SurfaceName[] = GetSurfConnectNameIfexists($first[0]);
+if(`size($SurfaceName)` >0){
+RemoveCurvesThatshareNamedSurface($Connecting, $SurfaceName[0]);
+}
+
+select -r $Connecting;
+select -r $ConnectingOld;
+
+
+
+
+
+
+
+
+
+
+int $ifTrue = FindifFourCurvesShareSurface($Foundboundarycurves);
+
+//check order 
+
+string $Foundboundarycurves[];
+clear $Foundboundarycurves;
+stringArrayInsertAtIndex(0, $Foundboundarycurves,  $first[0]);
+stringArrayInsertAtIndex(0, $Foundboundarycurves,  $ConnectPatch[0]);
+stringArrayInsertAtIndex(0, $Foundboundarycurves,  $ConnectPatch[1]);
+stringArrayInsertAtIndex(0, $Foundboundarycurves,  $ConnectPatch[2]);
+
+
+
+
+
+
+string $EdgeCurveZ2[];
+clear $EdgeCurveZ2;
+  
+ string $EdgeCurveZ3[];
+clear $EdgeCurveZ3;
+
+string $shortNameCurve = "Curve*";
+string $everyFirstCurveShapeset[];
+string $EdgeCurveZ[];
+clear $EdgeCurveZ; 
+string $shortNameCurve = "Curve*";
+
+$everyFirstCurveShapeset = `ls -assemblies $shortNameCurve`;
+select -r $everyFirstCurveShapeset;
+
+///////////////////////////////////////////////
+//CHANGED SCRIPT
+
+ string $EdgeCurveZ3[];
+
+
+
+
+proc string[] boundryall( string $everyFirstCurveShapeset[]){
+
+int $EndAll = 0;
+ string $EdgeCurveZ3[];
+string $EdgeCurveZ2[];
+string $EdgeCurveZ[];
+
+int $everycurveSize = size($everyFirstCurveShapeset);
+while( size($everyFirstCurveShapeset) > 2 ){ 
+$EndAll++;
+
+if ( $EndAll == 1000 ){
+clear $everyFirstCurveShapeset;
+} 
+
+
+if (size($everyFirstCurveShapeset) == 3 ){
+ stringArrayInsertAtIndex(0, $EdgeCurveZ2, $everyFirstCurveShapeset[0]);
+ stringArrayInsertAtIndex(0, $EdgeCurveZ2, $everyFirstCurveShapeset[1]);
+ stringArrayInsertAtIndex(0, $EdgeCurveZ2, $everyFirstCurveShapeset[2]);
+}
+
+int $everycurveSizeIndex = size($everyFirstCurveShapeset) -1;
+string $FirstCurvesZ[];
+$FirstCurvesZ[0] = $everyFirstCurveShapeset[$everycurveSizeIndex];
+
+string $firstcurveRelatives[];
+$firstcurveRelatives = `listRelatives -shapes $FirstCurvesZ`;
+string $firstcurveConnectionsz[];
+$firstcurveConnectionsz = `listConnections $firstcurveRelatives`;
+string $firstcurveshapes[];
+$firstcurveshapes = `listConnections -shapes 1 $firstcurveConnectionsz`;
+string $firstcurveConn[] = stringArrayRemove($firstcurveRelatives, $firstcurveshapes);
+int $numberofconnections = size($firstcurveConn);
+
+
+if ( $numberofconnections >= 2 ) {
+stringArrayRemoveAtIndex($everycurveSizeIndex, $everyFirstCurveShapeset);
+int $everycurveSizeIndex = size($everyFirstCurveShapeset) -1;
+string $FirstCurvesZ[];
+$FirstCurvesZ[0] = $everyFirstCurveShapeset[$everycurveSizeIndex];
+}
+int $everycurveSize = size($everyFirstCurveShapeset);
+int $divide;
+int $switchNumber;
+if (( $everycurveSize < 1000 ) && ( $everycurveSize >= 500 )){
+$divide = $everycurveSize / 50;
+$switchNumber = 0; 
+print $divide;}
+if (( $everycurveSize < 500 ) && ( $everycurveSize >= 250 )){
+$divide = $everycurveSize / 25; 
+$switchNumber = 0;}
+if (( $everycurveSize < 250 ) && ( $everycurveSize >= 100 )){
+$divide = $everycurveSize / 12; }
+if (( $everycurveSize < 100 ) && ( $everycurveSize >= 50 )){
+$divide = $everycurveSize / 5; 
+$switchNumber = 0;}
+if (( $everycurveSize < 50 ) && ( $everycurveSize >= 20 )){
+$divide =$everycurveSize / 4; 
+$switchNumber = 0;}
+if (( $everycurveSize < 20 ) && ( $everycurveSize > 18 )){
+$divide = $everycurveSize / 2;
+$switchNumber = 0;
+print $divide;
+ }
+if ( $everycurveSize <= 18 ){
+$switchNumber = 1;
+ }
+
+int $n;
+
+switch($switchNumber) 
+
+{
+	case 0:
+	int $n = $divide;
+	string $NearestCurvesZ[] = (NearestObjectArray($n, $everyFirstCurveShapeset));
+	int $n2 = $n * 2;
+	string $NearestCurvesZn2[] = (NearestObjectArray($n2, $everyFirstCurveShapeset));
+break;
+
+	case 1:
+	string $NearestCurvesZ[] = $everyFirstCurveShapeset;
+	string $NearestCurvesZn2[] = $everyFirstCurveShapeset;
+break;
+
+}
+
+print $NearestCurvesZ; 
+
+string $TEMPzCurveAAb[];
+if ( size($TEMPzCurveAAb) > 0){
+clear $TEMPzCurveAAb;
+}
+int $ISTRUE0A1;
+int $numIntZZ;
+for ( $eachZ in $NearestCurvesZ ) {
+
+int $ISTRUE0A1 = catchQuiet($intersectCurveZ0 = `curveIntersect -ch 0 -ud 0 -tol 0.01 $FirstCurvesZ $eachZ`);
+int $numIntZZ = size($intersectCurveZ0);
+	if (($ISTRUE0A1 > 0) || ($numIntZZ > 0)) {
+stringArrayInsertAtIndex(0, $TEMPzCurveAAb, $eachZ);
+}
+}
+
+
+$NearestCurvesZ = $TEMPzCurveAAb;
+int $numIntAX1 = size($TEMPzCurveAAb);
+
+int $switchNumberA;
+if ( $numIntAX1 == 0 ){
+ string $removeoneFromeveryFirstA[];
+$removeoneFromeveryFirstA = stringArrayRemove($FirstCurvesZ, $everyFirstCurveShapeset);
+$everyFirstCurveShapeset = $removeoneFromeveryFirstA;
+$switchNumberA = 0;
+}
+
+
+string $TEMPzCurveA[0];
+$numInts2 = size($TEMPzCurveA);
+if ( $numInts2 > 0 ){
+clear $TEMPzCurveA;
+}
+
+
+if ( $numIntAX1 == 0 ){
+$switchNumberA = 0;
+}
+
+
+string $diff[];
+if ( size($diff) > 0){
+clear $diff;
+}
+$diff = stringArrayRemove($NearestCurvesZ, $NearestCurvesZn2);
+
+
+if( size($diff) == 0 ) {
+clear $everyFirstCurveShapeset;
+clear $NearestCurvesZ; 
+$switchNumberA = 1;
+} else if( size($diff) > 0 ){
+$switchNumberA = 2;
+} 
+
+if(( size($NearestCurvesZ) == 3 ) && ($everycurveSize == 3)) {
+$switchNumberA = 1; }
+
+switch($switchNumberA) 
+
+{
+	case 0:
+
+stringArrayRemoveAtIndex($everycurveSizeIndex, $everyFirstCurveShapeset);
+int $everycurveSizeIndex = size($everyFirstCurveShapeset) -1;
+string $FirstCurvesZ[];
+$FirstCurvesZ[0] = $everyFirstCurveShapeset[$everycurveSizeIndex];
+
+	print "next";
+break;
+
+	case 1:
+print "done";
+ stringArrayInsertAtIndex(0, $EdgeCurveZ, $NearestCurvesZ[0]);
+ stringArrayInsertAtIndex(0, $EdgeCurveZ, $NearestCurvesZ[1]);
+ stringArrayInsertAtIndex(0, $EdgeCurveZ, $NearestCurvesZ[2]);
+break;
+
+	case 2:
+
+for ( $eachAB in $diff ) {
+int $ISTRUE0B = catchQuiet($intersectCurveZ1 = `curveIntersect -ch 0 -ud 0 -tol 0.01 $FirstCurvesZ $eachAB`);
+int $numIntZZZ = size($intersectCurveZ1);
+	if (($ISTRUE0B > 0) || ($numIntZZZ > 0)) {
+ stringArrayInsertAtIndex(0, $TEMPzCurveA, $eachAB);
+}
+}
+string $NearestCurvesZA[];
+int $numInts2a;
+$numInts2a = size($NearestCurvesZA);
+if ( $numInts2a > 0 ){
+clear $NearestCurvesZA;
+} 
+$NearestCurvesZA = stringArrayCatenate($NearestCurvesZ, $TEMPzCurveA);
+$NearestCurvesZ = $NearestCurvesZA;
+string $diffremove[];
+int $numInts2a;
+$numInts2a = size($diffremove);
+if ( $numInts2a > 0 ){
+clear $diffremove;
+} 
+$diffremove = stringArrayRemove($TEMPzCurveA, $diff);
+string $TEMPAlldiffCurveZBBBB[];
+$numInts = size($TEMPAlldiffCurveZBBBB);
+if ( $numInts > 0 ){
+clear $TEMPAlldiffCurveZBBBB;
+} 
+$TEMPAlldiffCurveZBBBB = $diffremove;
+//////////////////////////////////////////////////////
+
+string $diffX[]; clear $diffX; string $boundaryCurves[]; clear $boundaryCurves; 
+int $numIntxZB; string $OtherCurves[]; clear $OtherCurves; string $oneboundaryCurve[]; clear $oneboundaryCurve;
+string $boundaryCurvesAA[]; string $oneboundaryCurve[]; clear $oneboundaryCurve;
+string $boundaryCurves[]; 
+clear $boundaryCurves;
+string $boundaryCurves1[]; 
+clear $boundaryCurves1;
+	int $X = 1;
+	int $ENDLOOPA;
+	int $i = 1;
+	int $ENDLOOP;
+	int $B = 0;
+	int $ISTRUE0A001;
+	int $numIntZZA;
+	int $numIntZZAB;
+	int $ISTRUE0B002;
+	int $endtrigger = 0;
+	int $NEARsize;
+
+	while (size($NearestCurvesZ) > 0 ){
+	 if ( $endtrigger == 2 ){ 
+	clear $NearestCurvesZ;
+	size($NearestCurvesZ); }
+int $NEARsize = size($NearestCurvesZ);
+ if ( $NEARsize == 1 ){ 
+clear $NearestCurvesZ;
+} 
+for ( $each in $NearestCurvesZ ) {
+stringArrayInsertAtIndex(0, $boundaryCurves1, $each);
+clear $oneboundaryCurve; 
+stringArrayInsertAtIndex(0, $oneboundaryCurve, $boundaryCurves1[0]);
+ $X = 1;
+$ENDLOOPA = size($TEMPAlldiffCurveZBBBB);
+for ( $eachA in $TEMPAlldiffCurveZBBBB ) {
+stringArrayInsertAtIndex(0, $boundaryCurves1, $each);
+clear $oneboundaryCurve; 
+stringArrayInsertAtIndex(0, $oneboundaryCurve, $boundaryCurves1[0]);
+int $ISTRUE0A001 = catchQuiet($intersectCurveZ0A = `curveIntersect -ch 0 -ud 0 -tol 1.0 $each $eachA`);
+$ENDLOOPA = size($TEMPAlldiffCurveZBBBB);
+$X++;
+int $numIntZZA = size($intersectCurveZ0A);
+if ((($ISTRUE0A001 == 0) && ( $X == $ENDLOOPA)) || (($numIntZZA == 0) && ( $X == $ENDLOOPA))) {
+string $removecurveAz2[];
+$removecurveAz2[0] = $each;
+$NearestCurvesZ = stringArrayRemove($removecurveAz2, $NearestCurvesZ);
+int $NEARsize = size($NearestCurvesZ);
+ 
+} else if (($ISTRUE0A001 > 0) || ($numIntZZA > 0)){
+	string $diffX[];
+	clear $diffX;
+	$diffX = stringArrayRemoveExact($oneboundaryCurve, $NearestCurvesZ);
+$ENDLOOP = size($diffX);
+
+int $XendtriggerSearch = 1;
+
+	for ( $eachB in $diffX ) {
+$XendtriggerSearch++;
+
+ if ( $endtrigger == 2 ){ 
+clear $NearestCurvesZ; } 
+
+int $ISTRUE0B002 = catchQuiet($intersectCurveZAB = `curveIntersect -ch 0 -ud 0 -tol 0.001 $eachA $eachB`);
+
+int $numIntZZAB = size($intersectCurveZAB);
+int $numsizeNearest = size($NearestCurvesZ); 
+int $numsizediffX = size($diffX); 
+//
+//
+
+if (( $endtrigger == 0 ) && ( $numsizeNearest < 2 )){
+ string $removeoneFromeveryFirstA[];
+$removeoneFromeveryFirstA = stringArrayRemove($FirstCurvesZ, $everyFirstCurveShapeset);
+$everyFirstCurveShapeset = $removeoneFromeveryFirstA;
+ }
+	if (($ISTRUE0B002 > 0) || ($numIntZZAB > 0)) {	
+	boundary -ch 1 -or 0 -ep 0 -rn 1 -po 1 -ept 0.001 $FirstCurvesZ $each $eachA $eachB;
+$endtrigger = $endtrigger +1;
+if ( $endtrigger == 1 || $endtrigger == 2 ) {
+stringArrayInsertAtIndex(0, $boundaryCurves, $each);
+stringArrayInsertAtIndex(0, $boundaryCurves, $eachB);
+stringArrayInsertAtIndex(0, $boundaryCurves, $eachA);
+}
+if ( $endtrigger < 2 ){
+string $removecurveAz[]; string $removecurveBz[]; string $removecurveCz[]; 
+	$removecurveAz[0] = $each;	
+	$removecurveBz[0] = $eachB;
+	$removecurveCz[0] = $eachA;
+string $NearestCurvesZ[] = stringArrayRemove($removecurveAz, $NearestCurvesZ);
+string $NearestCurvesZ[] = stringArrayRemove($removecurveBz, $NearestCurvesZ);
+string $TEMPAlldiffCurveZBBBB[] = stringArrayRemove($removecurveCz, $TEMPAlldiffCurveZBBBB); }
+else if ( $endtrigger == 2 ){ 
+clear $NearestCurvesZ; }
+  
+		     } 
+	}
+//end of if
+}
+//end of For
+}
+}
+}
+
+int $boundaryCurvessize = size($boundaryCurves); 
+if( $boundaryCurvessize > 0 ) {
+for ( $eachboundry in $boundaryCurves ) {
+string $selectedCurve[];
+clear $selectedCurve;
+$selectedCurve[0] = $eachboundry;
+string $firstcurveRelatives[];
+$firstcurveRelatives = `listRelatives -shapes $selectedCurve`;
+string $firstcurveConnectionsz[];
+$firstcurveConnectionsz = `listConnections $firstcurveRelatives`;
+string $firstcurveshapes[];
+$firstcurveshapes = `listConnections -shapes 1 $firstcurveConnectionsz`;
+string $firstcurveConn[] = stringArrayRemove($firstcurveRelatives, $firstcurveshapes);
+int $numberofconnections = size($firstcurveConn);
+
+if (( $endtrigger == 1 ) && ( $numberofconnections == 1 )) {
+
+ stringArrayInsertAtIndex(0, $EdgeCurveZ3, $FirstCurvesZ[0]); }
+
+if ( $numberofconnections == 2 ) {
+string $firstcurveConn[] = stringArrayRemove($selectedCurve, $everyFirstCurveShapeset);
+$everyFirstCurveShapeset = $firstcurveConn;
+
+}
+}
+
+}
+string $selectedCurve[];
+clear $selectedCurve;
+$selectedCurve[0] = $FirstCurvesZ[0];
+string $firstcurveRelatives[];
+$firstcurveRelatives = `listRelatives -shapes $selectedCurve`;
+string $firstcurveConnectionsz[];
+$firstcurveConnectionsz = `listConnections $firstcurveRelatives`;
+string $firstcurveshapes[];
+$firstcurveshapes = `listConnections -shapes 1 $firstcurveConnectionsz`;
+string $firstcurveConn[] = stringArrayRemove($firstcurveRelatives, $firstcurveshapes);
+int $numberofconnectionsFIRST = size($firstcurveConn);
+
+if (( $endtrigger == 1 ) && ( $numberofconnectionsFIRST == 1 )) {
+
+ stringArrayInsertAtIndex(0, $EdgeCurveZ2, $FirstCurvesZ[0]); }
+
+
+
+if ( $endtrigger == 0 ){
+ stringArrayInsertAtIndex(0, $EdgeCurveZ2, $FirstCurvesZ[0]); }
+
+string $removeoneFromeveryFirst[];
+$removeoneFromeveryFirst = stringArrayRemove($FirstCurvesZ, $everyFirstCurveShapeset);
+$everyFirstCurveShapeset = $removeoneFromeveryFirst;
+clear $FirstCurvesZ; 
+break;
+}
+playButtonStepForward;
+select -r $everyFirstCurveShapeset;
+
+}
+
+return $EdgeCurveZ2;
+
+}
+
+
+$EdgeCurveZ3 = boundryall( $everyFirstCurveShapeset);
+
