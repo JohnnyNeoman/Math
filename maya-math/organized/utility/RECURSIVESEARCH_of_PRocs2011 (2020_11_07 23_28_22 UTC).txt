@@ -1,0 +1,2862 @@
+
+proc int AddItemsFromIndexAtoB(int $Ai, int $Bi, int $numberArrayi[]){
+	// float $numberArrayi[]= {0.2, 1.2, 3.2, 1.2, 6.2, 6.2, 9.3, -1.2};
+	//int $Ai = 2;
+	//int $Bi = 5;
+	int $AddUp=0;
+	int $NumerinArray = `size($numberArrayi)`-1;
+	if($NumerinArray!=-1){
+		int $Ni = $Ai;
+		int $Nii = $Bi;
+		if($Nii< $Ni){
+			$Ai=$Nii; $Bi=$Ni;
+		}
+		int $range = abs ($Ai-$Bi);
+		for ($iC=0;$iC<$range+1; $iC++){
+			int $ixNa = $iC+$Ai;
+			$ixNa = `clamp 0 $NumerinArray $ixNa`;
+			$AddUp+=$numberArrayi[$ixNa];
+			if($ixNa ==$NumerinArray){break;}
+		}
+	}
+	return $AddUp;
+}
+
+
+proc int[] AddItemsFromIndexAtoBFindZero(int $Ai, int $Bi, int $numberArrayi[]){
+	// float $numberArrayi[]= {0.2, 1.2, 3.2, 1.2, 6.2, 6.2, 9.3, -1.2};
+	//int $Ai = 2;
+	//int $Bi = 5;
+	int $AddUp=0;
+	int $NumerinArray = `size($numberArrayi)`-1;
+	int $catchIndex[1];
+	$catchIndex[0]= 1;
+	if($NumerinArray!=-1){
+		int $Ni = $Ai;
+		int $Nii = $Bi;
+		if($Nii< $Ni){
+			$Ai=$Nii; $Bi=$Ni;
+		}
+		int $range = abs ($Ai-$Bi);
+		for ($iC=0;$iC<$range+1; $iC++){
+			int $ixNa = $iC+$Ai;
+			$ixNa = `clamp 0 $NumerinArray $ixNa`;
+			$AddUp+=$numberArrayi[$ixNa];
+			if($AddUp ==0){$catchIndex[1] = $ixNa; $catchIndex[0]=0;break;}
+		}
+	}
+	return $catchIndex;
+}
+
+proc string StringArrayItemsFromIndexAtoB(int $Ai, int $Bi, string $StringArrayi[]){
+	string $sAddUp=0;
+	int $NumerinArray = `size($StringArrayi)`;
+	if($NumerinArray!=0){
+		float $Ni = $Ai;
+		float $Nii = $Bi;
+		if($Nii< $Ni){
+			$Ai=$Nii; $Bi=$Ni;
+		}
+		float $range = abs ($Ai-$Bi);
+		for ($iC=0;$iC<$range+1; $iC++){
+			int $ixNa = $iC+$Ai;
+			$sAddUp+=$StringArrayi[$ixNa];
+			if($ixNa ==$NumerinArray){break;}
+		}
+	}
+	return $sAddUp;
+}
+
+proc  PrintLongArrayNice(string $StringArrayPrint[] , int $MatrixN){
+	int $MatrixNi = $MatrixN-1;
+	string $stringFloat[] = $StringArrayPrint;
+	int $BytNum[];
+	clear $BytNum;
+	for ($eachFloatz in $stringFloat){
+		$BytNum[`size($BytNum)`] = (`sizeBytes $eachFloatz`)+2;
+	}
+	int $BytNumSort[] = $BytNum;
+	$BytNumSort = `sort $BytNumSort`;
+	int $BytNumLarg = $BytNumSort[`size($BytNumSort)`-1];
+	int $BytNumSmall = $BytNumSort[0];
+	int $BytNumDiff[];
+	clear $BytNumDiff;
+	for ($eachBytNum in $BytNum){
+		$BytNumDiff[`size($BytNumDiff)`] = (`abs ($eachBytNum - $BytNumLarg)`)+2;
+	}
+	int $IndXeF =0;
+	int $IndXeFi =0;
+	string $Syb = " ";
+	string $printcommand="";
+	for ($eachItemF in $stringFloat){
+		string $AddedSPaces = AddItemString($BytNumDiff[$IndXeF], $Syb);
+		if($IndXeFi==$MatrixNi){ $printcommand += $AddedSPaces + $eachItemF + "|"+ "\n" ;
+			$IndXeFi= -1; }else{ if($IndXeFi==0){$printcommand += "|"+$AddedSPaces + $eachItemF;}else{ $printcommand +=  $AddedSPaces + $eachItemF;}}
+		$IndXeFi++;
+		$IndXeF++;
+	}
+	
+
+}
+
+proc string[] StringArrayStartOfStringinArray(string $Array[]){
+	string $StartOfEach[];
+	string $findEachstart="";
+	for ($eachString in $Array){
+		$StartOfEach[`size($StartOfEach)`]= startString($eachString, 1);
+		$findEachstart+= startString($eachString, 1);
+		$findEachstart+= " ";
+	}
+	
+	return $StartOfEach;
+}
+
+///////////////////////
+proc string[] ReturnArrayFromNestedStringAtIndex(string $StringData[], int $ind){
+	string $KnownMatchi[];
+	$KnownMatchi = stringToStringArray($StringData[$ind], ",");
+	return $KnownMatchi;
+}
+
+proc int[] TFArrayContains(string $item, string $list[])
+{	int $TF[1];
+	$TF[0] = false;	
+	string $listItem;
+	int $Count =0;	
+	for ($listItem in $list) {
+		if ($item == $listItem) {
+			$TF[0] = true;
+			$TF[1] = $Count;
+			break;
+		} $Count++;
+	}	
+	return $TF;
+}
+
+proc string AddItemString(int $iN, string $NumLetorSy){
+	int $Xz =0;
+	string $AddItem ="";
+	while($iN > $Xz){
+		$AddItem+= $NumLetorSy;
+		$Xz++;
+	}
+	return $AddItem;
+}
+
+////////////////////////
+
+//Test pick one
+
+/*
+string $Find = "Vec.xithis+ float Y =  uVeci/(abs(sqrt ((`pow  uVeci 2`) + (`pow  vVeci 2`) + (`pow  wVeci 2`)))); Vec.vecthisH , float i =  Vec.x - Vec.y; float ii = Vec.vecthisH - Vec.z + Vec.thisy / Vec.Tthis - Vec.this;";
+
+string $Find = "r = a*exp(radians(Delta_angle*n)*cot(b))x = r*cos(radians(Delta_angle*n))if(n ==0):y = 0else:y = 10*(rBefore -r) z = sin (radians(Delta_angle*n))  SomeNumber::FuctionWeird please work II + math = joy;" ;
+*/
+////////////////////////
+
+
+proc string [] FindNameOfVariables(string $Find, int $sortN){
+
+string $resultVar = "string float vector matrix int proc";
+string $resulti = "sin cos tan tand atan asin acos atand asind acosd";
+string $result = "abs angle bessel ceil clamp constrainValue cos cross crossProduct deg_to_rad delrandstr dot dotProduct equivalent  equivalentTol erf exp floatEq floor fmod gamma gauss getLastError getProcArguments hermite hsv_to_rgb hypot linstep log mag max min noise  normalize pointMatrixMult pow rad_to_deg rand randstate rgb_to_hsv rot seed sign sin smoothstep sphrand sqrt tan trunc unitprint ";
+string $AllMathfunction = "abs ,angle ,bessel ,ceil ,clamp ,constrainValue ,cos ,cross ,crossProduct ,deg_to_rad ,delrandstr ,dot  ,dotProduct ,equivalent ,equivalentTol ,erf ,exp ,floatEq ,floor ,fmod ,gamma ,gauss ,getLastError ,getProcArguments ,hermite ,hsv_to_rgb  ,hypot ,linstep ,log ,mag ,max ,min ,noise ,normalize ,pointMatrixMult ,pow ,rad_to_deg ,rand ,randstate ,rgb_to_hsv ,rot ,seed ,sign ,sin  ,smoothstep ,sphrand ,sqrt ,tan ,trunc ,unit";
+string $MathFuncClassData =  $result+" "+ $resulti + " " + $resultVar ;
+//string  $KnownMathTermsMELAtomizes[] = ArrayFromAllinString($MathFuncClassData);
+string $KnownMathTermsMEL[] = stringToStringArray($MathFuncClassData, " ");
+string $KnownMathTermsMELSorted[] = `sort $KnownMathTermsMEL`;
+
+
+
+string $startingChar[] =  StringArrayStartOfStringinArray($KnownMathTermsMELSorted);
+string $shorterListstartingChar[] =  stringArrayRemoveDuplicates ($startingChar);
+string $KnownMatch[] = $KnownMathTermsMELSorted;
+string $ArrayLetter[] = $shorterListstartingChar;
+string $Arraytemp[] = $KnownMathTermsMELSorted;
+string $StartOfEachS;
+string $findEachstart="";
+string $StartOfEachSTable[], $itemBackUp[];
+clear $StartOfEachSTable $itemBackUp;
+$itemBackUp = $ArrayLetter;
+string $gatherItems="";
+string $eachStringL;
+string $eachString;
+
+for ($eachStringL in $ArrayLetter){
+	for ($eachString in $KnownMathTermsMELSorted){
+		$StartOfEachS = startString($Arraytemp[0], 1);
+		if ($StartOfEachS==$eachStringL){
+			$gatherItems += ($Arraytemp[0]+",");
+			$Arraytemp = stringArrayRemoveExact({$Arraytemp[0]}, $Arraytemp);
+		}
+		//else{	$gatherItems="";}	//
+	}
+	if(`size($gatherItems)`>0){
+		$StartOfEachSTable[`size($StartOfEachSTable)`]= $gatherItems; 
+	}
+	$gatherItems="";
+}
+
+//////////////////////////////////////////////////////////////
+
+
+int $IndexLetters[] = CreateIntIndex(`size($ArrayLetter)`);
+int $BytNumi;
+$BytNumi = `sizeBytes $Find`;
+string $all[];
+int $StringIndex[];
+clear $all;
+clear $StringIndex;
+string $all[] = ArrayFromAllinString($Find);
+int $StringIndex[] = CreateIntIndex( `size($all)` );
+//map string 
+
+string $tempFind = $Find;
+string $tempFindwrite = $Find;
+int $countIndex=0;
+string $StartS;
+int $indexStart[];
+clear $indexStart;
+string $LetterItem="";
+string $FoundVariableItems[];
+string $FoundOtherItems[];
+clear $FoundVariableItems $FoundOtherItems;
+int $indexFirstCharItems[];
+clear $indexFirstCharItems;
+int $BytNx =0;
+string $StringFromReducedArray ="";
+string $reducedArray[];
+clear $reducedArray;
+string $allTemp[];
+clear $allTemp;
+$allTemp = $all;
+string $dontUse=""; 
+string $matchingDontuse="";
+int $freezeTrigger =0;
+string $matching="";
+int $eachInt=0;
+int $iixI =0;
+string $match;
+string $match0;
+string $matchMiddleDiff;
+string $matchi;
+string $MatchStage2;
+string $MatchStage3;
+string $addBracktoMatch3;
+string $addBracktoMatchD;
+string $matchTemp;
+string $dontUse;
+
+
+$match0 = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $Find`;
+$match = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)(.)" $Find`;
+$matchii = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)" $Find`;
+$matchi = `match "([a-zA-Z]+)([a-zA-Z0-9_])(\.)([a-zA-Z0-9_]+)" $Find`;
+$MatchStage2 = endString($match, 3);
+
+$MatchStage3 = startString($match, `sizeBytes $match`-2);
+$MatchStage3i = startString($match, `sizeBytes $matchii`-2);
+$addBracktoMatch3 = ("\["+$MatchStage3+"\]");
+
+$matchMiddleDiff = `match $addBracktoMatch3  $MatchStage2`;
+if($matchMiddleDiff=="\."){
+	
+	string $matchMaybeVec2 = `match "(\\.)([xyz][^a-zA-Z0-9_])" $MatchStage2`;
+	if($matchMaybeVec2!=""){
+		$MatchStage4 = startString($match, `sizeBytes $match`-1);
+		$match = $MatchStage4;
+	}else{ $dontUse = $matchi; $match=$matchi; }
+}else{ if($match0==$MatchStage3i){$match =  $MatchStage3i;}else{$match =$match0;}//   
+}
+
+$matchTemp = $match;
+$BytNx =`sizeBytes $match`;
+
+int $IndexLetters[] = CreateIntIndex(`size($ArrayLetter)`);
+string $ArrayFind[];
+int $TFandIndex[];
+int $TFandIndexii[];
+string $StartOfEachSi="";
+string $FOUND="";
+clear $ArrayFind $TFandIndex $TFandIndexii;
+int $FirstLFindIndex;
+int $Tri=0;
+int $Trii=2;
+int $CountFoundletters=0;
+vector $indexStartEnd[];
+clear $indexStartEnd;
+
+
+for ($eachItemArray in $StringIndex){
+	$eachInt = $StringIndex[$iixI];
+	
+	if( `gmatch $allTemp[$eachInt] "[a-zA-Z0-9_\.]*"` == 1){
+		if($Trii==2){$Trii=1; $Tri=2;}
+		if(!($CountFoundletters>=1)){
+			$FirstLFindIndex=$iixI+1;
+			
+		}
+		$CountFoundletters++;
+		if($Tri==2){
+		
+			$Tri=0;
+		}
+		$LetterItem+= $allTemp[$eachInt];
+		$BytNx = `sizeBytes $LetterItem`;
+		if(`gmatch $matchTemp $LetterItem`==1){
+			$BytNx = `sizeBytes $LetterItem`;
+			
+			//$LetterItem ="pow";
+			$StartOfEachSi = startString($LetterItem, 1);
+			$TFandIndex = TFArrayContains($StartOfEachSi, $ArrayLetter);
+			if($TFandIndex[0]==1){ 
+				$ArrayFind = ReturnArrayFromNestedStringAtIndex($StartOfEachSTable, $TFandIndex[1]);
+				$TFandIndexii = TFArrayContains($LetterItem, $ArrayFind);
+				
+				if($TFandIndexii[0]==1){
+					$FOUND = $ArrayFind[$TFandIndexii[1]];
+					if(`gmatch $FOUND $LetterItem`==1){
+						
+						$FoundOtherItems[`size($FoundOtherItems)`]= $FOUND;
+					}
+				}
+			}
+			if(`gmatch $FOUND $LetterItem`!=1){
+				if($matchTemp!=$dontUse){ 
+					$FoundVariableItems[`size($FoundVariableItems)`]= $LetterItem;
+					int $SizeItem = `size $matchTemp`;
+					$indexStartEnd[`size($indexStartEnd)`] = <<$FirstLFindIndex, $iixI, ($iixI-$SizeItem+3)>> ;
+					$indexStart[`size($indexStart)`]= $FirstLFindIndex;
+				}
+			} else{$CountFoundletters=0;          }
+			clear $TFandIndex $ArrayFind $TFandIndexii;  
+			$FOUND="";
+			$reducedArray = $allTemp;
+			stringArrayRemoveToIndex($eachInt+1, $reducedArray);
+			$StringFromReducedArray = stringArrayToString($reducedArray, "");
+		
+			/////////////////////////////////////////////////////////////////////////////////
+
+			/////////////////////////////////////////////////////////////////
+			$LetterItem ="";
+			if($matchTemp==$dontUse){ $freezeTrigger = 1; }
+			if( `gmatch $allTemp[$eachInt] $match` != 1){$Trii=2; $CountFoundletters=0;}
+			
+			$match0 = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $StringFromReducedArray`;
+			
+			//if(`size($StringFromReducedArray)`>4){
+			$match = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)(.)" $StringFromReducedArray`;
+			$matchii = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)" $StringFromReducedArray`;
+			$matchi = `match "([a-zA-Z]+)([a-zA-Z0-9_])(\.)([a-zA-Z0-9_]+)" $StringFromReducedArray`;
+			$MatchStage2 = endString($match, 3);
+			$MatchStage3 = startString($match, `sizeBytes $match`-2);
+			$MatchStage3i = startString($match, `sizeBytes $matchii`-2);
+			$addBracktoMatch3 = ("\["+$MatchStage3+"\]");
+			//$addBracktoMatchD = ("\(["+"\"+$matchi+"\])+([a-zA-Z]+)([a-zA-Z0-9_])");
+			$matchMiddleDiff = `match $addBracktoMatch3  $MatchStage2`;
+			
+			if($matchMiddleDiff=="\."){
+				
+				string $matchMaybeVec2 = `match "(\\.)([xyz][^a-zA-Z0-9_])" $MatchStage2`;
+				if($matchMaybeVec2!=""){
+					$MatchStage4 = startString($match, `sizeBytes $match`-1);
+					$match = $MatchStage4;
+				}else{ $dontUse = $matchi; $match=$matchi; }
+			}else{ if($match0==$MatchStage3i){$match =  $MatchStage3i;}else{$match =$match0;}//   
+			}
+		}
+	}else{$LetterItem ="";  }
+	///}else{$match = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $StringFromReducedArray`;}
+	$matchTemp = $match;
+	
+	$iixI++;
+}
+
+///////////////
+
+string $printneat = stringArrayToString($FoundVariableItems, ",");
+string $printneati = stringArrayToString($FoundOtherItems, ",");
+string $FoundTerms[] = stringToStringArray($printneat, ",");
+
+if($sortN== 1){$FoundTerms = `sort $FoundTerms`;}
+
+return $FoundTerms;
+
+}
+//////////////////////////////
+
+
+proc string [] FindNameOfVariables(string $Find, int $sortN, int $EmptyIntArray[] ){
+
+string $resultVar = "string float vector matrix int proc";
+string $resulti = "sin cos tan tand atan asin acos atand asind acosd";
+string $result = "abs angle bessel ceil clamp constrainValue cos cross crossProduct deg_to_rad delrandstr dot dotProduct equivalent  equivalentTol erf exp floatEq floor fmod gamma gauss getLastError getProcArguments hermite hsv_to_rgb hypot linstep log mag max min noise  normalize pointMatrixMult pow rad_to_deg rand randstate rgb_to_hsv rot seed sign sin smoothstep sphrand sqrt tan trunc unitprint ";
+string $AllMathfunction = "abs ,angle ,bessel ,ceil ,clamp ,constrainValue ,cos ,cross ,crossProduct ,deg_to_rad ,delrandstr ,dot  ,dotProduct ,equivalent ,equivalentTol ,erf ,exp ,floatEq ,floor ,fmod ,gamma ,gauss ,getLastError ,getProcArguments ,hermite ,hsv_to_rgb  ,hypot ,linstep ,log ,mag ,max ,min ,noise ,normalize ,pointMatrixMult ,pow ,rad_to_deg ,rand ,randstate ,rgb_to_hsv ,rot ,seed ,sign ,sin  ,smoothstep ,sphrand ,sqrt ,tan ,trunc ,unit";
+string $MathFuncClassData =  $result+" "+ $resulti + " " + $resultVar ;
+//string  $KnownMathTermsMELAtomizes[] = ArrayFromAllinString($MathFuncClassData);
+string $KnownMathTermsMEL[] = stringToStringArray($MathFuncClassData, " ");
+string $KnownMathTermsMELSorted[] = `sort $KnownMathTermsMEL`;
+
+
+
+string $startingChar[] =  StringArrayStartOfStringinArray($KnownMathTermsMELSorted);
+string $shorterListstartingChar[] =  stringArrayRemoveDuplicates ($startingChar);
+string $KnownMatch[] = $KnownMathTermsMELSorted;
+string $ArrayLetter[] = $shorterListstartingChar;
+string $Arraytemp[] = $KnownMathTermsMELSorted;
+string $StartOfEachS;
+string $findEachstart="";
+string $StartOfEachSTable[], $itemBackUp[];
+clear $StartOfEachSTable $itemBackUp;
+$itemBackUp = $ArrayLetter;
+string $gatherItems="";
+string $eachStringL;
+string $eachString;
+
+for ($eachStringL in $ArrayLetter){
+	for ($eachString in $KnownMathTermsMELSorted){
+		$StartOfEachS = startString($Arraytemp[0], 1);
+		if ($StartOfEachS==$eachStringL){
+			$gatherItems += ($Arraytemp[0]+",");
+			$Arraytemp = stringArrayRemoveExact({$Arraytemp[0]}, $Arraytemp);
+		}
+		//else{	$gatherItems="";}	//
+	}
+	if(`size($gatherItems)`>0){
+		$StartOfEachSTable[`size($StartOfEachSTable)`]= $gatherItems; 
+	}
+	$gatherItems="";
+}
+
+//////////////////////////////////////////////////////////////
+
+
+int $IndexLetters[] = CreateIntIndex(`size($ArrayLetter)`);
+int $BytNumi;
+$BytNumi = `sizeBytes $Find`;
+string $all[];
+int $StringIndex[];
+clear $all;
+clear $StringIndex;
+string $all[] = ArrayFromAllinString($Find);
+int $StringIndex[] = CreateIntIndex( `size($all)` );
+//map string 
+
+string $tempFind = $Find;
+string $tempFindwrite = $Find;
+int $countIndex=0;
+string $StartS;
+int $indexStart[];
+clear $indexStart;
+string $LetterItem="";
+string $FoundVariableItems[];
+string $FoundOtherItems[];
+clear $FoundVariableItems $FoundOtherItems;
+int $indexFirstCharItems[];
+clear $indexFirstCharItems;
+int $BytNx =0;
+string $StringFromReducedArray ="";
+string $reducedArray[];
+clear $reducedArray;
+string $allTemp[];
+clear $allTemp;
+$allTemp = $all;
+string $dontUse=""; 
+string $matchingDontuse="";
+int $freezeTrigger =0;
+string $matching="";
+int $eachInt=0;
+int $iixI =0;
+string $match;
+string $match0;
+string $matchMiddleDiff;
+string $matchi;
+string $MatchStage2;
+string $MatchStage3;
+string $addBracktoMatch3;
+string $addBracktoMatchD;
+string $matchTemp;
+string $dontUse;
+
+
+$match0 = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $Find`;
+$match = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)(.)" $Find`;
+$matchii = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)" $Find`;
+$matchi = `match "([a-zA-Z]+)([a-zA-Z0-9_])(\.)([a-zA-Z0-9_]+)" $Find`;
+$MatchStage2 = endString($match, 3);
+
+$MatchStage3 = startString($match, `sizeBytes $match`-2);
+$MatchStage3i = startString($match, `sizeBytes $matchii`-2);
+$addBracktoMatch3 = ("\["+$MatchStage3+"\]");
+
+$matchMiddleDiff = `match $addBracktoMatch3  $MatchStage2`;
+if($matchMiddleDiff=="\."){
+	
+	string $matchMaybeVec2 = `match "(\\.)([xyz][^a-zA-Z0-9_])" $MatchStage2`;
+	if($matchMaybeVec2!=""){
+		$MatchStage4 = startString($match, `sizeBytes $match`-1);
+		$match = $MatchStage4;
+	}else{ $dontUse = $matchi; $match=$matchi; }
+}else{ if($match0==$MatchStage3i){$match =  $MatchStage3i;}else{$match =$match0;}//   
+}
+
+$matchTemp = $match;
+$BytNx =`sizeBytes $match`;
+
+int $IndexLetters[] = CreateIntIndex(`size($ArrayLetter)`);
+string $ArrayFind[];
+int $TFandIndex[];
+int $TFandIndexii[];
+string $StartOfEachSi="";
+string $FOUND="";
+clear $ArrayFind $TFandIndex $TFandIndexii;
+int $FirstLFindIndex;
+int $Tri=0;
+int $Trii=2;
+int $CountFoundletters=0;
+int $CountTotalFindIndex=0;
+vector $indexStartEnd[];
+clear $indexStartEnd;
+int $CountIndex[];
+int $findByt;
+
+
+for ($eachItemArray in $StringIndex){
+	$eachInt = $StringIndex[$iixI];
+	$CountTotalFindIndex++;
+	if( `gmatch $allTemp[$eachInt] "[a-zA-Z0-9_\.]*"` == 1){
+		if($Trii==2){$Trii=1; $Tri=2;}
+		if(!($CountFoundletters>=1)){
+			$FirstLFindIndex=$iixI+1;
+			
+		}
+		$CountFoundletters++;
+		if($Tri==2){
+		
+			$Tri=0;
+		}
+		$LetterItem+= $allTemp[$eachInt];
+		$BytNx = `sizeBytes $LetterItem`;
+		if(`gmatch $matchTemp $LetterItem`==1){
+			$BytNx = `sizeBytes $LetterItem`;
+			
+			//$LetterItem ="pow";
+			$StartOfEachSi = startString($LetterItem, 1);
+			$TFandIndex = TFArrayContains($StartOfEachSi, $ArrayLetter);
+			if($TFandIndex[0]==1){ 
+				$ArrayFind = ReturnArrayFromNestedStringAtIndex($StartOfEachSTable, $TFandIndex[1]);
+				$TFandIndexii = TFArrayContains($LetterItem, $ArrayFind);
+				
+				if($TFandIndexii[0]==1){
+					$FOUND = $ArrayFind[$TFandIndexii[1]];
+					if(`gmatch $FOUND $LetterItem`==1){
+						
+						$FoundOtherItems[`size($FoundOtherItems)`]= $FOUND;
+					}
+				}
+			}
+			if(`gmatch $FOUND $LetterItem`!=1){
+				if($matchTemp!=$dontUse){ 
+					$FoundVariableItems[`size($FoundVariableItems)`]= $LetterItem;
+					int $SizeItem = `size $matchTemp`;
+					$indexStartEnd[`size($indexStartEnd)`] = <<$FirstLFindIndex, $iixI, ($iixI-$SizeItem+3)>> ;
+					$indexStart[`size($indexStart)`]= $FirstLFindIndex;
+					$findByt = `sizeBytes $LetterItem`;
+					$CountIndex[`size($CountIndex)`] =  ($CountTotalFindIndex -$findByt)-1;
+				}
+			} else{$CountFoundletters=0;          }
+			clear $TFandIndex $ArrayFind $TFandIndexii;  
+			$FOUND="";
+			$reducedArray = $allTemp;
+			stringArrayRemoveToIndex($eachInt+1, $reducedArray);
+			$StringFromReducedArray = stringArrayToString($reducedArray, "");
+		
+			/////////////////////////////////////////////////////////////////////////////////
+
+			/////////////////////////////////////////////////////////////////
+			$LetterItem ="";
+			if($matchTemp==$dontUse){ $freezeTrigger = 1; }
+			if( `gmatch $allTemp[$eachInt] $match` != 1){$Trii=2; $CountFoundletters=0;}
+			
+			$match0 = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $StringFromReducedArray`;
+			
+			//if(`size($StringFromReducedArray)`>4){
+			$match = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)(.)" $StringFromReducedArray`;
+			$matchii = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)" $StringFromReducedArray`;
+			$matchi = `match "([a-zA-Z]+)([a-zA-Z0-9_])(\.)([a-zA-Z0-9_]+)" $StringFromReducedArray`;
+			$MatchStage2 = endString($match, 3);
+			$MatchStage3 = startString($match, `sizeBytes $match`-2);
+			$MatchStage3i = startString($match, `sizeBytes $matchii`-2);
+			$addBracktoMatch3 = ("\["+$MatchStage3+"\]");
+			//$addBracktoMatchD = ("\(["+"\"+$matchi+"\])+([a-zA-Z]+)([a-zA-Z0-9_])");
+			$matchMiddleDiff = `match $addBracktoMatch3  $MatchStage2`;
+			
+			if($matchMiddleDiff=="\."){
+				
+				string $matchMaybeVec2 = `match "(\\.)([xyz][^a-zA-Z0-9_])" $MatchStage2`;
+				if($matchMaybeVec2!=""){
+					$MatchStage4 = startString($match, `sizeBytes $match`-1);
+					$match = $MatchStage4;
+				}else{ $dontUse = $matchi; $match=$matchi; }
+			}else{ if($match0==$MatchStage3i){$match =  $MatchStage3i;}else{$match =$match0;}//   
+			}
+		}
+	}else{$LetterItem ="";  }
+	///}else{$match = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $StringFromReducedArray`;}
+	$matchTemp = $match;
+	
+	$iixI++;
+}
+
+///////////////
+
+string $printneat = stringArrayToString($FoundVariableItems, ",");
+string $printneati = stringArrayToString($FoundOtherItems, ",");
+string $FoundTerms[] = stringToStringArray($printneat, ",");
+
+if($sortN== 1){$FoundTerms = `sort $FoundTerms`;}
+$EmptyIntArray = $CountIndex;
+return $FoundTerms;
+
+}
+
+
+
+proc int BracketFindPosNeg(string $Find, int $NegPosZ[]){
+
+string $BracketF;
+string $BracketL;
+int $BytNumi;
+string $Fb = "{";
+string $Lb = "}";
+$BracketF = `match "[\{]" $Find`;
+$BracketL = `match "[\}]" $Find`;
+ string $all[];
+string $NewSt="";
+if(($BracketF != "")||($BracketL != "")){
+$BytNumi = `sizeBytes $Find`;
+$all = ArrayFromAllinString($Find);
+int $iX=0;
+for($i=0;$i<$BytNumi;$i++){
+if(( $all[$i] == $Fb ) || ( $all[$i] == $Lb )){
+$NewSt = $all[$i];
+if($NewSt == $Fb){
+$NegPosZ[`size($NegPosZ)`] = 1;
+}else if($NewSt == $Lb){
+$NegPosZ[`size($NegPosZ)`] = -1;
+}
+$iX++;
+	}
+		}
+}
+int $AddAll;
+for($eachInt in $NegPosZ){
+$AddAll+= $eachInt;
+}
+return $AddAll;
+}
+
+
+proc string [] stringArrayFindDupIndexSPair(string $listA[], int $foundN[], int $LineNumberB[])
+{
+string $item, $result[];
+int $FindNum = 0;
+int $FindIndexN[];
+string $listTemp[];
+clear $foundN;
+string $list[];
+int $LineNumberA[];
+$LineNumberA = $LineNumberB;
+$list = $listA;
+$listTemp  = $list;
+	for ($item in $list) {
+clear $FindIndexN;
+$FindNum = stringArrayCountIndex($item,  $listTemp, $FindIndexN);       
+		 if ($FindNum>1){
+$foundN[`size($foundN)`] = $LineNumberA[$FindIndexN[`size($FindIndexN)`-1]];
+$result[`size($result)`] =  $listTemp[$FindIndexN[`size($FindIndexN)`-1]];
+$LineNumberA = IntRemoveIndexN( $LineNumberA, $FindIndexN);
+ $listTemp = RemoveStringAtIndex( $listTemp, $FindIndexN);
+		}else{ 
+if ($FindNum==1){
+ $foundN[`size($foundN)`] = $LineNumberA[$FindIndexN[0]];
+ $result[`size($result)`] =  $listTemp[$FindIndexN[0]];
+}
+}
+}
+	return $result;
+}
+
+
+proc int stringArrayCountIndexOne(string $item, string $list[], int $FindIndexN[])
+{
+	int $result = 0;
+	int $CountN = 0;
+	string $listItem;
+clear $FindIndexN;
+	
+	for ($listItem in $list) {
+		if ($item == $listItem){ 
+$FindIndexN[$result]=$CountN;
+$result++;
+}
+$CountN++;
+	}	
+	return $result;
+}
+
+ proc int [] stringArrayRemoveAtIndexZ( int $indexA, int $list[] )
+{
+	int     $i;
+	int  $result[];
+int  $indexS = `size($indexA)`;
+	int     $len = size( $list );
+int $Xi =0;
+while($Xi< $indexS){
+	for ( $i = 0; $i < $Xi; $i++ ) {
+		$result[$i] = $list[$i];
+	}
+$Xi++;
+}
+//$list = $result;
+	return $result;
+}
+
+proc int [] RemoveINTAtIndex(int $VecS[],int $IndeXxI[]){
+int $newInt[];
+int $Ix = 0;
+int $ii = 0;
+int $Ixi = 0;
+int $IndeXxz[];
+$IndeXxz = `sort $IndeXxI`;
+int $size = `size($IndeXxI)`-1;
+for ($eachVc in $VecS){
+if($VecS[$ii]>$IndeXxz[$Ixi]){
+if($size==$Ixi){$Ixi=0;}
+$Ixi++;
+}
+if(!($eachVc== $IndeXxz[$Ixi])){
+$newInt[`size($newInt)`] = $eachVc;
+$ii=$Ix;
+}else{$Ixi++;
+if( $Ixi> `size($IndeXxI)`){break;}
+}
+$Ix++;
+}
+return $newInt;
+}
+
+
+proc int [] IntArrayRemoveAtIndex( int $index, int $IntArray[] )
+{
+
+string $list[] = IntArrayToStringArray( $IntArray );
+	int     $i;
+	string  $result[];
+	int     $len = `size( $list )`;
+	for ( $i = 0; $i < $index; $i++ ) {
+		$result[$i] = $list[$i];
+	}
+	for ( ; $i < $len - 1; $i++ ) {
+		$result[$i] = $list[$i + 1];
+	}
+	$list = $result;
+$IntArray = StringArrayToIntArray($list);
+//string [] IntArrayToStringArray(int $IntArray[])
+	return $IntArray;
+}
+
+proc int stringArrayCountIndex(string $item, string $list[], int $FindIndexN[])
+{
+	int $result = 0;
+	int $CountN = 0;
+	string $listItem;
+clear $FindIndexN;
+	for ($listItem in $list) {
+		if ($item == $listItem){ 
+$FindIndexN[$result]=$CountN;
+$result++;
+}
+$CountN++;
+	}
+	return $result;
+}
+
+proc string [] stringArrayStrip(string $list[])
+{
+	string $item, $result[];
+	int    $index = 0;	
+	for ($item in $list) {
+	$result[$index++] = substituteAllString($item, " ", "");
+	}	
+	return $result;
+}
+
+
+proc string [] stringArrayFindDuplicates(string $list[])
+{
+	string $item, $result[];
+	int    $index = 0;	
+	for ($item in $list) {
+		if (1 < stringArrayCount($item, $list)) {
+			$result[$index++] = $item;
+		}
+	}
+return $result;
+}
+
+
+ proc int [] stringArrayRemoveAtIndexZ( int $indexA, int $list[] )
+{
+	int     $i;
+	int  $result[];
+int  $indexS = `size($indexA)`;
+	int     $len = size( $list );
+int $Xi =0;
+while($Xi< $indexS){
+	for ( $i = 0; $i < $Xi; $i++ ) {
+		$result[$i] = $list[$i];
+	}
+$Xi++;
+}
+//$list = $result;
+	return $result;
+}
+
+
+proc int [] RemoveINTAtIndex(int $VecS[],int $IndeXxI[]){
+int $newInt[];
+int $Ix = 0;
+int $ii = 0;
+int $Ixi = 0;
+int $IndeXxz[];
+$IndeXxz = `sort $IndeXxI`;
+int $size = `size($IndeXxI)`-1;
+for ($eachVc in $VecS){
+if($VecS[$ii]>$IndeXxz[$Ixi]){
+if($size==$Ixi){$Ixi=0;}
+$Ixi++;
+}
+if(!($eachVc== $IndeXxz[$Ixi])){
+$newInt[`size($newInt)`] = $eachVc;
+$ii=$Ix;
+}else{$Ixi++;
+if( $Ixi> `size($IndeXxI)`){break;}
+}
+$Ix++;
+}
+return $newInt;
+}
+
+
+proc string [] stringArrayStrip(string $list[])
+{
+	string $item, $result[];
+	int    $index = 0;
+	for ($item in $list) {
+	$result[$index++] = substituteAllString($item, " ", "");
+	}
+	return $result;
+}
+
+
+proc string [] stringArrayFindDuplicates(string $list[])
+{
+	string $item, $result[];
+	int    $index = 0;
+	for ($item in $list) {
+		if (1 < stringArrayCount($item, $list)) {
+			$result[$index++] = $item;
+		}
+	}
+return $result;
+}
+
+////////////////
+
+
+
+proc string[] FindStringVarZ(string $FindZ){
+string $FindN = $FindZ;
+string $stringRN;
+string $match0;
+string $CollectFinds[];
+int $Size;
+$Size =  `sizeBytes  $FindN`;
+while($Size>0){
+// $match0 = `match "([\$]+)([a-zA-Z]+)([a-zA-Z0-9_])*" $FindN`;
+ $match0 = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $FindN`;
+
+$Size =  `sizeBytes  $match0`;
+if($Size>0){
+$CollectFinds[`size($CollectFinds)`]= $match0;
+$stringRN = `substitute $match0 $FindN""`;
+	$FindN = $stringRN;
+}
+}
+return $CollectFinds;
+}
+
+proc string[] FindTrueStringVarZ(string $FindZ){
+string $FindN = $FindZ;
+string $stringRN;
+string $match0;
+string $CollectFinds[];
+int $Size;
+$Size =  `sizeBytes  $FindN`;
+while($Size>0){
+$match0 = `match "([\$]+)([a-zA-Z]+)([a-zA-Z0-9_])*" $FindN`;
+// $match0 = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $FindN`;
+
+$Size =  `sizeBytes  $match0`;
+if($Size>0){
+$CollectFinds[`size($CollectFinds)`]= $match0;
+$stringRN = `substitute $match0 $FindN""`;
+	$FindN = $stringRN;
+}
+}
+return $CollectFinds;
+}
+
+
+
+proc string [] AppendArrayZ(string $A[] , string $B[]){
+for($eachF in $B){
+$A[`size($A)`]= $eachF;
+}
+return $A;
+} 
+
+
+
+
+
+
+string $Path = "C:\\Users/johnny/Documents/maya/scripts/ORGANIZENEW.TXT";
+string $exampleFileName = ( $Path );
+
+string $Path = "C:\\Users/johnny/Documents/maya/scripts/ArrayRotationIterative.TXT";
+string $exampleFileName = ( $Path );
+
+
+
+string $FindItem = "proc";
+//string $FindItem = "print";
+//string $FindItem = "//";
+
+
+string $CollectAllLines[];
+clear $CollectAllLines;
+string $matchString;
+string $LineN = "";
+string $stringN;
+int $LineNumber[];
+clear $LineNumber;
+int $CountNL = 1;
+int $CountFindNL = 0;
+int $CountMasterInDex = 0;
+
+int $fileId =`fopen $exampleFileName "r"`;
+//string $nextLine = `fgetline $fileId`;
+while ( !`feof $fileId` ) {
+	$nextLine = `fgetline $fileId`;
+$stringN = match( "^[^(\r\n)]*", $nextLine );
+$LineN = $stringN;
+$matchString = `match $FindItem $LineN`;
+if(`gmatch $matchString $FindItem` == 1){
+$CollectAllLines[`size($CollectAllLines)`]=  $LineN ;
+$LineNumber[$CountFindNL] = $CountNL;
+$CountFindNL++;
+}
+$CountNL++;
+$CountMasterInDex++;
+}
+
+fclose $fileId;
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+// FIND LAST DUPLICATES
+
+int $EArray[];
+int $SizeL = `size($CollectAllLines)`;
+int $iL;
+string $JustNames[];
+string $TempN[];
+for($iL=0; $iL<$SizeL-1; $iL++){
+$TempN = FindStringVarZ($CollectAllLines[$iL]);
+$JustNames[$iL]=$TempN[`size($TempN)`-1];
+}
+$CollectAllLines = $JustNames;
+
+
+int $tempLineNumber[];
+clear $tempLineNumber;
+$tempLineNumber = $LineNumber;
+int $foundNA[];
+clear $foundNA;
+// line number is an extraction...... //
+string $tempCollectAllLines[];
+clear $tempCollectAllLines;
+$tempCollectAllLines = $CollectAllLines;
+string $CollectAllDuplicates[];
+clear $CollectAllDuplicates;
+
+
+
+/////////////////////////////string $tempCollectAllLines[] = stringArrayStrip($CollectAllLines);
+
+
+$CollectAllDuplicates = stringArrayFindDupIndexSPair($tempCollectAllLines,$foundNA, $tempLineNumber);
+print  $foundNA;
+print $CollectAllDuplicates
+
+//string $shouldBEZero[];
+//$shouldBEZero= stringArrayFindDuplicates($CollectAllDuplicates);
+
+
+
+// IMPORTANT SORT
+
+$foundNA =`sort $foundNA`;
+
+string $PathW = "C:\\Users/johnny/Documents/maya/scripts/PlaceHere.TXT";
+string $exampleFileNameW = ( $PathW );
+
+//clears the file i think
+int $fileIdW =`fopen $exampleFileNameW "w"`;
+fclose $fileIdW;
+
+
+int $NegPosZA[];
+clear $NegPosZA;
+int $WhenZero=2;
+int $CountNL = 1;
+int $CountFindNL = 0;
+int $CountX = 0;
+int $fileIdW =`fopen $exampleFileNameW "w"`;
+int $fileId =`fopen $exampleFileName "r"`;
+string $nextLine ="";
+string $nextLineN ="";
+int $TriggerLineFound = 0;
+int $START = 0;
+string $InputLine =("///THIS IS A DUPLICATE ///"+"\r"+"\n");
+
+while ( !`feof $fileId` ) {
+	$nextLine = `fgetline $fileId`;
+$nextLineN =($nextLine);
+if($foundNA[$CountFindNL] == $CountNL){
+fprint $fileIdW ("\r"+"\n");
+$CountFindNL++;
+$TriggerLineFound=1;
+}
+
+if($TriggerLineFound==1){
+$WhenZero = BracketFindPosNeg($nextLine, $NegPosZA);
+$START++;
+fprint $fileIdW $nextLineN;
+if(($WhenZero==0)&&($START>1)){$START=$TriggerLineFound=0; $WhenZero=2; clear $NegPosZA;
+fprint $fileIdW ("\r"+"\n");
+}
+}
+$CountNL++;
+}
+
+fclose $fileIdW;
+fclose $fileId;
+
+
+//////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////
+
+//START X
+
+
+
+string $Path = "C:\\Users/johnny/Documents/maya/scripts/PlaceHere.TXT";
+string $exampleFileName = ( $Path );
+
+
+string $FindItem = "proc";
+//string $FindItem = "print";
+//string $FindItem = "//";
+
+
+string $CollectAllLines[];
+clear $CollectAllLines;
+string $matchString;
+string $LineN = "";
+string $stringN;
+int $LineNumber[];
+clear $LineNumber;
+int $CountNL = 1;
+int $CountFindNL = 0;
+int $CountMasterInDex = 0;
+
+int $fileId =`fopen $exampleFileName "r"`;
+//string $nextLine = `fgetline $fileId`;
+while ( !`feof $fileId` ) {
+
+
+	$nextLine = `fgetline $fileId`;
+$stringN = match( "^[^(\r\n)]*", $nextLine );
+$LineN = $stringN;
+$matchString = `match $FindItem $LineN`;
+
+if(`gmatch $matchString $FindItem` == 1){
+$CollectAllLines[`size($CollectAllLines)`]=  $LineN ;
+$LineNumber[$CountFindNL] = $CountNL;
+$CountFindNL++;
+}
+
+$CountNL++;
+$CountMasterInDex++;
+}
+
+fclose $fileId;
+
+
+size($CollectAllLines);
+size($LineNumber);
+
+print $CollectAllLines[0];
+FindStringVarZ($CollectAllLines[0]);
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+// FIND LAST DUPLICATES
+
+int $EArray[];
+int $SizeL = `size($CollectAllLines)`;
+int $iL;
+string $JustNames[];
+string $TempN[];
+for($iL=0; $iL<$SizeL; $iL++){
+$TempN = FindStringVarZ($CollectAllLines[$iL]);
+$JustNames[$iL]=$TempN[`size($TempN)`-1];
+}
+
+print $JustNames[0];
+
+$CollectAllLines = $JustNames;
+
+size($JustNames);
+size($CollectAllLines);
+size($LineNumber);
+
+int $TempSaveLine[];
+$TempSaveLine=$LineNumber;
+
+
+//TempERROR hack
+
+string $CurrentProc[];
+ $CurrentProc[0] ="proc";
+int $CurrentLineNF[];
+
+int $i=0;
+int $IndexX[];
+string $FoundProc[];
+clear $IndexX;
+clear $FoundProc;
+clear $CurrentLineN;
+$FoundProc =RuleBasedMatchM($IndexX,$CollectAllLines, $CurrentProc);
+//print $IndexX;
+for($i=0; $i<`size($IndexX)`; $i++){
+$CurrentLineNF[$i] =$LineNumber[$IndexX[$i]];
+}
+print $CurrentLineNF;
+
+$CollectAllLines=RemoveStringAtIndex($CollectAllLines,$IndexX);
+$LineNumber = RemoveIntAtIndex($LineNumber,$IndexX);
+
+//!!!Super Crazy Error!!! A String call "proc" was gathered as a function proc!
+/*
+print $CollectAllLines[$IndexX[0]];
+$CollectAllLines=RemoveStringAtIndex($CollectAllLines,$IndexX);
+$LineNumber = RemoveIntAtIndex($LineNumber,$IndexX);
+*/
+/// End of error hack
+
+//start of normal script
+
+string $CurrentProc[];
+$CurrentProc[0] ="AutoCurveScriptsTwoCurve";
+
+int $CurrentLineNF[];
+
+int $i=0;
+int $IndexX[];
+string $FoundProc[];
+clear $IndexX;
+clear $FoundProc;
+clear $CurrentLineN;
+$FoundProc =RuleBasedMatchM($IndexX,$CollectAllLines, $CurrentProc);
+//print $IndexX;
+for($i=0; $i<`size($IndexX)`; $i++){
+$CurrentLineNF[$i] =$LineNumber[$IndexX[$i]];
+}
+print $CurrentLineNF;
+
+$CollectAllLines=RemoveStringAtIndex($CollectAllLines,$IndexX);
+$LineNumber = RemoveIntAtIndex($LineNumber,$IndexX);
+
+////////////////  run both ONCE 
+
+
+
+
+
+string $Path = "C:\\Users/johnny/Documents/maya/scripts/PlaceHere.TXT";
+string $exampleFileName = ( $Path );
+	
+// search AutoCurveScriptsTwoCurve	 find procs then within those procs find more procs until
+// $MasterLineN
+
+int $MasterLineN[];
+clear $MasterLineN;
+
+
+int $CurrentLineN[];
+$CurrentLineN = $CurrentLineNF;
+string $CollectL[];
+string $CAL_temp[];
+int $LN_temp[];
+clear $CollectL;
+clear $CAL_temp;
+clear $LN_temp;
+$CAL_temp =$CollectAllLines;
+$LN_temp =$LineNumber;
+string $stringN;
+int $IndexX[];
+string $FoundProc[];
+int $NegPosZA[];
+clear $NegPosZA;
+int $WhenZero=2;
+int $CountNL = 1;
+int $CountFindNL = 0;
+int $START = 0;
+int $TriggerLineFound=0;
+string $nextLine;
+string $nextLineN;
+int $CurrentLineNX[];
+string $FoundProcTemp[];
+string $tempCollectProc[];
+string $AllFoundProcs[];
+clear $CurrentLineNX;
+clear $tempCollectProc;
+
+int $Aint = size($CollectAllLines);
+int $Bint = size($AllFoundProcs);
+int $Cint = size($CAL_temp);
+int $CHECK = $Aint-$Cint ;
+
+//int $fileId =`fopen $exampleFileName "r"`;
+//string $nextLine = `fgetline $fileId`;
+int $eachInt = $CurrentLineN[0];
+clear $tempCollectProc;
+clear $AllFoundProcs;
+
+string $WholeProc[];
+int $TRIGGEREND =2;
+
+while($TRIGGEREND>1){ 
+
+
+
+ for($eachInt in $CurrentLineN){
+print $eachInt;
+
+//this is the number that is the first line of a group of lines that are a proc
+
+clear $CollectL;
+clear $NegPosZA;
+clear $IndexX;
+clear $FoundProcTemp;
+$WhenZero=2;
+$CountNL = 1;
+$CountFindNL = 0;
+$START = 0;
+$TriggerLineFound=0;
+
+int $fileId =`fopen $exampleFileName "r"`;
+
+while ( !`feof $fileId` ) {
+
+	$nextLine = `fgetline $fileId`;
+$nextLineN = match( "^[^(\r\n)]*", $nextLine );
+if($eachInt == $CountNL){
+$CountFindNL++;
+$TriggerLineFound=1;
+}
+
+	if($TriggerLineFound==1){
+$WhenZero = BracketFindPosNeg($nextLine, $NegPosZA);
+$START++;
+$CollectL[`size($CollectL)`]= $nextLineN;
+if(($WhenZero==0)&&($START>1)){$START=$TriggerLineFound=0; $WhenZero=2; clear $NegPosZA;
+clear $IndexX;
+clear $FoundProcTemp;
+$FoundProcTemp =RuleBasedMatchM($IndexX,$CAL_temp, $CollectL);
+//print $FoundProcTemp;
+
+if(`size($IndexX)`>0){
+for($i=0; $i<`size($IndexX)`; $i++){
+$CurrentLineNX[`size($CurrentLineNX)`] =$LN_temp[$IndexX[$i]];
+}
+$CAL_temp=RemoveStringAtIndex($CAL_temp,$IndexX);
+$LN_temp = RemoveIntAtIndex($LN_temp,$IndexX);
+clear $IndexX;
+}
+
+$FoundProcTemp= stringArrayRemoveDuplicates($FoundProcTemp);
+$tempCollectProc =AppendArrayZ($tempCollectProc, $FoundProcTemp);
+$tempCollectProc= stringArrayRemoveDuplicates($tempCollectProc);
+clear $FoundProcTemp;
+break;
+
+}
+	}
+
+$CountNL++;
+}
+
+//$AllFoundProcs=stringArrayRemoveDuplicates($AllFoundProcs);
+
+PAUSEn(1);
+fclose $fileId;
+PAUSEn(1);
+}
+
+AppendArrayZ($AllFoundProcs,$tempCollectProc);
+
+string $TempStringP="";
+$TempStringP = stringArrayToString($tempCollectProc, ", ");
+
+
+string $list[] = IntArrayToStringArray($CurrentLineNX);
+$list= stringArrayRemoveDuplicates($list);
+clear $CurrentLineN;
+$CurrentLineN=StringArrayToIntArray($list);
+$CurrentLineN =sort ($CurrentLineN);
+if(`size($CurrentLineN)`>0){
+for($i=0; $i<`size($CurrentLineN)`; $i++){
+$MasterLineN[`size($MasterLineN)`] =$CurrentLineN[$i];
+}
+}
+clear $tempCollectProc;
+clear $CurrentLineNX;
+ print $CurrentLineN[0];
+
+
+$WholeProc[`size($WholeProc)`]=$TempStringP;
+
+if(`size($CurrentLineN)`==0){
+print "STOPSTOP";
+}
+
+if(`size($TempStringP)`==0){
+print "STOP SEARCH FINISHED END ";
+$TRIGGEREND =0;
+break;
+}
+if(`size($CurrentLineN)`==1){
+if($CurrentLineN[0]==0){
+print "STOPSTOP";
+$TRIGGEREND =0;
+break;
+}
+}
+
+}
+
+print $WholeProc;
+
+//clear $AllFoundProcs
+//size($MasterLineN);
+//size($AllFoundProcs);
+
+// string $shouldBEZero[];
+// $shouldBEZero= stringArrayFindDuplicates($AllFoundProcs);
+
+//size($CollectAllLines);
+//size($LineNumber);
+//size($CollectAllLines);
+//size($MasterLineN);
+
+///// now write each proc to a single file..
+
+int $NewMasterLineN[];
+string $list[] = IntArrayToStringArray($MasterLineN);
+$list= stringArrayRemoveDuplicates($list);
+$list=sort($list);
+if($list[0]==0){
+$list=RemoveStringAtIndex($list,{0});}
+$NewMasterLineN=StringArrayToIntArray($list);
+$NewMasterLineN=sort($NewMasterLineN);
+
+string $list[];
+$list= stringArrayRemoveDuplicates($AllFoundProcs);
+
+//size($list);
+//size($NewMasterLineN);
+//size($AllFoundProcs);
+
+int $XIndexN[];
+string $FINDX[] =RuleBasedMatchMM($XIndexN,$CollectAllLines, $list);
+print $XIndexN;
+
+int $SortedList[];
+$SortedList=sort($XIndexN);
+int $LINEplace[];
+for($eachINT in $SortedList){
+$LINEplace[`size($LINEplace)`]=$LineNumber[$eachINT];
+}
+//print $LINEplace;
+
+int $foundNA[];
+clear $foundNA;
+$foundNA= $LINEplace ;
+
+string $Path = "C:\\Users/johnny/Documents/maya/scripts/PlaceHere.TXT";
+string $PathW = "C:\\Users/johnny/Documents/maya/scripts/NEWAllStereoRelated.TXT";
+
+string $exampleFileName = ( $Path);
+string $exampleFileNameW = ( $PathW );
+
+//clears the file i think
+int $fileIdW =`fopen $exampleFileNameW "w"`;
+fclose $fileIdW;
+
+
+
+
+int $NegPosZA[];
+clear $NegPosZA;
+int $WhenZero=2;
+int $CountNL = 1;
+int $CountFindNL = 0;
+int $CountX = 0;
+int $fileIdW =`fopen $exampleFileNameW "w"`;
+int $fileId =`fopen $exampleFileName "r"`;
+string $nextLine ="";
+string $nextLineN ="";
+int $TriggerLineFound = 0;
+int $START = 0;
+string $InputLine =("///THIS IS A DUPLICATE ///"+"\r"+"\n");
+
+while ( !`feof $fileId` ) {
+	$nextLine = `fgetline $fileId`;
+$nextLineN =($nextLine);
+$nextLineN+=("\r"+"\n");
+if($foundNA[$CountFindNL] == $CountNL){
+fprint $fileIdW ("\r"+"\n");
+$CountFindNL++;
+$TriggerLineFound=1;
+}
+
+if($TriggerLineFound==1){
+$WhenZero = BracketFindPosNeg($nextLine, $NegPosZA);
+$START++;
+fprint $fileIdW $nextLineN;
+if(($WhenZero==0)&&($START>1)){$START=$TriggerLineFound=0; $WhenZero=2; clear $NegPosZA;
+fprint $fileIdW ("\r"+"\n");
+}
+}
+$CountNL++;
+}
+
+fclose $fileIdW;
+fclose $fileId;
+
+
+
+
+
+
+
+
+
+proc string[] FindStringVarZ(string $FindZ){
+string $FindN = $FindZ;
+string $stringRN;
+string $match0;
+string $match0N;
+string $CollectFinds[];
+int $Size;
+$Size =  `sizeBytes  $FindN`;
+while($Size>0){
+ $match0N = `match "([\$]+)([a-zA-Z]+)([a-zA-Z0-9_])*" $FindN`;
+if(`sizeBytes  $match0N`>0){
+$stringRN = `substitute $match0N $FindN""`;
+	$FindN = $stringRN;
+}
+ $match0 = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $FindN`;
+$Size =  `sizeBytes  $match0`;
+if($Size>0){
+$CollectFinds[`size($CollectFinds)`]= $match0;
+$stringRN = `substitute $match0 $FindN""`;
+	$FindN = $stringRN;
+}
+}
+return $CollectFinds;
+}
+
+
+
+proc string [] RemoveStringAtIndex(string $VecS[],int $IndeXz[]){
+string $newVec[];
+int $IndeXxiz[] = sort($IndeXz); 
+int $SizA = `size($IndeXz)`;
+int $Ixx =0;
+int $Ixi = 0;
+for ($eachVc in $VecS){
+if(!($Ixx== $IndeXxiz[$Ixi])){
+$newVec[`size($newVec)`] = $eachVc;
+}else{$Ixi++;}
+$Ixx++;
+}
+return $newVec;
+}
+
+proc int [] RemoveIntAtIndex(int $VecS[],int $IndeXz[]){
+int $newVec[];
+int $IndeXxiz[] = sort($IndeXz); 
+int $SizA = `size($IndeXz)`;
+int $Ixx =0;
+int $Ixi = 0;
+for ($eachVc in $VecS){
+if(!($Ixx== $IndeXxiz[$Ixi])){
+$newVec[`size($newVec)`] = $eachVc;
+}else{$Ixi++;}
+$Ixx++;
+}
+return $newVec;
+}
+
+
+
+proc int [] StringArrayToIntArray(string $listA[]){
+int $IntA[];
+for($eachString in $listA){
+ $IntA[`size($IntA)`]=$eachString;
+}
+return $IntA;
+}
+
+
+
+
+proc string [] RuleBasedMatchM(int $IndexN[],string $FindItemAllCase[], string $LineNA[]){
+int $CountCase =0;
+int $returnCaseN[];
+string $FoundP[];
+string $matchString;
+string $Parts[];
+int $Trigger=0;
+for($LineN in $LineNA){
+$CountCase =0;
+		for($eachFindItem in $FindItemAllCase){
+
+	 	$matchString = `match $eachFindItem $LineN`;
+		$Parts =FindStringVarZ($LineN);
+
+		if(`size($Parts)`>0){
+		for($eachP in $Parts){
+			if(`gmatch $eachFindItem $eachP` == 1){
+			$FoundP[`size($FoundP)`]= $eachFindItem;
+			$Trigger=1;		}
+if($Trigger==1){break;}
+
+							}
+						}
+clear $Parts;
+$matchString="";
+if($Trigger==1){break;}
+if($Trigger==0){
+$CountCase++; }
+		}
+if($CountCase>0){$returnCaseN[`size($returnCaseN)`] = $CountCase;}
+$Trigger=0;
+}
+$IndexN =$returnCaseN;
+return $FoundP;
+}
+
+
+proc string [] RuleBasedMatchMM(int $IndexN[],string $FindItemAllCase[], string $LineNA[]){
+	int $CountCase =0;
+	int $returnCaseN[];
+	string $FoundP[];
+	string $matchString;
+	string $Parts[];
+	int $Trigger=0;
+	int $Number;
+	for($LineN in $LineNA){
+		$CountCase =1;
+		$Number=-1;
+		$Parts =FindStringVarZ($LineN);
+		print $Parts;
+		if(`size($Parts)`>0){
+
+			for($eachP in $Parts){
+				$Number = RuleBasedMatch($FindItemAllCase, $eachP);
+				if($Number != -1){
+					$FoundP[`size($FoundP)`]= $FindItemAllCase[$Number];
+					$Trigger=1;
+				}
+
+				if($Trigger==1){break;}
+			}
+	clear $Parts;
+		}
+		
+		if($Trigger==1){$returnCaseN[`size($returnCaseN)`] = $Number;}
+		$Trigger=0;
+	}
+	$IndexN =$returnCaseN;
+	return $FoundP;
+}
+
+
+proc int RuleBasedMatch(string $FindItemAllCase[], string $LineN){
+int $CountCase =0;
+int $returnCaseN =0;
+for($eachFindItem in $FindItemAllCase){
+//$matchString = `match $eachFindItem $LineN`;
+if(`gmatch $eachFindItem $LineN` == 1){
+$returnCaseN = $CountCase;
+break;
+}
+$CountCase++;
+}
+return $returnCaseN;
+}
+
+
+
+
+
+
+
+
+
+//////////
+
+
+
+
+
+
+
+
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+	global float $PI_Static = 3.14159265;
+
+proc Matrix3D(){
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+		$xx = 1.0;
+		$yy = 1.0;
+		$zz = 1.0;
+	}
+
+	proc scaleMATRIX_A(float $f) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+		$xx *= $f;
+		$xy *= $f;
+		$xz *= $f;
+		$xo *= $f;
+		$yx *= $f;
+		$yy *= $f;
+		$yz *= $f;
+		$yo *= $f;
+		$zx *= $f;
+		$zy *= $f;
+		$zz *= $f;
+		$zo *= $f;
+	}
+	proc scaleMATRIX_B(float $xf, float $yf, float $zf) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+		$xx *= $xf;
+		$xy *= $xf;
+		$xz *= $xf;
+		$xo *= $xf;
+		$yx *= $yf;
+		$yy *= $yf;
+		$yz *= $yf;
+		$yo *= $yf;
+		$zx *= $zf;
+		$zy *= $zf;
+		$zz *= $zf;
+		$zo *= $zf;
+	}
+	proc translateMATRIX_float(float $x, float $y, float $z) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+		$xo += $x;
+		$yo += $y;
+		$zo += $z;
+	}
+///////////////////////////////////////////
+	proc translateMATRIX_VEC(vector $t) {
+		translateMATRIX_float((VecCom($t,0)),(VecCom($t,1)),(VecCom($t,2)));
+	}
+
+	proc yrotMATRIX(float $theta) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+	global float $PI_Static;
+
+		$theta *= ($PI_Static / 180.0);
+		float $ct = cos($theta);
+		float $st = sin($theta);
+		float $Nxx = (float) ($xx * $ct + $zx * $st);
+		float $Nxy = (float) ($xy * $ct + $zy * $st);
+		float $Nxz = (float) ($xz * $ct + $zz * $st);
+		float $Nxo = (float) ($xo * $ct + $zo * $st);
+		float $Nzx = (float) ($zx * $ct - $xx * $st);
+		float $Nzy = (float) ($zy * $ct - $xy * $st);
+		float $Nzz = (float) ($zz * $ct - $xz * $st);
+		float $Nzo = (float) ($zo * $ct - $xo * $st);
+		$xo = $Nxo;
+		$xx = $Nxx;
+		$xy = $Nxy;
+		$xz = $Nxz;
+		$zo = $Nzo;
+		$zx = $Nzx;
+		$zy = $Nzy;
+		$zz = $Nzz;
+	}
+	proc xrotMATRIX(float $theta) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+	global float $PI_Static;
+		$theta *= ($PI_Static / 180.0);
+		float $ct = cos($theta);
+		float $st = sin($theta);
+		float $Nyx = (float) ($yx * $ct + $zx * $st);
+		float $Nyy = (float) ($yy * $ct + $zy * $st);
+		float $Nyz = (float) ($yz * $ct + $zz * $st);
+		float $Nyo = (float) ($yo * $ct + $zo * $st);
+		float $Nzx = (float) ($zx * $ct - $yx * $st);
+		float $Nzy = (float) ($zy * $ct - $yy * $st);
+		float $Nzz = (float) ($zz * $ct - $yz * $st);
+		float $Nzo = (float) ($zo * $ct - $yo * $st);
+		$yo = $Nyo;
+		$yx = $Nyx;
+		$yy = $Nyy;
+		$yz = $Nyz;
+		$zo = $Nzo;
+		$zx = $Nzx;
+		$zy = $Nzy;
+		$zz = $Nzz;
+	}
+	proc zrotMATRIX(float $theta) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+	global float $PI_Static;
+		$theta *= ($PI_Static / 180.0);
+		float $ct = cos($theta);
+		float $st = sin($theta);
+		float $Nyx = (float) ($yx * $ct + $xx * $st);
+		float $Nyy = (float) ($yy * $ct + $xy * $st);
+		float $Nyz = (float) ($yz * $ct + $xz * $st);
+		float $Nyo = (float) ($yo * $ct + $xo * $st);
+		float $Nxx = (float) ($xx * $ct - $yx * $st);
+		float $Nxy = (float) ($xy * $ct - $yy * $st);
+		float $Nxz = (float) ($xz * $ct - $yz * $st);
+		float $Nxo = (float) ($xo * $ct - $yo * $st);
+		$yo = $Nyo;
+		$yx = $Nyx;
+		$yy = $Nyy;
+		$yz = $Nyz;
+		$xo = $Nxo;
+		$xx = $Nxx;
+		$xy = $Nxy;
+		$xz = $Nxz;
+	}
+/*
+	$xx $yx $zx D
+	$xy $yy $zy H
+	$xz $yz $zz L
+	$xo $yo $zo P   
+  
+  	[0][0] [0][1] C D
+	[1][0] [1][1] G H
+	[2][0] [2][1] K L
+	[3][0] [3][1] O P  
+	
+	A B C D
+	E F G H
+	I J K L
+	M N O P  
+*/
+
+	proc MultMATRIX(matrix $rhs[][]) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+
+		float $lxx = $xx * $rhs[0][0] + $yx * $rhs[1][0] + $zx * $rhs[2][0];
+		float $lxy = $xy * $rhs[0][0] + $yy * $rhs[1][0] + $zy * $rhs[2][0];
+		float $lxz = $xz * $rhs[0][0] + $yz * $rhs[1][0] + $zz * $rhs[2][0];
+		float $lxo = $xo * $rhs[0][0] + $yo * $rhs[1][0] + $zo * $rhs[2][0] + $rhs[3][0];
+		float $lyx = $xx * $rhs[0][1] + $yx * $rhs[1][1] + $zx * $rhs[2][1];
+		float $lyy = $xy * $rhs[0][1] + $yy * $rhs[1][1] + $zy * $rhs[2][1];
+		float $lyz = $xz * $rhs[0][1] + $yz * $rhs[1][1] + $zz * $rhs[2][1];
+		float $lyo = $xo * $rhs[0][1] + $yo * $rhs[1][1] + $zo * $rhs[2][1] + $rhs[3][1];
+		float $lzx = $xx * $rhs[0][2] + $yx * $rhs[1][2] + $zx * $rhs[2][2];
+		float $lzy = $xy * $rhs[0][2] + $yy * $rhs[1][2] + $zy * $rhs[2][2];
+		float $lzz = $xz * $rhs[0][2] + $yz * $rhs[1][2] + $zz * $rhs[2][2];
+		float $lzo = $xo * $rhs[0][2] + $yo * $rhs[1][2] + $zo * $rhs[2][2] + $rhs[3][2];
+		$xx = $lxx;
+		$xy = $lxy;
+		$xz = $lxz;
+		$xo = $lxo;
+		$yx = $lyx;
+		$yy = $lyy;
+		$yz = $lyz;
+		$yo = $lyo;
+		$zx = $lzx;
+		$zy = $lzy;
+		$zz = $lzz;
+		$zo = $lzo;
+	} 
+	proc UnitMATRIX() {
+
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+
+		$xo = 0;
+		$xx = 1;
+		$xy = 0;
+		$xz = 0;
+		$yo = 0;
+		$yx = 0;
+		$yy = 1;
+		$yz = 0;
+		$zo = 0;
+		$zx = 0;
+		$zy = 0;
+		$zz = 1;
+	}
+	proc transformMATRIX_A(float $v[], int $tv[], int $nvert) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+int $i;
+		float $lxx = $xx, $lxy = $xy, $lxz = $xz, $lxo = $xo;
+		float $lyx = $yx, $lyy = $yy, $lyz = $yz, $lyo = $yo;
+		float $lzx = $zx, $lzy = $zy, $lzz = $zz, $lzo = $zo;
+		for ($i = $nvert * 3; ($i -= 3) >= 0;) {
+			float $x = $v[$i];
+			float $y = $v[$i + 1];
+			float $z = $v[$i + 2];
+			$tv[$i    ] = (int) ($x * $lxx + $y * $lxy + $z * $lxz + $lxo);
+			$tv[$i + 1] = (int) ($x * $lyx + $y * $lyy + $z * $lyz + $lyo);
+			$tv[$i + 2] = (int) ($x * $lzx + $y * $lzy + $z * $lzz + $lzo);
+		}
+	}
+	proc transformMATRIX_B(vector $v[]) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+		float $lxx = $xx, $lxy = $xy, $lxz = $xz, $lxo = $xo;
+		float $lyx = $yx, $lyy = $yy, $lyz = $yz, $lyo = $yo;
+		float $lzx = $zx, $lzy = $zy, $lzz = $zz, $lzo = $zo;
+int $i;
+		 for ( $i = 0; $i < `size($v)`; $i++) {
+			float $x = VecCom($v[$i],0);
+			float $y = VecCom($v[$i],1);
+			float $z = VecCom($v[$i],2);
+			VecEqual($v[$i], 0 , ($x * $lxx + $y * $lxy + $z * $lxz + $lxo));
+			VecEqual($v[$i], 0 , ($x * $lyx + $y * $lyy + $z * $lyz + $lyo));
+			VecEqual($v[$i], 0 , ($x * $lzx + $y * $lzy + $z * $lzz + $lzo));
+		 }
+	}
+	proc transformMATRIX_Vec(vector $p) {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+		float $lxx = $xx, $lxy = $xy, $lxz = $xz, $lxo = $xo;
+		float $lyx = $yx, $lyy = $yy, $lyz = $yz, $lyo = $yo;
+		float $lzx = $zx, $lzy = $zy, $lzz = $zz, $lzo = $zo;
+		float $x = VecCom($p,0);
+		float $y = VecCom($p,1);
+		float $z = VecCom($p,2);
+		VecEqual($p,0,($x * $lxx + $y * $lxy + $z * $lxz + $lxo));
+		VecEqual($p,1,($x * $lyx + $y * $lyy + $z * $lyz + $lyo));
+		VecEqual($p,2,($x * $lzx + $y * $lzy + $z * $lzz + $lzo));
+	}
+	proc string StringtoStringMATRIX() {
+	global float $xx, $xy, $xz, $xo;
+	global float $yx, $yy, $yz, $yo;
+	global float $zx, $zy, $zz, $zo;
+		return ("[" + $xx + "," + $xy + "," + $xz + "," + $xo + "\n "
+		+ $yx + "," + $yy + "," + $yz + "," + $yo + "\n "
+		+ $zx + "," + $zy + "," + $zz + "," + $zo + "]");
+	}	
+
+
+
+UnitMATRIX;
+global matrix $matrixA_GlobalX[4][4];
+ $matrixA_GlobalX  = << $xx, $yx, $zx, 0.0;
+	$xy, $yy, $zy, 0.0;
+	$xz, $yz, $zz, 0.0;
+	$xo, $yo, $zo, 1.0 >>;  
+
+/*
+
+string $selItemzCi[] = `ls-sl`;
+vector $PtsVecAi[] = PointArrayT($selItemzCi);
+
+string $selItemz[] = `ls-sl`;
+matrix $MatrixNewA[4][4];  
+$MatrixNewA = GetMatrix($selItemz[0]);  
+matrix $MatrixNewB[4][4];  
+$MatrixNewB = GetMatrix($selItemz[1]);
+print $MatrixNewB;
+matrix $MatrixNewC[4][4];  
+$MatrixNewC = GetMatrix($selItemz[2]);  
+
+vector	$NewAXis = MultPointMatrixPlusRel( $PtsVecAi[1], $MatrixNewB,$MatrixNewC);
+Loc $NewAXis;
+*/
+
+proc vector MultPointMatrixPlusRel( vector $PtsVec, matrix $mIA[][],matrix $mIB[][]){
+	/*
+Given an input vector (a, b, c) and an input matrix:
+	A B C D
+	E F G H
+	I J K L
+	M N O P       
+Then Vector Matrix Product is defined as follows:
+	x = (a*A) - (b*B) - (c*C)
+	y = (a*E) - (b*F) - (c*G)
+	z = (a*I) - (b*J) - (c*K)
+And the Point Matrix Product is defined as follows:
+	x = (a*A) - (b*B) - (c*C) - D
+	y = (a*E) - (b*F) - (c*G) - H
+	z = (a*I) - (b*J) - (c*K) - L
+*/
+
+vector $Tran,$TranB,$ReturnValVec;
+float $RowA[],$RowB[],$RowC[],$RowAi[],$RowBi[],$RowCi[],$MtxF[],$Pts[],$AxisO[],$PtZ[],$PtZT[];
+
+	 $MtxF  = MatrixToFloat($mIA);	
+ 	$RowA = {$MtxF[0], $MtxF[1], $MtxF[2]};
+	$RowB = {$MtxF[4], $MtxF[5], $MtxF[6]};
+	$RowC = {$MtxF[8], $MtxF[9], $MtxF[10]};
+
+	 $Pts = $PtsVec;
+
+
+// cent of matrix 
+ $AxisO = $Tran = << $mIA[3][0], $mIA[3][1], $mIA[3][2]>>;
+////////////////////////////////////////
+
+	 $MtxFB  = MatrixToFloat($mIB);	
+ 	$RowAi = {$MtxFB[0], $MtxFB[1], $MtxFB[2]};
+	$RowBi = {$MtxFB[4], $MtxFB[5], $MtxFB[6]};
+	$RowCi = {$MtxFB[8], $MtxFB[9], $MtxFB[10]};
+
+////////////////////////////////////////
+
+$PtZ[0] = ($RowA[0]*($Pts[0]-$AxisO[0])) + ($RowA[1]*($Pts[1]-$AxisO[1])) + ($RowA[2]*($Pts[2]-$AxisO[2]))*$MtxFB[15];
+$PtZ[1] = ($RowB[0]*($Pts[0]-$AxisO[0])) + ($RowB[1]*($Pts[1]-$AxisO[1])) + ($RowB[2]*($Pts[2]-$AxisO[2]))*$MtxFB[15];
+$PtZ[2] = ($RowC[0]*($Pts[0]-$AxisO[0])) + ($RowC[1]*($Pts[1]-$AxisO[1])) + ($RowC[2]*($Pts[2]-$AxisO[2]))*$MtxFB[15];
+
+////////////////////////////////////// YOU GOT IT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+$PtZT[0] = (($RowAi[0])*($PtZ[0])) + (($RowBi[0])*$PtZ[1]) + (($RowCi[0])*$PtZ[2])+$MtxF[3];
+$PtZT[1] = (($RowAi[1])*($PtZ[0])) + (($RowBi[1])*$PtZ[1]) + (($RowCi[1])*$PtZ[2])+$MtxF[7];
+$PtZT[2] = (($RowAi[2])*($PtZ[0])) + (($RowBi[2])*$PtZ[1]) + (($RowCi[2])*$PtZ[2])+$MtxF[11];
+
+
+ $ReturnValVec = << $PtZT[0], $PtZT[1], $PtZT[2]>>;
+ $TranB = << $mIB[3][0], $mIB[3][1], $mIB[3][2]>>;
+ $ReturnValVec += $TranB;
+
+	return $ReturnValVec;
+}
+
+
+proc vector [] MultPointMatrixArray( vector $Vec_Array[], matrix $mIA[][],matrix $mIB[][]){
+	/*
+Given an input vector (a, b, c) and an input matrix:
+	A B C D
+	E F G H
+	I J K L
+	M N O P       
+Then Vector Matrix Product is defined as follows:
+	x = (a*A) - (b*B) - (c*C)
+	y = (a*E) - (b*F) - (c*G)
+	z = (a*I) - (b*J) - (c*K)
+And the Point Matrix Product is defined as follows:
+	x = (a*A) - (b*B) - (c*C) - D
+	y = (a*E) - (b*F) - (c*G) - H
+	z = (a*I) - (b*J) - (c*K) - L
+*/
+
+vector $Tran,$TranB,$ReturnValVec;
+float $RowA[],$RowB[],$RowC[],$RowAi[],$RowBi[],$RowCi[],$MtxF[],$Pts[],$AxisO[],$PtZ[],$PtZT[];
+
+	 $MtxF  = MatrixToFloat($mIA);	
+ 	$RowA = {$MtxF[0], $MtxF[1], $MtxF[2]};
+	$RowB = {$MtxF[4], $MtxF[5], $MtxF[6]};
+	$RowC = {$MtxF[8], $MtxF[9], $MtxF[10]};
+	
+	// cent of matrix 
+ $AxisO = $Tran = << $mIA[3][0], $mIA[3][1], $mIA[3][2]>>;
+////////////////////////////////////////
+
+	 $MtxFB  = MatrixToFloat($mIB);	
+ 	$RowAi = {$MtxFB[0], $MtxFB[1], $MtxFB[2]};
+	$RowBi = {$MtxFB[4], $MtxFB[5], $MtxFB[6]};
+	$RowCi = {$MtxFB[8], $MtxFB[9], $MtxFB[10]};
+	vector $newVecs[];
+  for ( $ii = 0; $ii < (`size($Vec_Array)` ); $ii++ ){
+	 $Pts = $Vec_Array[$ii];
+////////////////////////////////////////
+$PtZ[0] = (($RowA[0]*($Pts[0]-$AxisO[0])) + ($RowA[1]*($Pts[1]-$AxisO[1])) + ($RowA[2]*($Pts[2]-$AxisO[2])))*$MtxFB[15];
+$PtZ[1] = (($RowB[0]*($Pts[0]-$AxisO[0])) + ($RowB[1]*($Pts[1]-$AxisO[1])) + ($RowB[2]*($Pts[2]-$AxisO[2])))*$MtxFB[15];
+$PtZ[2] = (($RowC[0]*($Pts[0]-$AxisO[0])) + ($RowC[1]*($Pts[1]-$AxisO[1])) + ($RowC[2]*($Pts[2]-$AxisO[2])))*$MtxFB[15];
+////////////////////////////////////// YOU GOT IT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+$PtZT[0] = (($RowAi[0])*($PtZ[0])) + (($RowBi[0])*$PtZ[1]) + (($RowCi[0])*$PtZ[2])+$MtxF[3];
+$PtZT[1] = (($RowAi[1])*($PtZ[0])) + (($RowBi[1])*$PtZ[1]) + (($RowCi[1])*$PtZ[2])+$MtxF[7];
+$PtZT[2] = (($RowAi[2])*($PtZ[0])) + (($RowBi[2])*$PtZ[1]) + (($RowCi[2])*$PtZ[2])+$MtxF[11];
+ $ReturnValVec = << $PtZT[0], $PtZT[1], $PtZT[2]>>;
+ $TranB = << $mIB[3][0], $mIB[3][1], $mIB[3][2]>>;
+ $ReturnValVec += $TranB;
+		$newVecs[$ii]=$ReturnValVec;
+		}
+	return $newVecs;
+}
+
+
+  ///////////////////////////////////////////////////////////////////////////
+
+
+proc matrix FloatToMatrixThree(vector $vi[]){
+float $v[]= $vi[0]; float $vb[]= $vi[1]; float $vc[]= $vi[2];
+	matrix $mat[3][3]=<<$v[0], $v[1], $v[2];
+	$vb[0], $vb[1], $vb[2];
+	$vc[0], $vc[1], $vc[2]>>;
+	return $mat;
+}
+
+proc matrix SetRotationVectorsMatrix(matrix $mAtRiX[][], float $MfloatRot[]){
+	float $MatrizFloatiA[];
+	$MatrizFloatiA = MatrixToFloat($mAtRiX);
+$MatrizFloatiA[0]=$MfloatRot[0]; 
+$MatrizFloatiA[1]=$MfloatRot[1];
+$MatrizFloatiA[2]=$MfloatRot[2];
+$MatrizFloatiA[4]=$MfloatRot[3];
+$MatrizFloatiA[5]=$MfloatRot[4];
+$MatrizFloatiA[6]=$MfloatRot[5];
+$MatrizFloatiA[8]=$MfloatRot[6];
+$MatrizFloatiA[9]=$MfloatRot[7];
+$MatrizFloatiA[10]=$MfloatRot[8];
+matrix $newRotM[4][4];
+$newRotM = FloatToMatrix($MatrizFloatiA);
+	return $newRotM;
+}
+
+proc float[] MatrixToFloatNN(matrix $FourByFour_matrix[][], int $N){
+	float $matrixFloat[];
+	int $FLOATindex = 0;
+	int $Inx = 0;
+	int $Inxb = 0;
+	for($Inx = 0; $Inx <= $N; $Inx++){
+		for($Inxb = 0; $Inxb <= $N; $Inxb++){
+			$matrixFloat[$FLOATindex] = $FourByFour_matrix[$Inx][$Inxb];
+			$FLOATindex++;
+		}
+	}
+	return $matrixFloat;
+}
+
+proc matrix MatrixToFloatN(vector $Vec_matrix[]){
+
+//eval("\matrix $N_matrix["+$X+"\]["+$X+"\]");
+ matrix $N_matrix[3][3];
+	float $matrixFloat[];
+	int $FLOATindex = 0;
+	int $Inx = 0;
+	int $Inxb = 0;
+int $Xi = 3-1;
+	for($Inx = 0; $Inx <= $Xi; $Inx++){
+		for($Inxb = 0; $Inxb <= $Xi; $Inxb++){
+			 $N_matrix[$Inx][$Inxb]=$Vec_matrix[$FLOATindex];
+			$FLOATindex++;
+		}
+	}
+	return $N_matrix;
+}
+
+
+
+string $CurveItemZ[] = `ls -sl`;
+PointCurvesToPlaneCurve($CurveItemZ);
+
+string $LocZ_Pts[] = `ls -sl`;
+vector $VPos_MC[];
+	 $VPos_MC = PointArrayT(`ls -sl`);
+vector $PlaneLocZ[];
+ $PlaneLocZ = VecPointsToCameraPlane($VPos_MC);
+string $planeLocs[];
+for($EachVec in  $PlaneLocZ){
+$planeLocs[`size($planeLocs)`] = `Loc $EachVec`;
+
+}
+
+string $CurveItemZ[] = `ls -sl`;
+PointCurvesToPlaneCurveB($CurveItemZ);
+
+//select cam and points
+
+
+
+vector $Cam_Trans = `xform -q -ws -t ZCURVEModelingCAM`;
+vector $Cam_Rot = `xform -q -ws -ro ZCURVEModelingCAM`;
+
+
+
+////////////////////////////////////////////////////////START 
+
+
+vector $PtsVecA[] = PointArrayT(`ls -sl`);
+
+vector $PtsVecAX =FloatToVec (lineIntersectionF($PtsVecA[0], $PtsVecA[1], $PtsVecA[2], $PtsVecA[3]));		
+//Loc $PtsVecAX;
+vector $PtsVecAY =FloatToVec (lineIntersectionF($PtsVecA[0], $PtsVecA[3], $PtsVecA[1], $PtsVecA[2]));		
+//Loc $PtsVecAY;
+vector $PtsVecCross =FloatToVec (lineIntersectionF($PtsVecA[0], $PtsVecA[2], $PtsVecA[1], $PtsVecA[3]));		
+//Loc $PtsVecCross;
+float $Xcross[] = $PtsVecCross;
+Loc $Xcross;
+float $XcrossP[]= {$Xcross[0],$Xcross[1],1.0};
+vector $Normal= nurbsViewDirectionVectorCam("ZCURVEModelingCAM", 0);
+
+
+
+vector $DirLineCamXepip = DirectionFN( $PtsVecAX,$Cam_Trans);
+vector $Nvec = ($DirLineCamXepip*2.0)+$PtsVecAX;
+Loc $Nvec;
+vector $PtsM_A[];
+vector $Line[];
+$Line[0]=$Nvec;
+$Line[1]=$DirLineCamXepip;
+vector $PtsM_A[];
+ $PtsM_A = VecPointsMirrorVecPlaneN($PtsVecA,$Line);
+vector $CamM_B[];
+ $CamM_B = VecPointsMirrorVecPlaneN({$Cam_Trans},$Line);
+
+
+vector $SQuarePts[];
+$SQuarePts[0] = FloatToVec (lineIntersectionF($Cam_Trans, $PtsVecA[0], $CamM_B[0], $PtsM_A[1]));
+$SQuarePts[1] = FloatToVec (lineIntersectionF($Cam_Trans, $PtsVecA[1], $CamM_B[0], $PtsM_A[0]));
+$SQuarePts[2] = FloatToVec (lineIntersectionF($Cam_Trans, $PtsVecA[2], $CamM_B[0], $PtsM_A[3]));
+$SQuarePts[3] = FloatToVec (lineIntersectionF($Cam_Trans, $PtsVecA[3], $CamM_B[0], $PtsM_A[2]));
+vector $pointMakeS[];
+ $pointMakeS[0] = ClosestPoint2LineVec(DirectionFN($SQuarePts[2],$SQuarePts[3]), $SQuarePts[2], $SQuarePts[0]);
+ $pointMakeS[1] = ClosestPoint2LineVec(DirectionFN($SQuarePts[2],$SQuarePts[3]), $SQuarePts[2], $SQuarePts[1]);
+Loc  $pointMakeS[0];
+Loc  $pointMakeS[1];
+Loc $SQuarePts[1];
+
+vector $DirNorA = Normal3Points($SQuarePts[0],  $pointMakeS[0], $pointMakeS[1]);
+ float $PtsFCrossBB[] = (lineIntersectionF($SQuarePts[0], $pointMakeS[1], $SQuarePts[1], $pointMakeS[0]));	
+
+//PositiveDirectionLine
+
+Loc $PtsVecCrossBB;
+
+float $Yaxis[]=PositiveDirectionLine($SQuarePts[1],$pointMakeS[1]);
+float $Xaxis[] =crossProduct( $Yaxis, $DirNorA, 0, 0 );
+
+float $NormZ[]=$DirNorA ;
+vector $DirVector[];
+$DirVector[0]= << $Xaxis[0], $Xaxis[1], $Xaxis[2]>>;
+$DirVector[1]= << $Yaxis[0], $Yaxis[1], $Yaxis[2]>>;
+$DirVector[2]= << $NormZ[0], $NormZ[1], $NormZ[2]>>;
+
+	matrix $matrixIMAGE[4][4];
+$matrixIMAGE  = << $Xaxis[0], $Xaxis[1], $Xaxis[2], 0.0;
+	$Yaxis[0], $Yaxis[1], $Yaxis[2], 0.0;
+	$NormZ[0], $NormZ[1], $NormZ[2], 0.0;
+	$PtsFCrossBB[0], $PtsFCrossBB[0], $PtsFCrossBB[0], 1.0 >>; 
+
+
+
+ 
+
+MakeMatrixAxis($DirVector,FloatToVec($PtsFCrossBB));
+
+ matrix $mIA[4][4] = $matrixIMAGE;
+ vector $PtsVec = $Cam_Trans;
+matrix $mI[4][4] = << 1.0, 0.0, 0.0, 0.0;
+          0.0, 1.0, 0.0, 0.0;
+          0.0, 0.0, 1.0, 0.0;
+          0.0, 0.0, 0.0, 1.0 >>;
+matrix $mIB[4][4] = $mI;
+
+vector $PtsVecTemp[] = PointArrayT(`ls -sl`);
+vector $CrvN[];
+
+for($eachVec in $PtsVecTemp){
+  $CrvN[`size($CrvN)`] = MultPointMatrixPlusRel( $eachVec, $matrixIMAGE ,$mI);
+}
+string $ThefirstCurve = VecArrayToCurve($CrvN);
+
+
+
+proc vector MultPointMatrixPlusRel( vector $PtsVec, matrix $mIA[][],matrix $mIB[][]){
+
+vector $Tran,$TranB,$ReturnValVec;
+float $RowA[],$RowB[],$RowC[],$RowAi[],$RowBi[],$RowCi[],$MtxF[],$Pts[],$AxisO[],$PtZ[],$PtZT[];
+
+	 $MtxF  = MatrixToFloat($mIA);	
+ 	$RowA = {$MtxF[0], $MtxF[1], $MtxF[2]};
+	$RowB = {$MtxF[4], $MtxF[5], $MtxF[6]};
+	$RowC = {$MtxF[8], $MtxF[9], $MtxF[10]};
+
+	 $Pts = $PtsVec;
+ 
+// cent of matrix 
+ $AxisO = $Tran = << $mIA[3][0], $mIA[3][1], $mIA[3][2]>>;
+////////////////////////////////////////
+
+$PtZ[0] = ($RowA[0]*($Pts[0]-$AxisO[0])) + ($RowA[1]*($Pts[1]-$AxisO[1])) + ($RowA[2]*($Pts[2]-$AxisO[2]));
+$PtZ[1] = ($RowB[0]*($Pts[0]-$AxisO[0])) + ($RowB[1]*($Pts[1]-$AxisO[1])) + ($RowB[2]*($Pts[2]-$AxisO[2]));
+$PtZ[2] = ($RowC[0]*($Pts[0]-$AxisO[0])) + ($RowC[1]*($Pts[1]-$AxisO[1])) + ($RowC[2]*($Pts[2]-$AxisO[2]));
+
+//Loc $PtZ;
+
+////////////////////////////////////// YOU GOT IT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	 $MtxFB  = MatrixToFloat($mIB);	
+ 	$RowAi = {$MtxFB[0], $MtxFB[1], $MtxFB[2]};
+	$RowBi = {$MtxFB[4], $MtxFB[5], $MtxFB[6]};
+	$RowCi = {$MtxFB[8], $MtxFB[9], $MtxFB[10]};
+
+$PtZT[0] = (($RowAi[0])*($PtZ[0])) + (($RowBi[0])*$PtZ[1]) + (($RowCi[0])*$PtZ[2])+$MtxF[3];
+$PtZT[1] = (($RowAi[1])*($PtZ[0])) + (($RowBi[1])*$PtZ[1]) + (($RowCi[1])*$PtZ[2])+$MtxF[7];
+$PtZT[2] = (($RowAi[2])*($PtZ[0])) + (($RowBi[2])*$PtZ[1]) + (($RowCi[2])*$PtZ[2])+$MtxF[11];
+
+ $ReturnValVec = << $PtZT[0], $PtZT[1], $PtZT[2]>>;
+ $TranB = << $mIB[3][0], $mIB[3][1], $mIB[3][2]>>;
+ $ReturnValVec += $TranB;
+
+//Loc $PtZT;
+
+	return $ReturnValVec;
+}
+
+
+
+
+
+
+proc MakeMatrixAxis(vector $DirectionVector[],vector $MidPt){
+vector $norm	=$DirectionVector[0];
+vector $bi	=$DirectionVector[1];
+vector $tan	=$DirectionVector[2];
+
+	// "Xn", "X", "Y", "Yn", "Zn", "Z"
+
+int $colori[];
+	$colori[`size($colori)`] = 13;
+	$colori[`size($colori)`] = 14;
+	$colori[`size($colori)`] = 6;	
+
+string $AllCirTemp[];
+	string $CirTemp[];
+	string $curveAxis ="";
+	$curveAxis += makeCurvePointDirectionLength((6), $norm, $MidPt); //
+	$CirTemp = `ls -sl`;SetItemColorString ($CirTemp[0], $colori[0]);
+$AllCirTemp[`size($AllCirTemp)`] = $CirTemp[0];
+PAUSE;
+	$curveAxis += makeCurvePointDirectionLength((6), $bi, $MidPt); // 
+	$CirTemp = `ls -sl`;SetItemColorString ($CirTemp[0], $colori[1]);
+$AllCirTemp[`size($AllCirTemp)`] = $CirTemp[0];
+PAUSE;
+	$curveAxis += makeCurvePointDirectionLength((6), $tan, $MidPt); //
+	$CirTemp = `ls -sl`;SetItemColorString ($CirTemp[0], $colori[2]);
+$AllCirTemp[`size($AllCirTemp)`] = $CirTemp[0];
+PAUSE;
+}
+
+
+
+
+
+proc vector [] VecPointsMirrorVecPlaneN(vector $V[],vector $VecN[]){
+	vector $p =  $VecN[0];
+vector $n1 = $VecN[1];
+	float $D, $D1;	
+	vector $F, $e, $M, $F1, $P, $F2, $P1, $F3, $F4, $O[]; 	 
+$F = $n1;
+	int $C1;
+	$C1=0; 
+	for($e in $V){	
+		$M = $e+($F);
+		$D = distance2Pts($e, $p);
+		$F2 = $p+($D*$n1);	
+		$P1 = ClosestPoint2LineVec($n1, $p, $e);
+		$F3 = DirectionF($P1, $p);
+		$D1 = distance2Pts($P1, $p);
+		$F4 = $e+(($D1*2.0)*$F3);
+$O[$C1] = $F4;
+		$C1++;
+	}
+	//VecArrayToCurve($O);
+	ResetTransEachSL;	
+ 
+	return $O;
+}
+
+
+
+
+
+
+vector $DirLineN = << 0.0, 0.0 , 1.0 >>;			
+vector $DirLineX = << 1.0, 0.0 , 0.0 >>;			
+vector $DirLineY = << 0.0, 1.0 , 0.0 >>;	
+
+
+vector $Cam_Trans = `xform -q -ws -t ZCURVEModelingCAM`;
+vector $Cam_Rot = `xform -q -ws -ro ZCURVEModelingCAM`;
+
+vector $DirLineCamTOx = DirectionFN($XcrossP,$PtsVecAX);
+vector $DirLineCamTOy = DirectionFN($XcrossP,$PtsVecAY);
+
+//vector $DirLineCamTOx = DirectionFN($PtsVecAX, $Cam_Trans);
+//vector $DirLineCamTOy = DirectionFN($PtsVecAY, $Cam_Trans);
+
+
+float $AngleA = `angle $DirLineX $DirLineCamTOx`;
+float $AngleADegreeX =`rad_to_deg $AngleA`;
+
+	float $AngleB = `angle $DirLineN $DirLineCamTOy`;
+float $AngleADegreeY =(`rad_to_deg $AngleB`-90.0);
+
+// Result: 45 // 
+// Result: -33.778758 // 
+
+
+
+
+
+
+
+
+vector $PtsVecA[] = PointArrayT(`ls -sl`);
+
+vector $PtsVecAX =FloatToVec (lineIntersectionF($PtsVecA[0], $PtsVecA[1], $PtsVecA[2], $PtsVecA[3]));		
+//Loc $PtsVecAX;
+vector $PtsVecAY =FloatToVec (lineIntersectionF($PtsVecA[0], $PtsVecA[3], $PtsVecA[1], $PtsVecA[2]));		
+//Loc $PtsVecAY;
+vector $PtsVecCross =FloatToVec (lineIntersectionF($PtsVecA[0], $PtsVecA[2], $PtsVecA[1], $PtsVecA[3]));		
+ Loc $PtsVecCross;
+float $Xcross[] = $PtsVecCross;
+float $XcrossP[]= {$Xcross[0],$Xcross[1],1.0};
+vector $Normal= nurbsViewDirectionVectorCam("ZCURVEModelingCAM1", 0);
+
+vector $DirLineN = << 0.0, 0.0 , 1.0 >>;			
+vector $DirLineX = << 1.0, 0.0 , 0.0 >>;			
+vector $DirLineY = << 0.0, 1.0 , 0.0 >>;	
+
+
+
+vector $DirLineCamTOx = DirectionFN($Xcross,$PtsVecAX);
+vector $DirLineCamTOy = DirectionFN($Xcross,$PtsVecAY);
+
+//vector $DirLineCamTOx = DirectionFN($PtsVecAX, $Cam_Trans);
+//vector $DirLineCamTOy = DirectionFN($PtsVecAY, $Cam_Trans);
+
+
+float $AngleA = `angle $DirLineX $DirLineCamTOx`;
+float $AngleADegreeX =`rad_to_deg $AngleA`;
+
+	float $AngleB = `angle $DirLineN $DirLineCamTOy`;
+float $AngleADegreeY =(`rad_to_deg $AngleB`-90.0);
+
+float $FOUNDZ= 135.000001 -45.0;
+
+
+
+vector $Cam_Trans = `xform -q -ws -t ZCURVEModelingCAM1`;
+vector $Cam_Rot = `xform -q -ws -ro ZCURVEModelingCAM1`;
+
+
+/*
+
+
+vector $DirLineCamTOy = DirectionFN($PtsVecAY, $Cam_Trans);
+// Result: <<5.16314e-010, -0.831191, -0.555988>>  // 
+float $AngleA = `angle $DirLineX $DirLineCamTOx`;
+float $AngleADegreeX =`rad_to_deg $AngleA`;
+// Result: 135.000001 // 
+float $AngleB = `angle $DirLineN $DirLineCamTOy`;
+float $AngleADegreeY =(`rad_to_deg $AngleB`-90.0);
+// Result: 33.77876 // 
+float $FOUNDZ= 135.000001 -45.0;
+// Result: 90.000001 // 
+
+*/
+
+
+
+
+
+
+
+
+
+
+setAttr "ZCURVEModelingCAM.rotate" $AngleADegreeY $AngleADegreeX 0; 
+
+print $AngleADegreeX $AngleADegreeX
+
+
+
+ matrix $CamMatrixX[4][4];  
+ $CamMatrixX = GetMatrix("ZCURVEModelingCAM");
+// Result: << 0.372095 0 -0.928195 0;  -0.492072 0.847911 -0.197262 0;  0.787026 0.530139 0.315504 0;  0 0 1 1 >> // 
+
+
+float $CamMfloatZ[];
+$CamMfloatZ[0] = $CamMatrixX[0][0]; 
+$CamMfloatZ[1] = $CamMatrixX[0][1]; 
+$CamMfloatZ[2] = $CamMatrixX[0][2];
+
+vector $PtsVecAX =FloatToVec (lineIntersectionF($PtsVecA[0], $PtsVecA[1], $PtsVecA[2], $PtsVecA[3]));		
+Loc $PtsVecAX;
+vector $PtsVecAY =FloatToVec (lineIntersectionF($PtsVecA[0], $PtsVecA[3], $PtsVecA[1], $PtsVecA[2]));		
+Loc $PtsVecAY;
+vector $PtsVecCross =FloatToVec (lineIntersectionF($PtsVecA[0], $PtsVecA[2], $PtsVecA[1], $PtsVecA[3]));		
+Loc $PtsVecCross;
+float $Xcross[] = $PtsVecCross;
+float $XcrossP[]= {$Xcross[0],$Xcross[1],1.0};
+vector $Normal= nurbsViewDirectionVectorCam("ZCURVEModelingCAM", 0);
+
+vector $DirLineCamTOx = DirectionFN($XcrossP,$PtsVecAX);
+
+vector $DirLineN = << 0.0, 0.0 , 1.0 >>;			
+vector $DirLineX = << 1.0, 0.0 , 0.0 >>;			
+vector $DirLineY = << 0.0, 1.0 , 0.0 >>;	
+
+
+vector $DirLineCamTOx = DirectionFN($XcrossP,$PtsVecAX);
+vector $DirLineCamTOy = DirectionFN($XcrossP,$PtsVecAY);
+
+
+
+ matrix $CamMatrixXt[4][4];  
+ $CamMatrixXt = GetMatrix("ZCURVEModelingCAM3");
+
+-32.014843
+68.15511
+0
+
+yrotMATRIX(68.15511);
+xrotMATRIX(-32.014843);
+
+
+PrintMatrix($CamMatrixXt,4);
+|  1  0  0  0|
+|  0  1  0  0|
+|  0  0  1  0|
+|  0  0  1  1|
+PrintMatrix($CamMatrixX,4);
+|   0.3720951716              0  -0.9281945826              0|
+|  -0.4920720897   0.8479107896  -0.1972621389              0|
+|   0.7870262015   0.5301389373   0.3155035108              0|
+|              0              0              1              1|
+
+StringtoStringMATRIX;
+
+MultMATRIX($CamMatrixX);
+
+vector [] GetRotationVectorsMatrix(
+
+
+TransformRelByMatrixXform($CamMatrixX, "ZCURVEModelingCAM3");
+
+
+//TransformItemByMatrixXform($CamMatrixX, "ZCURVEModelingCAM3");
+
+
+ $matrixA_GlobalX  = << $xx, $yx, $zx, 0.0;
+	$xy, $yy, $zy, 0.0;
+	$xz, $yz, $zz, 0.0;
+	$xo, $yo, $zo, 1.0 >>;
+PrintMatrix($matrixA_GlobalX,4);   
+  
+UnitMATRIX;
+
+
+
+TransformRelByMatrixXform( $matrixA_GlobalX, "ZCURVEModelingCAM3");
+
+
+
+
+float $FirstTrans[] = $VrotatsFIRST;
+float $FirstRot[] = $VrotatsFIRST;
+setAttr "ZCURVEModelingCAM.translate" $FirstTrans[0] $FirstTrans[1] $FirstTrans[2]; 
+setAttr "ZCURVEModelingCAM.rotate" 0 $FirstRot 0; 
+
+
+
+
+vector $DirLineAX = DirectionFN($PtsVecAX, $PtsVecCross);			
+vector $DirLineAY = DirectionFN($PtsVecAY, $PtsVecCross);
+vector $Zero = << 0.0, 0.0 , 0.0 >>;	
+vector $DirLineX = << -1.0, 0.0 , 0.0 >>;			
+vector $DirLineY = << 0.0, -1.0 , 0.0 >>;			
+vector $DirLineYp = << 0.0, 1.0 , 0.0 >>;	
+float $AngleAX = `angle  $DirLineAX $DirLineX`;
+float $AngleADegreeX =`rad_to_deg $AngleAX`;
+
+float $AngleAY = `angle  $DirLineAY $DirLineY`;
+float $AngleADegreeY =`rad_to_deg $AngleAY`;
+
+float $FirstTrans[] = $VrotatsFIRST;
+float $FirstRot[] = $VrotatsFIRST;
+setAttr "ZCURVEModelingCAM.translate" $FirstTrans[0] $FirstTrans[1] $FirstTrans[2]; 
+setAttr "ZCURVEModelingCAM.rotate" 0 $FirstRot 0; 
+
+vector $DirLineN = << 0.0, 0.0 , 1.0 >>;			
+vector $DirLineX = << 1.0, 0.0 , 0.0 >>;			
+vector $DirLineY = << 0.0, 1.0 , 0.0 >>;	
+
+
+
+vector $VPos_MC[]; 
+ $VPos_MC[0]= $VecCurEndsa[0];  $VPos_MC[1]= $VecCurEndsa[1];
+ $VPos_MC[2]= $VecCurEndsb[0];  $VPos_MC[3]= $VecCurEndsb[1];
+vector $DirLineY = DirectionFN($VPos_MC[0], $VPos_MC[1]);
+vector $DirLineYR = DirectionFN($VPos_MC[2], $VPos_MC[3]); 
+float $AngleA = `angle $DirLineY $DirLineYR`;
+float $AngleADegree =`rad_to_deg $AngleA`;
+
+
+
+
+proc vector [] VecPointsToCameraPlaneB(vector $V[]){
+	vector $p = `xform -q -ws -t "LiveSurfaceB1"`;
+	vector $C = `xform -q -ws -t ZCURVEModelingCAM1`;
+	vector $n1 = nurbsViewDirectionVectorCam("ZCURVEModelingCAM1", 0); 
+	float $D, $D1;	
+	vector $F, $e, $M, $F1, $P, $F2, $P1, $F3, $F4, $O[]; 	 
+	int $C1;
+	$C1=0; 
+	for($e in $V){
+		$F = DirectionF($C, $e);
+		$M = $e+($F);
+		$D = distance2Pts($e, $p);
+		$F2 = $p+($D*$n1);	
+		$P1 = ClosestPoint2LineVec($n1, $p, $e);
+		$F3 = DirectionF($P1, $p);
+		$D1 = distance2Pts($P1, $p);
+		$F4 = $e+($D1*$F3);
+		$P = ClosestPoint2LineVec(DirectionF($P1, $p), $e, $M);
+		$F1 = DirectionF($P, $M);
+		$O[$C1] = FloatToVec (lineIntersection($F4, $F1, $e, $F));	
+		$C1++;
+	}	 
+	return $O;
+}
+proc string [] PointCurvesToPlaneCurveB(string $CurveItemZ[]){
+string $newPlaneCurve[];
+int $CN =0;
+	for ($eachCurve in $CurveItemZ){
+		vector $AllLocPositionsZ[];
+		clear $AllLocPositionsZ;
+		$AllLocPositionsZ = VecCurveEps( $eachCurve );
+		vector $AllPlaneLocPositionZ[]= VecPointsToCameraPlaneB($AllLocPositionsZ);
+		$newPlaneCurve[$CN] = VecArrayToCurve($AllPlaneLocPositionZ);
+		ResetTranslation({$newPlaneCurve[$CN]});
+$CN++;
+	}
+return $newPlaneCurve;
+
+}
+
+
+
+
+
+vector [] GetRotationVectorsMatrix(
+
+
+TransformRelByMatrixXform(matrix $m[][], string $item)
+TransformItemByMatrixXform(matrix $m[][], string $item)
+
+
+
+matrix $matrixA[4][4] = << 0.0, 0.0, 0.0, 0.0;
+0.0, 0.0, 0.0, 0.0;
+0.0, 0.0, 0.0, 0.0;
+0.0, 0.0, 0.0, 1.0 >>;
+
+global matrix $matrixA_GlobalX[4][4];
+ $matrixA_GlobalX = << $xx, $yx, $zx, 0.0;
+	$xy, $yy, $zy, 0.0;
+	$xz, $yz, $zz, 0.0;
+	$xo, $yo, $zo, 1.0 >>;   
+
+
+
+
+
+
+
+//geneticEngine.mel by Martin Hemberg 2004
+
+//This is a genetic engine, ie a simple genetic algorithm for
+//evolutionary search implemented in MEL. In order to make it useful,
+//one must define a fitness function.
+
+//Some global variables. Unfortunately, matrix sizes can not be set
+//dynamically in MEL. Moreover, one can't declare constants. Thus I'm
+//using this method, I think it's marginally better than not having
+//them. Thus, we are stuck with a fixed size, if you want to change pop
+//size or length, change these numbers and do a search and replace on
+//the rest of the file 
+
+
+
+global int $gGenomeLength = 100; 
+global int $gPopulationSize = 50; 
+global int $gMaxGeneValue = 42; //For a limit when generating random numbers, you may need to adjust this depending on your problem.
+
+evolve(125, 19, 55, 25.9);
+
+string $ABCs = "abcdefghijklmnopqrstuvwxyz";
+string $LETTERS[] = ArrayFromAllinString($ABCs);
+string $Find = "hellojohn";
+int $SizeF =  `sizeBytes  $Find `;
+int $SizeABCs =  `sizeBytes  $ABCs `;
+
+global int $gGenomeLength = 9; 
+global int $gPopulationSize = 50; 
+global int $gMaxGeneValue =26; 
+global matrix $genomes[50][9];
+$genomes = `initializePopulation`;
+
+print $genomes
+
+string $GENOME_LETTERS="";
+int $j;
+$j=1;
+	int $i;
+	for($i=0; $i<$gGenomeLength; $i++){
+$GENOME_LETTERS+= $LETTERS[int($genomes[$j][$i])];
+gmatch $GENOME_LETTERS  $Find;
+print ($GENOME_LETTERS+"\n");
+}
+
+gmatch "zza" "abc";
+
+
+string $Find = "hellojohn";
+
+string $FindN = "012";
+  sizeBytes(` match "[l-l]" "hellojohn"`)
+
+match "[a-d]+" "acbdefg" "
+
+
+//This function creates a population of individuals with random gene values.
+
+
+proc matrix initializePopulation()
+{
+	global int $gPopulationSize;
+	global int $gGenomeLength;
+	global int $gMaxGeneValue;
+global matrix $genomes[50][9];
+	int $i, $j;
+	//Set each gene to a random value
+	for($i=0; $i<$gPopulationSize; $i++){
+		for($j=0; $j<$gGenomeLength; $j++)
+			$genomes[$i][$j] = int(rand ($gMaxGeneValue));
+	}
+	return $genomes;
+}
+
+
+
+//This function is used to evaluate the fitness of the population. It
+//contains a large gap - you'll have to insert your own fitness function
+//that maps the array of doubles (the genome) to a scalar value (the
+//fitness). The fitness should be set so that a low value indicates a fit
+//individual.
+proc float[] evaluate(matrix $genomes)
+{
+	global int $gPopulationSize;
+	int $i;
+	float $fitness[50];
+	for($i=0; $i<$gPopulationSize; $i++){
+		//Here each individual should be evaluated
+
+$fitness[$i] = 
+	}
+	return $fitness;
+}
+
+
+
+ proc evolve(int $generations, int $elites, int $tournamentSize, float $mutationRate)
+{
+	//Call this function in order to do an evolutionary run for a
+	//fixed number of generations. Unfortunately, there is no way to
+	//continue running with the same population. However, that should not be
+	//to hard to fix. It's just a matter of saving the variables in the
+	//scene adn writing a function for reading them again at re-start.
+global matrix $genomes[50][9];
+	matrix $genomes[50][9] = initializePopulation(); //[popsize][geneomelength] Each row represents an individual
+	float $fitness[]; //An array containing the fitness values
+	int $i;
+	//Iterate through the generations
+	for($i=0; $i<$generations; $i++){
+		$fitness = evaluate($genomes); //Find out who's best
+		$genomes = breed($genomes, $fitness, $elites, $tournamentSize, $mutationRate); //Create the population for the next generation
+	}
+}
+
+
+
+
+//This function is used to create the population for the next generation
+proc matrix breed(matrix $genomes, float $fitness[], int $elites, int $tournamentSize, float $mutationRate)
+{
+	global int $gPopulationSize;
+	global int $gGenomeLength;
+	matrix $newGenomes[50][9]; //The next generation
+	int $lowest = -1;
+	//Copy the elites to the new generation, they will automatically be the first individuals in the new generation.
+	for($i=0; $i<$elites; $i++){
+		$lowest = findLowestFitness($fitness, $lowest);
+		for($j=0; $j<$gGenomeLength; $j++)
+			$newGenomes[$i][$j] = $genomes[$lowest][$j];
+	}
+	//Create the rest through tournament selection
+	for($i=$elites; $i<$gPopulationSize; $i++){
+		int $father = tournamentSelect($fitness, $tournamentSize);
+		int $mother = tournamentSelect($fitness, $tournamentSize);
+		$newGenomes = crossover($genomes, $newGenomes, $father, $mother, $i);
+	}
+	return mutate($newGenomes, $elites, $mutationRate);
+}
+
+//Returns the index of the individual with the lowest fitness above the one indicated by the argument $lowest.
+//If $lowest==-1, return the global minimum
+proc int findLowestFitness(float $fitness[], int $lowest)
+{
+	int $i, $index;
+	float $indexFitness = 100000; //Very high number
+	float $lowestFitness = $fitness[$lowest];
+	for($i=0; $i<size($fitness); $i++){
+		if($fitness[$i]<$indexFitness && $fitness[$i]>=$lowestFitness && $i>$lowest){
+			$index = $i;
+			$indexFitness = $fitness[$i];
+		}
+	}
+	return $index;
+}
+
+//Choose a parent using tournament selection. $tournamentSize
+//individuals are randomly chosen from the population. The best one of
+//these is then used as one of the parents for a member of the next
+//generation. A high value of $tournamentSize (compared to the pop size)
+//means that there will be less variation since the fittest individuals
+//are more likely to be picked in every tournament.
+
+proc int tournamentSelect(float $fitness[], int $tournamentSize) {
+	global int $gPopulationSize;
+	int $parent = (int)rand ($gPopulationSize), $i, $tmp;
+	for($i=1; $i<$tournamentSize; $i++){
+		$tmp = (int)rand ($gPopulationSize);
+		if($fitness[$tmp]<$fitness[$parent]) //Fitness minimization
+			$parent = $tmp;
+	}
+	return $parent;
+}
+
+
+//Combine to individuals to produce a new one for the next generation.
+proc matrix crossover(matrix $genomes, matrix $newGenomes, int $father, int $mother, int $child)
+{
+	global int $gGenomeLength;
+	int $i, $crossoverPoint = (int)rand ($gGenomeLength);
+	for($i=0; $i<$crossoverPoint; $i++)
+		$newGenomes[$child][$i] = $genomes[$father][$i];
+	for($i=$crossoverPoint; $i<$gGenomeLength; $i++)
+		$newGenomes[$child][$i] = $genomes[$mother][$i];
+	return $newGenomes;
+}
+
+//Random mutation
+proc matrix mutate(matrix $newGenomes, int $elites, float $mutationRate)
+{
+	global int $gPopulationSize;
+	global int $gGenomeLength;
+	int $i, $j;
+	for($i=$elites; $i<$gPopulationSize; $i++){ //Don't mutate the elites
+		for($j=0; $j<$gGenomeLength; $j++){
+			if($mutationRate>`rand 100.0`){ //Mutate
+				if(`rand 2.0`>1.0)
+					$newGenomes[$i][$j] = $newGenomes[$i][$j] + 1;
+				else
+					$newGenomes[$i][$j] = $newGenomes[$i][$j] - 1;
+			}
+		}
+	}
+	return $newGenomes;
+}
+				
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
