@@ -1,0 +1,63 @@
+string $object[];
+
+
+vector $newpos;
+vector $cpoint;
+
+
+$object = `ls -sl -fl`;
+
+
+// create CPOS
+createNode closestPointOnSurface -n projection_node;
+connectAttr ($object[1] + ".ws") projection_node.is; 
+
+
+vector $vert;
+vector $dcu;
+vector $mdcu;
+vector $normal;
+float $uc;
+float $vc;
+float $beta;
+
+float $u=0;
+float $tol=0.01;
+
+float $dis;
+float $min=1000000;
+float $p=0.5;
+float $k=0.5;
+
+while ($tol>0.00000001)
+		{
+		
+		while ($u<$p+$tol*100/2+$tol)
+			{
+		
+			$dcu=`pointPosition -w ($object[0]+".un["+$u+"]")`;  
+			setAttr "projection_node.ip" ($dcu.x) ($dcu.y) ($dcu.z);
+			$vert=`getAttr projection_node.p`;
+
+			$dis = mag ($vert-$dcu);
+
+				if ($dis<$min)
+					{
+					$min=$dis;
+					$k=$u;
+					}
+
+			$u = $u+$tol;
+			
+			}
+		$u=$p-$tol*5;
+		$tol=$tol/10;
+		// print $tol;
+		$p=$k;
+		
+		}
+
+
+
+
+$mdcu=`pointPosition -w ($object[0]+".un["+$p+"]")`;
