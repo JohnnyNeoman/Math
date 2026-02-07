@@ -1,0 +1,3201 @@
+proc START2dSCript(){
+ print " START2dSCript " ; print "line 1 "; print "\n" ;
+scriptJob -killAll -force;
+file -f -new;
+global float $DistSSS;
+$DistSSS =4.95;
+global string $CurveNames[];
+global int $MCurveIndex[];
+global vector $AllKnowVecEnds[];
+global vector $LocCurveEndsVec3D[];
+global string $CrvN_And_Vector[];
+clear  $MCurveIndex;
+clear  $CrvN_And_Vector;
+clear  $CurveNames; print $CurveNames;
+clear $AllKnowVecEnds;
+clear $LocCurveEndsVec3D; 
+global int $StringEpty[];
+global int $VectorEpty[];
+global int $SizeVecConnection[];
+global int $DeleteVEC_TF[];
+global int $CRVNameIndex[];
+clear  $StringEpty;
+clear $VectorEpty;
+clear $SizeVecConnection;
+clear $DeleteVEC_TF;
+clear $CRVNameIndex;
+string $ConnectionSet1;
+if ( `objExists ExistingCurveZSet` == 0  ) {
+	string $ConnectionSet1 = `sets -name ExistingCurveZSet`;
+}
+if ( `objExists LocCurveEnds` == 0  ) {
+	createDisplayLayer -name "LocCurveEnds" - number 1 -empty;
+	setAttr LocCurveEnds.color 13;
+}
+//
+EvalAllCurvesToolZ;
+PencilCurveTool;
+}
+ proc string [] stringInsertAtIndeX( int $index, string $list[], string $item ){
+ print " stringInsertAtIndeX " ; print "line 39 "; print "\n" ;
+$list[$index]=$item;
+	return($list);
+}
+ proc int [] IntInsertAtIndeX( int $index, int $list[], int $item ){
+ print " IntInsertAtIndeX " ; print "line 44 "; print "\n" ;
+$list[$index]=$item;
+	return($list);
+}
+proc int intArrayRemoveAtIndex( int $index, int $list[] ){
+ print " intArrayRemoveAtIndex " ; print "line 49 "; print "\n" ;
+	int     $i;
+	int  $result[];
+	int     $len = size( $list );
+	// Check for a valid index.
+	if ( $index > $len  || $index < 0 ) {
+		return( false );
+	}
+	for ( $i = 0; $i < $index; $i++ ) {
+		$result[$i] = $list[$i];
+	}
+	for ( ; $i < $len - 1; $i++ ) {
+		$result[$i] = $list[$i + 1];
+	}	
+	$list = $result;
+	return( true );
+}
+proc int [] IntFillInsert( int $index, int $list[] ){
+ print " IntFillInsert " ; print "line 67 "; print "\n" ;
+	int     $i,$j,$k,$e;
+	int  $result[];
+	int     $len = size( $list );
+$e=$k=0;
+if($len!=0){	
+	for ( $i = 0; $i <  $len+1; $i++ ) {
+if($i>0){
+if($k==0){
+if($list[$i-1]>$index){
+$result[$j] = $index;
+$k=1;
+$j++;
+}
+}
+if(($list[$i-1]<$index)||($list[$i-1]>$index)){
+$result[$j] = $list[$i-1];
+}
+if($list[$i-1]==$index){
+$result= $list; $e=1;break;
+}
+$j++;
+}
+}
+if(($e!=1)&&($k==0)){
+if(($list[$len-1]+1)==$index){
+$result[$len]=$index;
+}
+}
+}else{
+if($index==0){
+$result[0]=0;
+}
+}	
+	$list = $result;
+	return($result);
+}
+//THIS WORKKKKSSSSSSSSSSSSSSSSSSSSSSSSSSSSS/// YES
+//////////////////////
+proc string [] StringIntFillInsert( int $index, int $list[],string $indexS,string $listS[] ){
+ print " StringIntFillInsert " ; print "line 107 "; print "\n" ;
+	int     $i,$j,$k,$e;
+	int  $result[];
+	string  $resultS[];
+	int     $len = size( $listS);
+$e=$k=0;
+$resultS=$listS;
+$resultS[$index]=$indexS;
+$listS=$resultS;
+return $resultS;
+}
+proc AppendOrdeleteCRV(int $CRVN[],int $AP){
+ print " AppendOrdeleteCRV " ; print "line 119 "; print "\n" ;
+global int $DeleteVEC_TF[];
+global int $MCurveIndex[];
+	global string $CurveNames[];
+global string $CrvN_And_Vector[];
+global vector $AllKnowVecEnds[];
+global vector $LocCurveEndsVec3D[];
+	global string $CurveNamesi[];
+global int $CRVNameIndex[];
+int $Endsi[];
+$Endsi=IndexPairArrayFunc({$CRVN[0]});
+$Ends[0]= $MCurveIndex[$Endsi[0]];
+$Ends[1]= $MCurveIndex[$Endsi[1]];
+int $SizeCC =`size($CurveNames)`;
+global int $StringEpty[];
+global int $VectorEpty[];
+for($iC=0; $iC<`size($CRVN)`; $iC++){
+if($AP==0){
+delete  $CurveNames[$CRVN[$iC]];
+RemoveMatchingIntAtIndex($CRVN[$iC], $CRVNameIndex);
+$StringEpty[`size($StringEpty)`]=$CRVN[$iC];
+$CurveNames[$CRVN[$iC]]= "EMPTY";
+AppendCrvN_And_Vec($CRVN[$iC]);
+if(($DeleteVEC_TF[0]+$DeleteVEC_TF[1])!=0){
+if($DeleteVEC_TF[0]==1){$VectorEpty[`size($VectorEpty)`]= $MCurveIndex[$Endsi[0]]; }
+if($DeleteVEC_TF[1]==1){$VectorEpty[`size($VectorEpty)`]= $MCurveIndex[$Endsi[1]];}
+}
+}
+}
+if(`size($StringEpty)`>1){
+$StringEpty=`sort($StringEpty)`;}
+if(($DeleteVEC_TF[0]+$DeleteVEC_TF[1])!=2){
+if(`size($VectorEpty)`>1){
+$VectorEpty=`sort($VectorEpty)`;
+}
+}
+}
+////
+proc AppendCrvN_And_Vec(int $CurveIndex){
+ print " AppendCrvN_And_Vec " ; print "line 158 "; print "\n" ;
+global string $CrvN_And_Vector[];
+global string $CrvN_And_Vectori[];
+global	int $MCurveIndex[];
+global string $CurveNames[];
+global int $SizeVecConnection[];
+global int $DeleteVEC_TF[];
+int $Ends[];
+int $Endsi[]=IndexPairArrayFunc({$CurveIndex});
+$Ends[0]= $MCurveIndex[$Endsi[0]];
+$Ends[1]= $MCurveIndex[$Endsi[1]];
+$Ends=sort($Ends);
+$DeleteVEC_TF={0,0};
+int $Sbyte;
+string $array[];
+clear $array;
+int $iC,$Ti,$SSi;
+for($iC=0; $iC<2; $iC++){ 
+	$array = stringToStringArray($CrvN_And_Vector[$Ends[$iC]], ",");
+  $SSi=`size($array)`;
+$Sbyte =  `sizeBytes $CrvN_And_Vector[$Ends[$iC]]`;
+$SizeVecConnection[$iC]=$SSi;
+if( $SizeVecConnection[$iC]==1){
+$DeleteVEC_TF[$iC]=1;
+}else{$DeleteVEC_TF[$iC]=0;}
+for($i=0; $i<`size($array)`; $i++){
+$Ti =$array[$i];
+if($Ti==$CurveIndex){
+stringArrayRemoveAtIndex($i, $array);
+string $newStrinG;
+$newStrinG=stringArrayToString($array, ",");
+$CrvN_And_Vector[$Ends[$iC]]=$newStrinG;
+break;
+}
+}
+}
+}
+proc int RemoveMatchingIntAtIndex( int $index, int $list[] ){
+ print " RemoveMatchingIntAtIndex " ; print "line 196 "; print "\n" ;
+	int     $i,$j;
+	int  $result[];
+	int     $len = size( $list );	
+	for ( $j = $i = 0; $i <  $len; $i++ ) {
+if($list[$i]!=$index){
+		$result[$j] = $list[$i];
+$j++;
+}
+	}
+	$list = $result;
+	return( true );
+}
+proc RemoveFilledEpmtyVec(int $Num){
+ print " RemoveFilledEpmtyVec " ; print "line 210 "; print "\n" ;
+global int $VectorEpty[];
+int $NewVec[];
+for($iC=0; $iC<`size($VectorEpty)`; $iC++){
+if($iC!=$Num){
+$NewVec[`size($NewVec)`]=$VectorEpty[$iC];
+}
+}
+clear $VectorEpty;
+$VectorEpty=$NewVec;
+}
+global float $DistSSS;
+ 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+proc string [] AppendAllArrays(string $A[] , string $B[]){ 
+ print " AppendAllArrays " ; print "line 226 "; print "\n" ;
+	string $AB[] =$A;
+	for($eachF in $B){
+		$AB[`size($AB)`]= $eachF;
+	}
+	return $AB;
+}
+////////////////////////////////START
+global string $CrvN_And_Vectori[]; 
+global int $VectorEpty[];
+global int $SizeVecConnection[];
+global int $DeleteVEC_TF[];
+////////////////////////////////START
+proc AutoCurveScriptsTwoCurve(){
+ print " AutoCurveScriptsTwoCurve " ; print "line 240 "; print "\n" ;
+	global int $MCurveIndex[];
+	global string $StereoCurveZ[];
+	global string $CurveNames[];
+global int $Ind3dV2P[];
+global string $CrvN_And_Vector[];
+global vector $AllKnowVecEnds[];
+global vector $LocCurveEndsVec3D[];
+global string $CrvN_And_Vector[];
+global int $CRVNameIndex[];
+string $TempCRVNAME[];
+	//int $ifCond_is_True =  `ISSelectedTypeCurve`;
+	string $item[];
+	vector $CVecL[];
+	string $MObjList[];
+	$item = `ls -sl`;
+	if ($item[0] != ""){
+	if (`getSelectionType` == "nurbsCurve"){
+		//   This is just the curve script you need this  to be where the switch is
+		$item = `ls -sl`;
+		RebuildCRV($item[0]);
+		//DoesCurveBBcrossPlane($item[0]);
+		string $GetObjList[];
+		$GetObjList = `sets -q ExistingCurveZSet`;// select -r  $GetObjList;
+		string $NewObjListi[];
+		if(`size($GetObjList)`>0){
+			$TempCRVNAME =$CurveNames;
+			$NewObjListi=CRV2Dscript($TempCRVNAME,$item);
+	
+			$NewObjListi = stringArrayRemoveDuplicates ($NewObjListi);
+			if(`size($NewObjListi)`>0){
+				for($eachCRV in $NewObjListi){
+					rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 0 -kt 0 -s 22 -d 3 -tol 0.05 $eachCRV;
+					smoothCurve -ch 0 -rpo 1 -s 95.60 ($eachCRV +".cv [*]");
+				}
+				sets -include ExistingCurveZSet $NewObjListi ; 
+				LocCurveEndZ($NewObjListi);
+				$MObjList =MirrorLocAxisCRVs($NewObjListi);
+				LocCurveEndZ( $MObjList);
+			}else{ 
+				sets -include ExistingCurveZSet $item ; 
+				LocCurveEndZ($item);
+				$MObjList =MirrorLocAxisCRVs($item);
+				LocCurveEndZ( $MObjList);
+			}
+		}else{ sets -include ExistingCurveZSet $item ; 
+			vector $DrawnVecEnds[];
+			$DrawnVecEnds  =VecCurveEnds({$item[0]});
+			IndexCRV_VEC({0,0},({0,0}),$DrawnVecEnds,$item[0]);		
+			LocCurveEndZ($item);
+			$MObjList =MirrorLocAxisCRVs($item);
+			LocCurveEndZ( $MObjList);
+		}
+	}
+}else{ cycleBackgroundColor; PAUSE; }
+}
+proc EvalAllCurvesToolZ(){
+ print " EvalAllCurvesToolZ " ; print "line 304 "; print "\n" ;
+	eval("int $scriptt_jobAllCurvesToolsNumAZ =  `scriptJob -event DagObjectCreated  AutoCurveScriptsTwoCurve  -compressUndo true - protected  `;");
+}
+//////////////////////////////
+global float $DistSSS; $DistSSS=10.5;
+global int $Ind3dV2P[];
+global string $CrvN_And_Vector[];
+global string $CurveNames[];
+global int $MCurveIndex[];
+global vector $AllKnowVecEnds[];
+global vector $LocCurveEndsVec3D[];
+global string $CrvN_And_Vector[];
+proc int [] IndexPairFunc(int $XNum){
+ print " IndexPairFunc " ; print "line 317 "; print "\n" ;
+	int $Zss = $XNum*2;
+	int $Yss = $Zss+1;
+	int $pair[];
+	$pair={$Zss,$Yss};
+	return $pair;
+}
+proc int [] IndexPairArrayFunc(int $XNum[]){
+ print " IndexPairArrayFunc " ; print "line 325 "; print "\n" ;
+	int $Zss,$Yss,$pair[];
+	int $Si =`size($XNum)`;
+	int $Ci=0;
+	if($Si>0){
+		for($i=0; $i<$Si; $i++){
+			$Zss = $XNum[$i]*2;
+			$Yss = $Zss+1;
+			$pair[$Ci++]= $Zss;
+			$pair[$Ci++]= $Yss;
+		}
+	}
+	return $pair;
+}
+proc string [] MirrorLocAxisCRVs(string $AllCRVs[]){
+ print " MirrorLocAxisCRVs " ; print "line 340 "; print "\n" ;
+	//how  many axis 
+	//what are the Plane normals of the mirror Planes..
+	vector $Pos_A[],$VecPtsMirror[];
+	string $AllNewM[];
+	int $Siz=`size($AllCRVs)`;
+	for( $i = 0 ; $i <  $Siz; $i++ ) {			
+		$Pos_A = VecCurveCvs($AllCRVs[$i]);
+		$VecPtsMirror= VecPtsToZMirrorPts($Pos_A);
+		$AllNewM[$i] = VecArrayToCurve($VecPtsMirror);
+	}
+	return $AllNewM;
+}
+proc vector [] LocCurveEndZ(string $CurveItem[]){
+ print " LocCurveEndZ " ; print "line 354 "; print "\n" ;
+	string $CurveItem[];
+	string $LocEND[];
+	vector $CRV_EndsVec[];
+	int $numCVsL,$numCVsSL;
+	int $ALL =0;
+	int $i = 0;
+	for($eachCRV in $CurveItem){
+		$numCVsL = `getAttr -size ($eachCRV+".controlPoints")`-1;
+		$numCVsSL = $numCVsL-1;
+		$CRVendPts[0] = ($eachCRV + ".cv[0]") ;
+		$CRVendPts[1] = ($eachCRV + ".cv[" +  $numCVsL + "]") ;
+		for($i = 0; $i < 2;$i++){
+			$CRV_EndsVec[$i]= `pointPosition -w ($CRVendPts[$i])`;
+			$LocEND[$ALL]= `Loc($CRV_EndsVec[$i])`;
+			setAttr ($LocEND[$ALL]+".scale ") 0.5 0.5 0.5;
+			$ALL++;
+		}
+	}
+	editDisplayLayerMembers -noRecurse LocCurveEnds $LocEND;
+	return $CRV_EndsVec;
+}
+proc RebuildCRV(string $CRVr){
+ print " RebuildCRV " ; print "line 377 "; print "\n" ;
+	int $arc;
+	$arc =22;
+	rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 0 -kt 0 -s $arc -d 3 -tol 0.05 $CRVr;
+	smoothCurve -ch 0 -rpo 1 -s (300) ($CRVr +".cv [*]");
+	rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 0 -kt 0 -s $arc -d 3 -tol 0.05 $CRVr;
+}
+proc PAUSEn(int $n){
+ print " PAUSEn " ; print "line 385 "; print "\n" ;
+	int $i=0;
+	while($i < $n){
+		cycleBackgroundColor;
+		eval("playButtonStepForward");
+		$i++;
+	}
+}
+global float $U[];
+global string $Tstring[];
+global float $T_G[];
+global int $CurveCutIndex[];
+proc vector [] CurvatureUtilitySimple(string $curvesZ[], string $myCurve){
+ print " CurvatureUtilitySimple " ; print "line 398 "; print "\n" ;
+	string $getIT="";
+	global float $U[];
+	global float $T_G[];
+	global string $Tstring[];
+	global int $CurveCutIndex[];
+	float $T[];
+	clear $U;
+	clear $T_G;
+	clear $Tstring;
+	clear $CurveCutIndex;
+	vector $Pos3DVecOnCRV[];
+	int $StepCycle,$Sa, $ix, $ii, $CUTsCurve,$CountNearing, $CountFactorIzed,$numEPs,$numEPrealNum2;	
+	string $myCPOC ;
+	$myCPOC = `createNode closestPointOnCurve`;
+	connectAttr ($myCurve+".worldSpace") ($myCPOC+".inCurve");
+	string $CurveSelection[],$myCurvex, $myCPOC, $tempLoc,$tempLocX,$CurveEPzCount;
+	vector $Pos3DZ[],$CurveVectors[];
+	float $step,$NumbersA[],$values[],$Pos1[],$a, $t,$distance,$smallest,$FactorX ;
+	int $StepCycle;
+	int $CountInter=0;
+	int $CurvCutNFound=0;
+	int $EachCRVcount=0;
+	for($myCurvex in $curvesZ){
+		$CurvCutNFound=0;
+		$StepCycle= $CUTsCurve =$ii = $ix = $a =$CountNearing =$CountFactorIzed= 0;
+		$CurveSelection = `ls -fl  ($myCurvex+".ep[0:*]")`; 
+		$CurveEPzCount = size($CurveSelection);
+		$numEPs = size ($CurveSelection);
+		$numEPrealNum2 = ( $numEPs -1 ) * 2; 
+		$myCPOC = `pointOnCurve  -ch on -pr 0.0 -p $myCurvex`;
+		$step = $numEPrealNum2;  		
+		$StepCycle =0;
+		$smallest = 4.5;	
+		$FactorX = 2.0;			
+		for($a = 0; $a <= $step;$a++){
+
+			$t =  $a/$step; 		
+			setAttr ($myCPOC +  ".parameter") $t ;
+			$Pos1  = `getAttr  ($myCPOC + ".position")`;
+			$CurveVectors[$ii] = <<$Pos1[0], $Pos1[1], $Pos1[2]>>;
+			$distance = `closestPointOnCurve -ip $Pos1[0] $Pos1[1] $Pos1[2] -q -d $myCurve`;
+			if($distance<$smallest){
+				$smallest = $distance/2.0;
+				$Pos3DVecOnCRV[$ix] = FloatToVec(`closestPointOnCurve -ip $Pos1[0] $Pos1[1] $Pos1 [2] -q -p $myCurve`);
+				if($CountNearing > -1){
+					$step *= $FactorX; $a *= $FactorX;
+					$CountFactorIzed++;
+				}$CountNearing++;
+				if($distance<0.005){
+					if($CountNearing>1){
+						for($aD = 0; $aD < $CountFactorIzed;$aD++){
+							$step /= $FactorX; 
+							$a /= $FactorX;
+						}
+						$CountFactorIzed=0;
+						$smallest = $distance*2.0;
+					}
+					$CountNearing=0;
+					$Pos3DZ[`size($Pos3DZ)`]=$Pos3DVecOnCRV[$ix];
+					//Loc $Pos3DVecOnCRV[$ix];
+					$U[$CountInter] =`closestPointOnCurve -ip $Pos1[0] $Pos1[1] $Pos1[2] -q -u $myCurve`;
+					$T[$CountInter]=$t;
+					$T_G[$CountInter]=$t;
+					string $McrvU =$U[$CountInter];
+					string $ParX= $t;
+					$Tstring[$CountInter]=$Tstring[$CountInter]+$ParX+",";
+					$getIT+=($myCurve+" "+$McrvU);
+					$getIT+= (" "+$myCurvex+" "+$ParX+" ");
+					$CountInter++;
+					$CurvCutNFound=1;
+					$ix++;
+					$CUTsCurve+=1;
+					break;
+				}					}
+			///////////////////////
+			if(($distance>($smallest*2.0))&&($CountFactorIzed>0)){
+				if($ix==0){
+					for($aD = 0; $aD < $CountFactorIzed;$aD++){
+						$step /= $FactorX; 
+						$a /= $FactorX;}
+					$CountFactorIzed=0;
+					$CountNearing=-1;
+				}
+			}
+			$ii++;	
+		}
+		delete $myCPOC;
+		if($CurvCutNFound==1){
+			$CurveCutIndex[`size($CurveCutIndex)`]=$EachCRVcount;
+			}
+		$EachCRVcount++;
+	}	
+	return $Pos3DZ; 
+}
+proc int IntersectPlaneAndSegment( vector $Add,vector $p0, vector $N, vector $p1, vector $p2){
+// print " IntersectPlaneAndSegment " ; print "line 494 "; print "\n" ;
+	int $Number=0;
+	global vector $FoundVecG;
+	// Get the $denominator. If it's 0, the plane and line are parallel.
+	vector $v12 = $p2 - $p1;
+	float $denominator = dotProduct( $N, $v12, 0 );
+	if ((!(`abs($denominator)` < -0.0001))&&(!(`abs($denominator)` == 0))){
+		// Get the $numerator.
+		vector $v10 = $p0 - $p1;
+		float $numerator = dotProduct($N, $v10, 0 );
+		// Calculate t and see if the segment intersects the plane.
+		float $t = $numerator / $denominator;
+		if (!(`abs($denominator)` < -0.0001)){
+			if(!(`abs($denominator)` == 0)){
+				if (($t >= 0) && ($t <= 1))
+				{
+					// The segment intersects the plane at $p1 + t * $v12.
+					// If the plane and line segment intersect, add the
+					// points of intersection to points and return true.
+					// Append vecs
+					$FoundVecG =$p1 + $t * $v12;
+					Loc $FoundVecG;
+					$Number= 1;
+				}
+			}
+		}
+	}else{
+		$Number= 0;}
+	return $Number;
+}
+proc int [] IndexPattern(int $n,int $Pn){
+ print " IndexPattern " ; print "line 525 "; print "\n" ;
+	int $IndexP[];
+	$IndexP[0]=$n*$Pn;
+	$IndexP[1]=($n*$Pn)+1;
+	return $IndexP;
+}
+proc int [] InsideRectangle(string $is,string $AllOther[]){
+ print " InsideRectangle " ; print "line 532 "; print "\n" ;
+	vector $MiddleA,$MiddleB;
+	int $CNT[];
+	float $HW_A[],$HW_B[],$MaX,$MaZ,$MbX,$MbZ,$HH,$WW,$DaX,$DaZ;
+	int $CN=0;
+	for($isB in $AllOther){
+		$MiddleA = BBoxInfo2DHW( $is, $HW_A);
+		$MiddleB = BBoxInfo2DHW( $isB, $HW_B);
+		$MaX =VecCom($MiddleA, 0);
+		$MaZ =VecCom($MiddleA, 2);
+		$MbX =VecCom($MiddleB, 0);
+		$MbZ =VecCom($MiddleB, 2);
+		$HH = ($HW_A[0]+ $HW_B[0])/2;
+		$WW= ($HW_A[1]+ $HW_B[1])/2;
+		$DaX = abs ($MaX- $MbX);
+		$DaZ=  abs ($MaZ- $MbZ);
+		if(($HH>$DaX )&&($WW>$DaZ )){
+			$CNT[`size($CNT)`]=$CN;
+		}
+		$CN++;
+	}
+	return $CNT;
+}
+proc vector BBoxInfo2DHW(string $Ii,float $H_W[]){
+ print " BBoxInfo2DHW " ; print "line 556 "; print "\n" ;
+	float $bbInfo[5];	
+	$bbInfo =`xform -query -bb $Ii`;
+	vector $AW = <<$bbInfo[0], $bbInfo[1], $bbInfo[2]>>;
+	vector $BW = <<$bbInfo[3], $bbInfo[4], $bbInfo[2]>>;
+	float $DistW = distance2Pts( $AW, $BW);
+	vector $AH = <<$bbInfo[0], $bbInfo[1], $bbInfo[2]>>;
+	vector $BH = <<$bbInfo[0], $bbInfo[4], $bbInfo[5]>>;
+	float $DistH = distance2Pts( $AH, $BH);
+	$H_W[0]=$DistW;
+	$H_W[1]=$DistH;
+	vector $Mid = ($BW + $BH )/2.0;		
+	return  $Mid ;
+}
+proc float VecCom(vector $Vai, int $XYZ){
+ print " VecCom " ; print "line 571 "; print "\n" ;
+	float $x, $y, $z;
+	$x = $Vai.x;
+	$y = $Vai.y;
+	$z = $Vai.z;
+	float $N;
+	if($XYZ==0){$N=$x;} if($XYZ==1){$N=$y;} if($XYZ==2){$N=$z;}
+	return $N;
+}
+proc float[ ] BBoxInfo2D(string $i){
+ print " BBoxInfo2D " ; print "line 581 "; print "\n" ;
+	float $bbInfo[5];	
+	select $i;
+	$bbInfo =`xform -query -bb $i`;		
+	return $bbInfo;
+}
+proc vector [] VecCurveCvs(string $CurveItem ){
+ print " VecCurveCvs " ; print "line 588 "; print "\n" ;
+	vector $CurveLocArrayVec[];
+	string $CurveSelection[];
+	$CurveSelection = `ls -fl ($CurveItem+".cv[*]")`; 
+	float $EACHCVposAZ[];	
+	for ($eachZA in $CurveSelection) {       
+		$EACHCVposAZ = `pointPosition -w ($eachZA)`;
+		$CurveLocArrayVec[`size($CurveLocArrayVec)`]= << $EACHCVposAZ[0], $EACHCVposAZ[1], $EACHCVposAZ[2] >>;
+	}
+	return $CurveLocArrayVec;
+}
+proc matrix GetCRV2D_Matrix(vector $PtsVecs[]){
+ print " GetCRV2D_Matrix " ; print "line 600 "; print "\n" ;
+	matrix $mI[4][4];
+	float $MidPt[];
+	$MidPt = MidPoint($PtsVecs[0], $PtsVecs[1]);
+	vector $UpAxis = <<0,1,0>>;
+	vector $DirLine = DirectionFN($PtsVecs[0], $PtsVecs[1]);	
+	vector $Vperp = crossProduct( $DirLine, $UpAxis, 0, 0 );
+	vector $norm, $bi, $tan;
+	$norm = $UpAxis;
+	$bi = $Vperp;
+	$tan = $DirLine;
+	$mI = << ($norm.x), ($norm.y), ($norm.z), 0.0;     // X axis
+	($bi.x), ($bi.y), ($bi.z),  0.0;     // Y axis
+	($tan.x), ($tan.y), ($tan.z), 0.0;     // Z axis
+	$MidPt[0], $MidPt[1], $MidPt[2], 1.0  >>;  // Position
+	return $mI;
+}
+proc vector [] Matrix_Curve_Translation2D(vector $VecPairA[],vector $VecPairB[], vector $CurveVecPointZ[]){
+ print " Matrix_Curve_Translation2D " ; print "line 618 "; print "\n" ;
+	matrix $matrixA[4][4] = << 0.0, 0.0, 0.0, 0.0;
+	0.0, 0.0, 0.0, 0.0;
+	0.0, 0.0, 0.0, 0.0;
+	0.0, 0.0, 0.0, 1.0 >>;
+	matrix $matrixB[4][4] = << 0.0, 0.0, 0.0, 0.0;
+	0.0, 0.0, 0.0, 0.0;
+	0.0, 0.0, 0.0, 0.0;
+	0.0, 0.0, 0.0, 1.0 >>;
+	vector $EmptyVecA[];
+	$matrixA =GetCRV2D_Matrix($VecPairA);
+	vector $EmptyVecB[];
+	$matrixB = GetCRV2D_Matrix($VecPairB);
+	float $LengthA = distance2Pts ($VecPairA[0], $VecPairA[1]);
+	float $LengthB = distance2Pts ($VecPairB[0], $VecPairB[1]);
+	float $LengthAB ;
+	float $Sign_F;
+	if($LengthA<$LengthB){$LengthAB = $LengthB/$LengthA; $Sign_F=1.0;}else{$LengthAB = $LengthB/$LengthA;  $Sign_F=1.0;}
+	$LengthAB *= $Sign_F;
+	$matrixB[3][3] =$LengthAB;
+	vector $NVecPointZ[];
+	$NVecPointZ = MultPointMatrixArray($CurveVecPointZ, $matrixA,$matrixB);
+	return $NVecPointZ;
+}
+proc float [] FloatArrayAB(float $ptA, float $ptB,float $STEPFA){
+ print " FloatArrayAB " ; print "line 643 "; print "\n" ;
+	float $CrvTS;
+	float $CrvTE;
+	if($ptA>$ptB){
+		$CrvTS = $ptB;
+		$CrvTE = $ptA;
+	}else{
+		$CrvTS = $ptA;
+		$CrvTE = $ptB;
+	}
+	float $STEPF =$STEPFA-1.0;
+	float $segN =($CrvTE-$CrvTS)/$STEPF;
+	float  $FlineV[];
+	$FlineV[0]=$CrvTS;
+	int $St=0;
+	float $AddS=$CrvTS;
+	for( $Vi=0; $Vi < $STEPF; $Vi++ ){ 
+		$FlineV[$Vi+1] = $AddS+=$segN;
+		$St++;
+	}
+	return $FlineV;
+}
+proc vector [] VecCurveSEnds(string $CurveItem[]){
+ print " VecCurveSEnds " ; print "line 666 "; print "\n" ;
+	string $CRVendPts[];
+	vector $CRV_EndsVec[];
+	int $numCVsL,$numCVsSL;
+	int $AllEnds=0;
+	for($eachCRV in $CurveItem){
+		$numCVsL = `getAttr -size ($eachCRV+".controlPoints")`-1;
+		$numCVsSL = $numCVsL-1;
+		$CRVendPts[0] = ($eachCRV + ".cv[0]") ;	
+		$CRVendPts[1] = ($eachCRV + ".cv[" +  $numCVsL + "]") ;
+		for($i = 0; $i < 2;$i++){
+			$CRV_EndsVec[$AllEnds]= `pointPosition -w ($CRVendPts[$i])`;
+			$AllEnds++;
+		}
+	}
+	return $CRV_EndsVec;
+}
+proc int DoesCurveBBcrossPlane(string $CrvS){
+ print " DoesCurveBBcrossPlane " ; print "line 684 "; print "\n" ;
+	//most important is the plane normaland its pt vector
+	//  further on you will want to see if it crosses more then one plane or axis
+	// if radial mirroring
+	vector $p0i= <<0.0, 0.0, 0.0>>;
+	vector $Ni=  <<1.0, 0.0, 0.0>>;
+	vector $BoxA[];
+	float $Rxz_HWA[];
+	$BoxA=GetBboxFromItemF($CrvS,$Rxz_HWA);
+	vector $Pos[];	
+	$Pos = $BoxA;
+	vector $FoundPt;
+	vector $VecPar[];
+	int $IfTrue;
+	int $InN[];
+	int $SizeN =`size($Pos)`;
+	int $Fn ,$Nn =0;
+	for($Nn=0; $Nn<$SizeN-1; $Nn++){
+		$InN=IndexPattern($Nn,1);
+		$VecPar[0]=$Pos[$InN[0]];
+		$VecPar[1]=$Pos[$InN[1]];
+		$IfTrue = IntersectPlaneAndSegment( $FoundPt, $p0i, $Ni, $VecPar[0],$VecPar[1]);
+		if($IfTrue ==1){
+			$Fn++;
+			break;
+		}
+	}
+	return $IfTrue;
+}
+proc float VecCom(vector $Vai, int $XYZ){
+ print " VecCom " ; print "line 714 "; print "\n" ;
+	float $x, $y, $z;
+	$x = $Vai.x;
+	$y = $Vai.y;
+	$z = $Vai.z;
+	float $N;
+	if($XYZ==0){$N=$x;} if($XYZ==1){$N=$y;} if($XYZ==2){$N=$z;}
+	return $N;
+}
+proc vector VecEqual(vector $Vai, int $XYZ, float $Val){
+ print " VecEqual " ; print "line 724 "; print "\n" ;
+	float $x, $y, $z;
+	$x = $Vai.x;
+	$y = $Vai.y;
+	$z = $Vai.z;
+	if($XYZ==0){ $x=$Val;} if($XYZ==1){ $y=$Val;} if($XYZ==2){ $z=$Val;}
+	$Vai = <<$x, $y, $z>>;
+	return $Vai;
+}
+proc vector [] GetBboxFromItemF(string $ii, float $Rxz_HW[]){
+ print " GetBboxFromItemF " ; print "line 734 "; print "\n" ;
+	//get bounding box co-ordinates
+	float $bbInfo[] = `BBoxInfo2D $ii`;
+	vector $VecBBox[];
+	$VecBBox[0]=<<$bbInfo[0],0,$bbInfo[5]>>;
+	$VecBBox[1]=<<$bbInfo[3],0,$bbInfo[5]>>;
+	$VecBBox[2]=<<$bbInfo[3],0,$bbInfo[2]>>;
+	$VecBBox[3]=<<$bbInfo[0],0,$bbInfo[2]>>;
+	vector $Middle   = <<(($bbInfo[3]+$bbInfo[0])*0.5),0.0,(($bbInfo[5]+$bbInfo[2])* 0.5)>>;
+	float $bbSize[];		
+	//work out the size of the bounding box + offset value
+	$bbSize[0] = ($bbInfo[3] - $bbInfo[0]);
+	$bbSize[1] = ($bbInfo[5] - $bbInfo[2]);
+	//$Rxz_HW[0] = ($bbInfo[3]+$bbInfo[0])*0.5;
+	//$Rxz_HW[1] =($bbInfo[5]+$bbInfo[2])* 0.5;
+	$Rxz_HW[0] = $bbInfo[0];
+	$Rxz_HW[1] = $bbInfo[2];
+	$Rxz_HW[2] = $bbSize[0];
+	$Rxz_HW[3] = $bbSize[1];
+	return $VecBBox;		
+}
+proc int [] DoesCurveBBcrossCurve(string $CrvS,string $CrvAll[]){
+ print " DoesCurveBBcrossCurve " ; print "line 756 "; print "\n" ;
+	global vector $FoundVecG;
+	//most important is the plane normaland its pt vector
+	//  further on you will want to see if it crosses more then one plane or axis
+	// if radial mirroring
+	string $StringMCRV[];
+	vector $Pos[];
+	$Pos=VecCurveCvs($CrvS);
+	int $SizeN =`size($Pos)`;
+	vector $FoundPt;
+	vector $VecPar[];
+	int $IfTrue,$BIfTruei;
+	int $InN[];
+	int $Fn ,$Nn =0;
+	vector $p0i;
+	vector $Ni;
+	vector $Cur_CRV[];
+	int $IndexF[];
+	int $SizeC =`size($CrvAll)`;
+	vector $UpAxis = <<0.0,1.0,0.0>>;
+	vector $DirLine;
+	vector $Vperp;
+	for($j=0; $j<$SizeC; $j++){
+		$Cur_CRV  =VecCurveCvs($CrvAll[$j]);
+		////for each other curv segment
+		for($i=0; $i<$SizeN-1; $i++){
+			$Fn=0;
+			for($Nn=0; $Nn<$SizeN-1; $Nn++){
+				$IfTrue=0;
+				$VecPar[0]=$Pos[$Nn];  $VecPar[1]=$Pos[$Nn+1];
+				$IfTrue = RayIntersect($FoundPt,{$VecPar[0],$VecPar[1]},{$Cur_CRV[$i],$Cur_CRV[$i+1]});
+				
+				if($IfTrue ==1){
+					$BIfTruei=0;
+					$BIfTruei = RayIntersect($FoundPt,{$Cur_CRV[$i],$Cur_CRV[$i+1]},{$VecPar[0],$VecPar[1]});
+					if($BIfTruei ==1){
+int $INtf=0;
+$INtf=IsInside4Vec({$Cur_CRV[$i],$Cur_CRV[$i+1],$VecPar[0],$VecPar[1]},$FoundPt);
+if(($INtf ==1)||($BIfTruei ==1)){
+						$IndexF[`size($IndexF)`]=$j;
+						//Loc $FoundVecG;
+						$InN=IndexPattern($i,1);
+						$StringMCRV[`size($StringMCRV)`]=($InN[0]+","+$InN[1]);
+						$InN=IndexPattern($Nn,1);
+						$StringMCRV[`size($StringMCRV)`-1]=  ($StringMCRV[size($StringMCRV)-1]+","+$InN[0] +","+$InN[1]+"\n");
+						$Fn+=1;
+						break;
+}
+					}
+				}
+			}
+		}
+	}
+	return $IndexF;
+}
+////////////////
+global vector $FoundVecG;
+proc int RayIntersect(vector $FoundPt,vector $VecPar[],vector $Cur_CRV[]){
+ //print " RayIntersect " ; print "line 814 "; print "\n" ;
+	global vector $FoundVecG;
+	vector $UpAxis = <<0.0,1.0,0.0>>;
+	vector $p0i= ($VecPar[0]+$VecPar[1])/2.0;
+	vector $DirLine = DirectionFN($VecPar[0],$VecPar[1]);	
+	vector $Ni= crossProduct( $DirLine, $UpAxis, 0, 0 );
+	vector $Fv=<<0,0,0>>;
+	$Ni=`unit($Ni)`;
+	int $IfTrueiii=0;
+	$IfTrueiii = IntersectPlaneAndSegment($FoundPt, $p0i, $Ni, $Cur_CRV[0],$Cur_CRV[0+1]);
+	$FoundPt=$FoundVecG;
+	return $IfTrueiii;
+}
+//////////////////
+proc int [] InsideRectangle(string $is,string $AllOther[]){
+ print " InsideRectangle " ; print "line 829 "; print "\n" ;
+	vector $MiddleA,$MiddleB;
+	int $CNT[];
+	float $HW_A[],$HW_B[],$MaX,$MaZ,$MbX,$MbZ,$HH,$WW,$DaX,$DaZ;
+	int $CN=0;
+	for($isB in $AllOther){
+		$MiddleA = BBoxInfo2DHW( $is, $HW_A);
+		$MiddleB = BBoxInfo2DHW( $isB, $HW_B);
+		$HW_A[0]*=1.5;
+		$HW_A[1]*=1.5;
+		$MaX =VecCom($MiddleA, 0);
+		$MaZ =VecCom($MiddleA, 2);
+		$MbX =VecCom($MiddleB, 0);
+		$MbZ =VecCom($MiddleB, 2);
+		$HH = ($HW_A[0]+ $HW_B[0])/2.0;
+		$WW= ($HW_A[1]+ $HW_B[1])/2.0;
+		$DaX = abs ($MaX- $MbX);
+		$DaZ=  abs ($MaZ- $MbZ);
+		if(($HH>$DaX )&&($WW>$DaZ )){
+			$CNT[`size($CNT)`]=$CN;
+		}
+		$CN++;
+	}
+	return $CNT;
+}
+proc vector BBoxInfo2DHW(string $Ii,float $H_W[]){
+ print " BBoxInfo2DHW " ; print "line 855 "; print "\n" ;
+	float $bbInfo[5];	
+	$bbInfo =`xform -query -bb $Ii`;
+	vector $AW = <<$bbInfo[0], $bbInfo[1], $bbInfo[2]>>;
+	vector $BW = <<$bbInfo[3], $bbInfo[4], $bbInfo[2]>>;
+	float $DistW = distance2Pts( $AW, $BW);
+	vector $AH = <<$bbInfo[0], $bbInfo[1], $bbInfo[2]>>;
+	vector $BH = <<$bbInfo[0], $bbInfo[4], $bbInfo[5]>>;
+	float $DistH = distance2Pts( $AH, $BH);
+	$H_W[0]=$DistW;
+	$H_W[1]=$DistH;
+	vector $Mid = ($BW + $BH )/2.0;		
+	return  $Mid ;
+}
+proc vector [] RenderCurveSeg(string $SelC,float $STEPCrv,float $CrvTSi,float $CrvTEi){
+ print " RenderCurveSeg " ; print "line 870 "; print "\n" ;
+	//float $STEPCrv =22.0;
+	float $CreateSegAT[];
+	$CreateSegAT =FloatArrayAB($CrvTSi,$CrvTEi,$STEPCrv);
+	string $myCurvex =$SelC;
+	$myCPOC = `pointOnCurve  -ch on -pr 0.0 -p $myCurvex`;
+	vector $NewCurveVec[];
+	int $SizeSeg=`size($CreateSegAT)`;	
+	int $CountT=0;
+	float $t=0;		
+	for($a = 0; $a < $SizeSeg;$a++){
+		$t =  $CreateSegAT[$CountT];
+		if($t>=1){$t=1;}
+		if($t<=0){$t=0;}			
+		setAttr ($myCPOC +  ".parameter") $t ;
+		$NewCurveVec[$CountT] = `getAttr  ($myCPOC + ".position")`;
+		$CountT++;
+	}
+	delete $myCPOC;
+	return $NewCurveVec;
+}
+proc vector [] LocCurveEnds(string $CurveItem[], vector $CurveLocArrayVec[]){
+ print " LocCurveEnds " ; print "line 892 "; print "\n" ;
+	string $CRVendPts[];
+	vector $CRV_EndsVec[];
+	int $numCVsL,$numCVsSL;
+	$numCVsL = `getAttr -size ($CurveItem[0]+".controlPoints")`-1;
+	$numCVsSL = $numCVsL-1;
+	$CRVendPts[0] = ($CurveItem[0] + ".cv[0]") ;
+	$CRVendPts[1] = ($CurveItem[0] + ".cv[" +  $numCVsL + "]") ;
+	for($i = 0; $i < 2;$i++){
+		$CRV_EndsVec[$i]= `pointPosition -w ($CRVendPts[$i])`;
+		string $LocEND;
+		$LocEND = `Loc($CRV_EndsVec[$i])`;
+		setAttr ($LocEND+".scale") 0.5;
+		editDisplayLayerMembers -noRecurse LocCurveEnds $LocEND;
+	}
+	return $CRV_EndsVec;
+}
+if ( `objExists LocCurveEnds` == 0  ) {
+	createDisplayLayer -name "LocCurveEnds" - number 1 -empty;
+	setAttr LocCurveEnds.color 13;
+}
+proc string getSelectionType(){
+ print " getSelectionType " ; print "line 914 "; print "\n" ;
+	string $selectionFindType[] = `ls -sl -fl`;
+	string $idnodeType2;
+	string $Relativesselection[];
+	$Relativesselection = `listRelatives $selectionFindType[0]`;
+	if (`size($Relativesselection)` == 0){ string $idnodeType3[] = `nodeType -inherited $selectionFindType[0]`;
+		int $Value = stringArrayGmatchFind($idnodeType3, "controlPoint");
+		if($Value == 1){ $idnodeType2="controlPoint";}else{ $idnodeType2=$idnodeType3[(`size($idnodeType3)`)-1];}
+	}else{ $idnodeType2 = `nodeType $Relativesselection[0]`;}
+	return $idnodeType2;
+}
+proc int MostRightClockWiseInt ( vector $Vecs[], int $Two[]){
+ print " MostRightClockWiseInt " ; print "line 926 "; print "\n" ;
+	string $ThreePoints[] = { "0", "1", "2"};
+	vector $U1,$U2,$V1,$V2,$normalV[];
+	float $normalAAdd,$normalAAdd2,$normalA[] ,$normalB[];
+int $TwoNew[];
+	$U1 = TwoVecsOrFloats($Vecs[1], $Vecs[0]);
+	$V1 = TwoVecsOrFloats($Vecs[2], $Vecs[0]);
+	$U2 = TwoVecsOrFloats($Vecs[2], $Vecs[0]);
+	$V2 = TwoVecsOrFloats($Vecs[1], $Vecs[0]);
+	$normalV[0] = FloatToVec( crossProduct( $U1, $V1, 0, 1 ) );
+	$normalV[1] = FloatToVec( crossProduct( $U2, $V2, 0, 1 ) );
+	 $normalA = `unit ($normalV[0])`;
+	 $normalB = `unit ($normalV[1])`;
+	$normalAAdd = $normalA[0] + $normalA[1];
+	$normalAAdd2 = $normalB[0] + $normalB[1];
+	if( $normalAAdd< $normalAAdd2){
+		$TwoNew ={$Two[1], $Two[0]};		
+	}else{ 
+		$TwoNew ={$Two[0], $Two[1]};		
+	}
+ $Two = $TwoNew;
+	return $TwoNew[0];
+}
+proc int IsInside4Vec(vector $ABveci[],vector $ABV){
+ print " IsInside4Vec " ; print "line 950 "; print "\n" ;
+vector $VecOrder[];
+$VecOrder=VectorClockWise($ABveci);
+float $AX = $ABV.x;
+float $AZ = $ABV.z;
+int $TFi=0;
+$TFi=isInsideCRV ($VecOrder,$AX, $AZ );
+return $TFi;
+}
+global int $TRi[];
+proc vector [] VectorClockWise(vector $ABvec[]){
+ print " VectorClockWise " ; print "line 961 "; print "\n" ;
+global int $TRi[];
+vector $tempABV[],$tempSave[];
+int $CountT,$Run,$iR,$Cb,$TempA,$TempB,$SizeN,$SizeVc,$TwoX[],$TR[];
+$CountT=$Cb=0;
+$TwoX={(1+$Cb),(2+$Cb)};
+$SizeVc =$SizeN =`size($ABvec)`;
+$TR=CreateIntIndex($SizeVc);
+$iR=$Run=$SizeVc-2;
+for($iR=$Run; $Cb<$SizeN; ){
+$Run=$SizeVc-2;
+if($Run==0){break;}
+$CountT=0;
+for($CountT=0; $CountT<$Run; $CountT++){
+$TwoX={(1+$Cb),(2+$Cb+$CountT)};
+$tempABV ={$ABvec[$TR[$Cb]],$ABvec[$TR[$TwoX[0]]],$ABvec[$TR[($TwoX[1])]]};
+MostRightClockWiseInt ($tempABV, $TwoX);
+$TempA=$TR[$TwoX[0]];
+$TempB=$TR[$TwoX[1]];
+$TwoX={(1+$Cb),(2+$Cb+$CountT)};
+$TR[$TwoX[0]]=$TempA;
+$TR[$TwoX[1]]=$TempB;
+}
+$Cb++;
+$SizeVc-=1;
+}
+for($i=0; $i<$SizeN; $i++){
+$tempSave[$i]=$ABvec[$TR[$i]];
+}
+$TRi=$TR;
+return $tempSave;
+}
+proc int isInsideCRV ( vector $lineCurve[], float $x, float $z){
+ print " isInsideCRV " ; print "line 994 "; print "\n" ;
+	// step through each set of 2 points in the curve 
+	// find the formula of the line between and the intersection with the point
+	// if the points greater are more than the points less along that axis, then it is inside if they are even, it is outside
+	$num = `size($lineCurve)`;
+	float $x2, $z2,  $x1, $z1,  $m,$b,  $xVals[], $p2[];
+	int $i = 0, $j = 0;
+	while ($i < $num) {
+		if ( $i > 0 ) {
+			$x1 = $x2;
+			$z1 = $z2;
+		}
+		$p2 = $lineCurve[$i];
+		$x2 = $p2[0];
+		$z2 = $p2[2];
+		if ( $i > 0 ) {		
+			if ( ($z2 > $z && $z1 < $z)  ||  ($z1 > $z && $z2 < $z) ) {
+				// the line crosses the z of the test point - check where x val of intersection. Form line using (x2,z2)   and  (x1,z1)			
+				if ($x2 == $x1) {
+					$xVals[$j] = $x2;
+				} else {
+					$m = ($z1 - $z2) / ($x1 -$x2);
+					$b = $z1 - $m * $x1;
+					// now z = mx + b    OR  x = (z-b)/m
+					$xVals[$j] = ($z-$b)/$m; }
+				$j++; }
+		}
+		$i++; }
+	$xVals = sort ($xVals);
+	$k = 0;
+	while ($k < size($xVals)) {
+		$xa = $xVals[$k]; $k++;
+		$xb = $xVals[$k]; $k++;
+		if ($xa < $x && $xb > $x) {
+			return 1;
+		}
+	}
+	return 0;
+}
+///NEW 
+
+
+global int $Ind3d_past[];
+global int $SizeVABpast[];
+global vector $MiddleSeg;
+proc IndexCRV_VEC(int $CC[],int $Ind3d[],vector $NewVecEnds[],string $NewCRVname){
+ print " IndexCRV_VEC " ; print "line 1506 "; print "\n" ;
+	global string $CrvN_And_Vector[];
+	global int $MCurveIndex[];
+	global vector $AllKnowVecEnds[];
+	global string $CurveNames[];
+	global int $Ind3dV2P[];
+	global int $StringEpty[];
+	global int $VectorEpty[];
+	global int $SizeVecConnection[];
+	global int $DeleteVEC_TF[];
+	global int $CRVNameIndex[];
+	global int $Ind3d_past[];
+	global int $SizeVABpast[];
+	int $SizeVAB[];
+	int $SizeC,$Size,$SizeV;
+	$SizeV=`size($AllKnowVecEnds)`;
+	$SizeVAB[0]= $SizeV;
+	$SizeVAB[1]= $SizeV+1; 
+	if(`size($StringEpty)`>0){
+		$SizeC=int($StringEpty[0]);
+	}else{
+		$SizeC=`size($CurveNames)`; 
+	}
+	/// this is the hard one 
+	int $SizeE =`size($VectorEpty)`;
+	int $CountDeletFill=0;
+	if($SizeE>0){
+		$SizeVAB[0]=$VectorEpty[0];
+		$CountDeletFill++;
+		$SizeE=$SizeE-1;
+		if($SizeE!=0){
+			$SizeVAB[1]=$VectorEpty[1];
+			$CountDeletFill++;
+		}else{
+			$SizeVAB[1]=`size($AllKnowVecEnds)`;
+		}
+	}else{
+		$SizeV=`size($AllKnowVecEnds)`;
+		$SizeVAB[0]= $SizeV;
+		$SizeVAB[1]= $SizeV+1;
+	}
+	//if $CountDeletFill== 2 remove only twice if filled twice
+	if(($Ind3d[0]>`size($AllKnowVecEnds)`)||($Ind3d[1]>`size($AllKnowVecEnds)`)){
+	}
+	int $Ends[];
+	int $Endsi[]=IndexPairArrayFunc({$SizeC});
+	$Ends[0]= $MCurveIndex[$Endsi[0]];
+	$Ends[1]= $MCurveIndex[$Endsi[1]];
+	$Size=`size($MCurveIndex)`;
+	
+	if($CC[0]+$CC[1]!=0){
+		if($CC[0]+$CC[1]!=2){
+			if($CC[0]==1){
+				$MCurveIndex[$Endsi[0]]= $Ind3d[0];
+				$MCurveIndex[$Endsi[1]]=$SizeVAB[0];
+				$CrvN_And_Vector[$Ind3d[0]]=($CrvN_And_Vector[$Ind3d[0]]+"," +$SizeC ); //HERE//
+				$CrvN_And_Vector[$SizeVAB[0]]=($CrvN_And_Vector[$SizeVAB[0]]+","+$SizeC);
+				$AllKnowVecEnds[$SizeVAB[0]]=$NewVecEnds[1];
+				if ($CountDeletFill> 0){
+					RemoveFilledEpmtyVec(0);
+				}
+			}
+			if($CC[1]==1){
+				$MCurveIndex[$Endsi[0]]= $Ind3d[1];
+				$MCurveIndex[$Endsi[1]]=$SizeVAB[0];
+				$CrvN_And_Vector[$Ind3d[1]]=($CrvN_And_Vector[$Ind3d[1]]+","+$SizeC);
+				$CrvN_And_Vector[$SizeVAB[0]]=($CrvN_And_Vector[$SizeVAB[0]]+","+$SizeC);
+				$AllKnowVecEnds[$SizeVAB[0]]=$NewVecEnds[0];
+				if ($CountDeletFill> 0){
+					RemoveFilledEpmtyVec(0);
+				}
+			}
+			/////////
+		}
+	}
+	if($CC[0]+$CC[1]==2){
+		$MCurveIndex[$Endsi[0]]= $Ind3d[0];
+		$MCurveIndex[$Endsi[1]]=$Ind3d[1];
+		$CrvN_And_Vector[$Ind3d[0]]=($CrvN_And_Vector[$Ind3d[0]]+","+$SizeC);
+		$CrvN_And_Vector[$Ind3d[1]]=($CrvN_And_Vector[$Ind3d[1]]+","+$SizeC);
+	}
+	if($CC[0]+$CC[1]==0){
+		$MCurveIndex[$Endsi[0]]=$SizeV;
+		$MCurveIndex[$Endsi[1]]=$SizeV+1;
+		$CrvN_And_Vector[$SizeVAB[0]]=($CrvN_And_Vector[$SizeVAB[0]]+","+$SizeC);
+		$CrvN_And_Vector[$SizeVAB[1]]=($CrvN_And_Vector[$SizeVAB[1]]+","+$SizeC);
+		$AllKnowVecEnds[$SizeVAB[0]]= $NewVecEnds[0];
+		$AllKnowVecEnds[$SizeVAB[1]]= $NewVecEnds[1];
+		if ($CountDeletFill> 0){
+			RemoveFilledEpmtyVec(0);
+		}
+		if ($CountDeletFill> 1){
+			RemoveFilledEpmtyVec(0);
+		}
+	}
+	if(`size($StringEpty)`!=0){
+		if(`size($StringEpty)`==1){
+			clear $StringEpty;
+		}else{
+			intArrayRemoveAtIndex(0,$StringEpty);
+		}
+	}
+	$Ind3d_past = $Ind3d;
+	$SizeVABpast =$SizeVAB;
+	StringIntFillInsert($SizeC, $CRVNameIndex,$NewCRVname,$CurveNames);
+	$CRVNameIndex=IntFillInsert( $SizeC, $CRVNameIndex);
+}
+//////////
+global vector $MiddleSeg;
+proc string [] CutExisting(float $sortedTGF,string $crvsFC){
+ print " CutExisting " ; print "line 1616 "; print "\n" ;
+int $Sbyte =  `sizeBytes $crvsFC`;
+if($Sbyte==0){print " ERROR HERE 77777777777777777777777777777777777777777777777777777777777777777777  ";}
+	global vector $MiddleSeg;
+	vector $CVecL[];
+	float $TempU[];
+	clear  $TempU;
+	$TempU[`size($TempU)`]=0.0;
+	$TempU[`size($TempU)`]= $sortedTGF;
+	$TempU[`size($TempU)`]=1.0;
+	string $NewCutCRVs[];
+	vector $CRVSEG_A[];
+	int $SizeCuts =2;
+	float $Hsize= $SizeCuts;
+	for($iC=0; $iC<$Hsize; $iC++){
+		clear $CRVSEG_A;
+		float $CrvTSi = $TempU[$iC];
+		float $CrvTEi = $TempU[$iC+1];
+		vector $CRVSEG_A[];
+		$CRVSEG_A=RenderCurveSeg($crvsFC,44,$CrvTSi,$CrvTEi);
+		if($iC==0){$MiddleSeg=$CRVSEG_A[`size($CRVSEG_A)`-1];	
+		}
+		$NewCutCRVs[`size($NewCutCRVs)`]=VecArrayToCurveB($CRVSEG_A);
+	}
+select -r $NewCutCRVs;
+PAUSE;  PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE;
+PAUSE;  PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE;
+PAUSE;  PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE;
+PAUSE;  PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE;
+PAUSE;  PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE;
+PAUSE;  PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE;
+PAUSE;  PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE;
+PAUSE;  PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE;
+PAUSE;  PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE; PAUSE;
+print $NewCutCRVs;
+	return $NewCutCRVs;
+}
+
+proc int CRVIndexPairF(int $XNum){
+	int $Zss = int($XNum/2.0);
+	return $Zss;
+}
+
+
+		proc string [] CRV2Dscript(string $Sel_list[],string $Sel[]){
+ print " \t\tproc string [] CRV2Dscript(string $Sel_list[],string $Sel[]){ " ; print "LINE_B 1 "; print "\n" ;		
+ print " \t\t " ; print "LINE_B 2 "; print "\n" ;
+			global int $Ind3dV2P[];
+ print " \t\t\tglobal int $Ind3dV2P[]; " ; print "LINE_B 3 "; print "\n" ;
+			global float $U[];
+ print " \t\t\tglobal float $U[]; " ; print "LINE_B 4 "; print "\n" ;
+			global string $Tstring[];
+ print " \t\t\tglobal string $Tstring[]; " ; print "LINE_B 5 "; print "\n" ;
+			global float $T_G[];
+ print " \t\t\tglobal float $T_G[]; " ; print "LINE_B 6 "; print "\n" ;
+			global int $CurveCutIndex[];
+ print " \t\t\tglobal int $CurveCutIndex[]; " ; print "LINE_B 7 "; print "\n" ;
+			global float $DistSSS;
+ print " \t\t\tglobal float $DistSSS; " ; print "LINE_B 8 "; print "\n" ;
+			global string $CrvN_And_Vector[];
+ print " \t\t\tglobal string $CrvN_And_Vector[]; " ; print "LINE_B 9 "; print "\n" ;
+			global int $MCurveIndex[];
+ print " \t\t\tglobal int $MCurveIndex[]; " ; print "LINE_B 10 "; print "\n" ;
+			global vector $AllKnowVecEnds[];
+ print " \t\t\tglobal vector $AllKnowVecEnds[]; " ; print "LINE_B 11 "; print "\n" ;
+			global string $CurveNames[];
+ print " \t\t\tglobal string $CurveNames[]; " ; print "LINE_B 12 "; print "\n" ;
+			global int $CRVNameIndex[];
+ print " \t\t\tglobal int $CRVNameIndex[]; " ; print "LINE_B 13 "; print "\n" ;
+			global int $Ind3d_past[];
+ print " \t\t\tglobal int $Ind3d_past[]; " ; print "LINE_B 14 "; print "\n" ;
+			global int $SizeVABpast[];
+ print " \t\t\tglobal int $SizeVABpast[]; " ; print "LINE_B 15 "; print "\n" ;
+			global vector $MiddleSeg;
+ print " \t\t\tglobal vector $MiddleSeg; " ; print "LINE_B 16 "; print "\n" ;
+			string $tempCRVNAMES[]= $CurveNames; 
+ print " \t\t\tstring $tempCRVNAMES[]= $CurveNames;  " ; print "LINE_B 17 "; print "\n" ;
+			string $AllNew[],$TEMP_new[];
+ print " \t\t\tstring $AllNew[],$TEMP_new[]; " ; print "LINE_B 18 "; print "\n" ;
+			vector $CUTcrv[];
+ print " \t\t\tvector $CUTcrv[]; " ; print "LINE_B 19 "; print "\n" ;
+			int $MoreThenOne=0;	
+ print " \t\t\tint $MoreThenOne=0;\t " ; print "LINE_B 20 "; print "\n" ;
+			int $m_Or_e[];
+ print " \t\t\tint $m_Or_e[]; " ; print "LINE_B 21 "; print "\n" ;
+			//DEBUG  
+ print " \t\t\t//DEBUG   " ; print "LINE_B 22 "; print "\n" ;
+			int $NoCUT =1;
+ print " \t\t\tint $NoCUT =1; " ; print "LINE_B 23 "; print "\n" ;
+			vector $allNearVecEnds[];	
+ print " \t\t\tvector $allNearVecEnds[];\t " ; print "LINE_B 24 "; print "\n" ;
+			int $DA[];
+ print " \t\t\tint $DA[]; " ; print "LINE_B 25 "; print "\n" ;
+			int $DB[];
+ print " \t\t\tint $DB[]; " ; print "LINE_B 26 "; print "\n" ;
+			int $TempINA[];
+ print " \t\t\tint $TempINA[]; " ; print "LINE_B 27 "; print "\n" ;
+			int $TempINAi[];
+ print " \t\t\tint $TempINAi[]; " ; print "LINE_B 28 "; print "\n" ;
+			vector $tempVi[];
+ print " \t\t\tvector $tempVi[]; " ; print "LINE_B 29 "; print "\n" ;
+			vector $tempVii[];
+ print " \t\t\tvector $tempVii[]; " ; print "LINE_B 30 "; print "\n" ;
+			int $ListDelete[];
+ print " \t\t\tint $ListDelete[]; " ; print "LINE_B 31 "; print "\n" ;
+			int $VecTA;
+ print " \t\t\tint $VecTA; " ; print "LINE_B 32 "; print "\n" ;
+			int $VecTB;
+ print " \t\t\tint $VecTB; " ; print "LINE_B 33 "; print "\n" ;
+			int $Ocrv=0;
+ print " \t\t\tint $Ocrv=0; " ; print "LINE_B 34 "; print "\n" ;
+			float $sortedTG[];					
+ print " \t\t\tfloat $sortedTG[];\t\t\t\t\t " ; print "LINE_B 35 "; print "\n" ;
+			float $dist_A[],$dist_B[],$SA,$SB;
+ print " \t\t\tfloat $dist_A[],$dist_B[],$SA,$SB; " ; print "LINE_B 36 "; print "\n" ;
+			vector $DrawnVecEnds[];
+ print " \t\t\tvector $DrawnVecEnds[]; " ; print "LINE_B 37 "; print "\n" ;
+			string $CollectCRV[];
+ print " \t\t\tstring $CollectCRV[]; " ; print "LINE_B 38 "; print "\n" ;
+			int $SizeSeg;
+ print " \t\t\tint $SizeSeg; " ; print "LINE_B 39 "; print "\n" ;
+			int $CRV_IND[];
+ print " \t\t\tint $CRV_IND[]; " ; print "LINE_B 40 "; print "\n" ;
+			clear $AllNew;
+ print " \t\t\tclear $AllNew; " ; print "LINE_B 41 "; print "\n" ;
+			int $iC=0;
+ print " \t\t\tint $iC=0; " ; print "LINE_B 42 "; print "\n" ;
+			clear $Sel_list;
+ print " \t\t\tclear $Sel_list; " ; print "LINE_B 43 "; print "\n" ;
+			for($iC=0; $iC<`size($CRVNameIndex)`; $iC++){
+ print " \t\t\tfor($iC=0; $iC<`size($CRVNameIndex)`; $iC++){ " ; print "LINE_B 44 "; print "\n" ;
+				$TEMP_new[$iC]=$tempCRVNAMES[$CRVNameIndex[$iC]];
+ print " \t\t\t\t$TEMP_new[$iC]=$tempCRVNAMES[$CRVNameIndex[$iC]]; " ; print "LINE_B 45 "; print "\n" ;
+			}
+ print " \t\t\t} " ; print "LINE_B 46 "; print "\n" ;
+			$Sel_list =$TEMP_new;
+ print " \t\t\t$Sel_list =$TEMP_new; " ; print "LINE_B 47 "; print "\n" ;
+			vector $SnapEnds[];
+ print " \t\t\tvector $SnapEnds[]; " ; print "LINE_B 48 "; print "\n" ;
+			int $CCi[];
+ print " \t\t\tint $CCi[]; " ; print "LINE_B 49 "; print "\n" ;
+			vector $Ind3di[],$NewVecE[],$DrawnVecEnds[];
+ print " \t\t\tvector $Ind3di[],$NewVecE[],$DrawnVecEnds[]; " ; print "LINE_B 50 "; print "\n" ;
+			int $IndexR[];
+ print " \t\t\tint $IndexR[]; " ; print "LINE_B 51 "; print "\n" ;
+			int $IndexO[];
+ print " \t\t\tint $IndexO[]; " ; print "LINE_B 52 "; print "\n" ;
+			$CCi={0,0};
+ print " \t\t\t$CCi={0,0}; " ; print "LINE_B 53 "; print "\n" ;
+			//////////////////////////////////////////////
+ print " \t\t\t////////////////////////////////////////////// " ; print "LINE_B 54 "; print "\n" ;
+			//STEP #1
+ print " \t\t\t//STEP #1 " ; print "LINE_B 55 "; print "\n" ;
+			int $SizeCuts=0;
+ print " \t\t\tint $SizeCuts=0; " ; print "LINE_B 56 "; print "\n" ;
+			int $SFoundC=0;
+ print " \t\t\tint $SFoundC=0; " ; print "LINE_B 57 "; print "\n" ;
+			int $IndexA[],$sZ;
+ print " \t\t\tint $IndexA[],$sZ; " ; print "LINE_B 58 "; print "\n" ;
+			clear $IndexA;
+ print " \t\t\tclear $IndexA; " ; print "LINE_B 59 "; print "\n" ;
+			int $IndexB[];
+ print " \t\t\tint $IndexB[]; " ; print "LINE_B 60 "; print "\n" ;
+			$IndexA=InsideRectangle($Sel[0],$Sel_list);
+ print " \t\t\t$IndexA=InsideRectangle($Sel[0],$Sel_list); " ; print "LINE_B 61 "; print "\n" ;
+			//get INDEX of ONLY EXISTING CURVES
+ print " \t\t\t//get INDEX of ONLY EXISTING CURVES " ; print "LINE_B 62 "; print "\n" ;
+			for($iC=0; $iC<`size($IndexA)`; $iC++){
+ print " \t\t\tfor($iC=0; $iC<`size($IndexA)`; $iC++){ " ; print "LINE_B 63 "; print "\n" ;
+				$IndexB[$iC]=$CRVNameIndex[$IndexA[$iC]];
+ print " \t\t\t\t$IndexB[$iC]=$CRVNameIndex[$IndexA[$iC]]; " ; print "LINE_B 64 "; print "\n" ;
+			}
+ print " \t\t\t} " ; print "LINE_B 65 "; print "\n" ;
+			$IndexA=$IndexB;	
+ print " \t\t\t$IndexA=$IndexB;\t " ; print "LINE_B 66 "; print "\n" ;
+			$sZ =`size($IndexA)`;
+ print " \t\t\t$sZ =`size($IndexA)`; " ; print "LINE_B 67 "; print "\n" ;
+			clear $Ind3dV2P;
+ print " \t\t\tclear $Ind3dV2P; " ; print "LINE_B 68 "; print "\n" ;
+			$Ind3dV2P=IndexPairArrayFunc($IndexA);
+ print " \t\t\t$Ind3dV2P=IndexPairArrayFunc($IndexA); " ; print "LINE_B 69 "; print "\n" ;
+			float $Arc;
+ print " \t\t\tfloat $Arc; " ; print "LINE_B 70 "; print "\n" ;
+			vector $tempV[];
+ print " \t\t\tvector $tempV[]; " ; print "LINE_B 71 "; print "\n" ;			
+ print " \t\t\t " ; print "LINE_B 72 "; print "\n" ;
+			if($sZ>0){
+ print " \t\t\tif($sZ>0){ " ; print "LINE_B 73 "; print "\n" ;
+				$Arc =`arclen $Sel[0]`;
+ print " \t\t\t\t$Arc =`arclen $Sel[0]`; " ; print "LINE_B 74 "; print "\n" ;
+				string $crvsFound[];
+ print " \t\t\t\tstring $crvsFound[]; " ; print "LINE_B 75 "; print "\n" ;
+				clear $crvsFound; 
+ print " \t\t\t\tclear $crvsFound;  " ; print "LINE_B 76 "; print "\n" ;
+				for($Icr=0;  $Icr<$sZ; $Icr++){
+ print " \t\t\t\tfor($Icr=0;  $Icr<$sZ; $Icr++){ " ; print "LINE_B 77 "; print "\n" ;
+					$crvsFound[$Icr]=$Sel_list[$IndexA[$Icr]];
+ print " \t\t\t\t\t$crvsFound[$Icr]=$Sel_list[$IndexA[$Icr]]; " ; print "LINE_B 78 "; print "\n" ;
+				}		
+ print " \t\t\t\t}\t\t " ; print "LINE_B 79 "; print "\n" ;
+				int $tempStringI[];
+ print " \t\t\t\tint $tempStringI[]; " ; print "LINE_B 80 "; print "\n" ;
+				for($Icr=0;  $Icr<$sZ*2; $Icr++){
+ print " \t\t\t\tfor($Icr=0;  $Icr<$sZ*2; $Icr++){ " ; print "LINE_B 81 "; print "\n" ;
+					$tempV[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$Ind3dV2P[$Icr]]];
+ print " \t\t\t\t\t$tempV[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$Ind3dV2P[$Icr]]]; " ; print "LINE_B 82 "; print "\n" ;
+					$tempStringI[$Icr] =$MCurveIndex[$Ind3dV2P[$Icr]];
+ print " \t\t\t\t\t$tempStringI[$Icr] =$MCurveIndex[$Ind3dV2P[$Icr]]; " ; print "LINE_B 83 "; print "\n" ;
+				}	
+ print " \t\t\t\t}\t " ; print "LINE_B 84 "; print "\n" ;
+				$allNearVecEnds=$tempV;			
+ print " \t\t\t\t$allNearVecEnds=$tempV;\t\t\t " ; print "LINE_B 85 "; print "\n" ;
+				//STEP #2		
+ print " \t\t\t\t//STEP #2\t\t " ; print "LINE_B 86 "; print "\n" ;
+				int $FoundCut_Index[];
+ print " \t\t\t\tint $FoundCut_Index[]; " ; print "LINE_B 87 "; print "\n" ;
+				$FoundCut_Index = DoesCurveBBcrossCurve($Sel[0], $crvsFound);
+ print " \t\t\t\t$FoundCut_Index = DoesCurveBBcrossCurve($Sel[0], $crvsFound); " ; print "LINE_B 88 "; print "\n" ;
+				string $crvsOther[];
+ print " \t\t\t\tstring $crvsOther[]; " ; print "LINE_B 89 "; print "\n" ;
+				clear $crvsOther; 
+ print " \t\t\t\tclear $crvsOther;  " ; print "LINE_B 90 "; print "\n" ;
+				string $crvsFoundCut[];
+ print " \t\t\t\tstring $crvsFoundCut[]; " ; print "LINE_B 91 "; print "\n" ;
+				clear $crvsFoundCut; 
+ print " \t\t\t\tclear $crvsFoundCut;  " ; print "LINE_B 92 "; print "\n" ;
+				$sZ =`size($crvsFound)`;
+ print " \t\t\t\t$sZ =`size($crvsFound)`; " ; print "LINE_B 93 "; print "\n" ;
+				int $FC=0;
+ print " \t\t\t\tint $FC=0; " ; print "LINE_B 94 "; print "\n" ;
+				for($Icr=0;  $Icr<$sZ; $Icr++){
+ print " \t\t\t\tfor($Icr=0;  $Icr<$sZ; $Icr++){ " ; print "LINE_B 95 "; print "\n" ;
+					if($FoundCut_Index[$FC]==$Icr){
+ print " \t\t\t\t\tif($FoundCut_Index[$FC]==$Icr){ " ; print "LINE_B 96 "; print "\n" ;
+						$IndexR[$FC] =$IndexA[$FoundCut_Index[$FC]];
+ print " \t\t\t\t\t\t$IndexR[$FC] =$IndexA[$FoundCut_Index[$FC]]; " ; print "LINE_B 97 "; print "\n" ;
+						$crvsFoundCut[$FC]=$crvsFound[$FoundCut_Index[$FC]];
+ print " \t\t\t\t\t\t$crvsFoundCut[$FC]=$crvsFound[$FoundCut_Index[$FC]]; " ; print "LINE_B 98 "; print "\n" ;
+						$FC++;
+ print " \t\t\t\t\t\t$FC++; " ; print "LINE_B 99 "; print "\n" ;
+					}else{
+ print " \t\t\t\t\t}else{ " ; print "LINE_B 100 "; print "\n" ;
+						$crvsOther[`size($crvsOther)`]=$crvsFound[$Icr];
+ print " \t\t\t\t\t\t$crvsOther[`size($crvsOther)`]=$crvsFound[$Icr]; " ; print "LINE_B 101 "; print "\n" ;
+						$IndexO[`size($IndexO)`]=$IndexA[$FoundCut_Index[$FC]];
+ print " \t\t\t\t\t\t$IndexO[`size($IndexO)`]=$IndexA[$FoundCut_Index[$FC]]; " ; print "LINE_B 102 "; print "\n" ;
+					}
+ print " \t\t\t\t\t} " ; print "LINE_B 103 "; print "\n" ;
+				}
+ print " \t\t\t\t} " ; print "LINE_B 104 "; print "\n" ;				
+ print " \t\t\t\t " ; print "LINE_B 105 "; print "\n" ;
+				$SFoundC =`size($crvsFoundCut)`;
+ print " \t\t\t\t$SFoundC =`size($crvsFoundCut)`; " ; print "LINE_B 106 "; print "\n" ;				
+ print " \t\t\t\t " ; print "LINE_B 107 "; print "\n" ;
+				if($SFoundC>0){
+ print " \t\t\t\tif($SFoundC>0){ " ; print "LINE_B 108 "; print "\n" ;					
+ print " \t\t\t\t\t " ; print "LINE_B 109 "; print "\n" ;
+					clear $U;
+ print " \t\t\t\t\tclear $U; " ; print "LINE_B 110 "; print "\n" ;
+					//YES  $CurveCutIndex is the int Index of found CRVS  so to track 
+ print " \t\t\t\t\t//YES  $CurveCutIndex is the int Index of found CRVS  so to track  " ; print "LINE_B 111 "; print "\n" ;
+					$CUTcrv = CurvatureUtilitySimple($crvsFoundCut, $Sel[0]);			
+ print " \t\t\t\t\t$CUTcrv = CurvatureUtilitySimple($crvsFoundCut, $Sel[0]);\t\t\t " ; print "LINE_B 112 "; print "\n" ;
+					$CRV_IND=$CurveCutIndex;
+ print " \t\t\t\t\t$CRV_IND=$CurveCutIndex; " ; print "LINE_B 113 "; print "\n" ;
+					$SizeCuts =`size($U)`;			
+ print " \t\t\t\t\t$SizeCuts =`size($U)`;\t\t\t " ; print "LINE_B 114 "; print "\n" ;
+							print ("SizeCuts START:"+"\n");
+ print " \t\t\t\t\t\t\tprint (\"SizeCuts START:\"+\"\\n\"); " ; print "LINE_B 115 "; print "\n" ;
+							print $SizeCuts;			
+ print " \t\t\t\t\t\t\tprint $SizeCuts;\t\t\t " ; print "LINE_B 116 "; print "\n" ;
+							print ("SizeCuts END"+"\n");		
+ print " \t\t\t\t\t\t\tprint (\"SizeCuts END\"+\"\\n\");\t\t " ; print "LINE_B 117 "; print "\n" ;							
+ print " \t\t\t\t\t\t\t " ; print "LINE_B 118 "; print "\n" ;
+					// $CurveCutIndex  is the  index of the total size of  $crvsFoundCut that Intersects
+ print " \t\t\t\t\t// $CurveCutIndex  is the  index of the total size of  $crvsFoundCut that Intersects " ; print "LINE_B 119 "; print "\n" ;
+					// so the past index Number 
+ print " \t\t\t\t\t// so the past index Number  " ; print "LINE_B 120 "; print "\n" ;
+					////////////////////////NEW
+ print " \t\t\t\t\t////////////////////////NEW " ; print "LINE_B 121 "; print "\n" ;
+					int $IndexRb[];
+ print " \t\t\t\t\tint $IndexRb[]; " ; print "LINE_B 122 "; print "\n" ;
+					int $IndexOb[];
+ print " \t\t\t\t\tint $IndexOb[]; " ; print "LINE_B 123 "; print "\n" ;
+					$IndexOb=$IndexO;
+ print " \t\t\t\t\t$IndexOb=$IndexO; " ; print "LINE_B 124 "; print "\n" ;
+					$sZ =`size($crvsFoundCut)`;
+ print " \t\t\t\t\t$sZ =`size($crvsFoundCut)`; " ; print "LINE_B 125 "; print "\n" ;
+					$FC=0;
+ print " \t\t\t\t\t$FC=0; " ; print "LINE_B 126 "; print "\n" ;
+					for($Icr=0;  $Icr<$sZ; $Icr++){
+ print " \t\t\t\t\tfor($Icr=0;  $Icr<$sZ; $Icr++){ " ; print "LINE_B 127 "; print "\n" ;
+						
+ print " \t\t\t\t\t\t " ; print "LINE_B 128 "; print "\n" ;
+						if($CRV_IND[$FC]==$Icr){
+ print " \t\t\t\t\t\tif($CRV_IND[$FC]==$Icr){ " ; print "LINE_B 129 "; print "\n" ;
+							$IndexRb[$FC] =$IndexR[$CRV_IND[$FC]];			
+ print " \t\t\t\t\t\t\t$IndexRb[$FC] =$IndexR[$CRV_IND[$FC]];\t\t\t " ; print "LINE_B 130 "; print "\n" ;
+							$FC++;
+ print " \t\t\t\t\t\t\t$FC++; " ; print "LINE_B 131 "; print "\n" ;
+						}else{		
+ print " \t\t\t\t\t\t}else{\t\t " ; print "LINE_B 132 "; print "\n" ;
+							$IndexOb[`size($IndexOb)`]=$IndexR[$CRV_IND[$FC]];
+ print " \t\t\t\t\t\t\t$IndexOb[`size($IndexOb)`]=$IndexR[$CRV_IND[$FC]]; " ; print "LINE_B 133 "; print "\n" ;
+						}
+ print " \t\t\t\t\t\t} " ; print "LINE_B 134 "; print "\n" ;
+					}
+ print " \t\t\t\t\t} " ; print "LINE_B 135 "; print "\n" ;
+					//May need to change this
+ print " \t\t\t\t\t//May need to change this " ; print "LINE_B 136 "; print "\n" ;
+					$IndexR=$IndexRb;
+ print " \t\t\t\t\t$IndexR=$IndexRb; " ; print "LINE_B 137 "; print "\n" ;
+					//May need to change this		
+ print " \t\t\t\t\t//May need to change this\t\t " ; print "LINE_B 138 "; print "\n" ;
+					$IndexO= $IndexOb;
+ print " \t\t\t\t\t$IndexO= $IndexOb; " ; print "LINE_B 139 "; print "\n" ;
+					////////////////////////NEW			
+ print " \t\t\t\t\t////////////////////////NEW\t\t\t " ; print "LINE_B 140 "; print "\n" ;
+					if($SizeCuts>0){				
+ print " \t\t\t\t\tif($SizeCuts>0){\t\t\t\t " ; print "LINE_B 141 "; print "\n" ;
+						float $oldUii[]=$U;
+ print " \t\t\t\t\t\tfloat $oldUii[]=$U; " ; print "LINE_B 142 "; print "\n" ;
+						int $USortK[];
+ print " \t\t\t\t\t\tint $USortK[]; " ; print "LINE_B 143 "; print "\n" ;
+						$USortK = SortNumbersIntIndex($U);
+ print " \t\t\t\t\t\t$USortK = SortNumbersIntIndex($U); " ; print "LINE_B 144 "; print "\n" ;
+						int $tempIN[];
+ print " \t\t\t\t\t\tint $tempIN[]; " ; print "LINE_B 145 "; print "\n" ;						
+ print " \t\t\t\t\t\t " ; print "LINE_B 146 "; print "\n" ;
+						for($iC=0; $iC<`size($USortK)`; $iC++){
+ print " \t\t\t\t\t\tfor($iC=0; $iC<`size($USortK)`; $iC++){ " ; print "LINE_B 147 "; print "\n" ;
+							$sortedTG[$iC]= $T_G[$USortK[$iC]];
+ print " \t\t\t\t\t\t\t$sortedTG[$iC]= $T_G[$USortK[$iC]]; " ; print "LINE_B 148 "; print "\n" ;
+							$tempIN[$iC]=$CRV_IND[$USortK[$iC]];				}
+ print " \t\t\t\t\t\t\t$tempIN[$iC]=$CRV_IND[$USortK[$iC]];\t\t\t\t} " ; print "LINE_B 149 "; print "\n" ;
+						$USortK=$tempIN;				
+ print " \t\t\t\t\t\t$USortK=$tempIN;\t\t\t\t " ; print "LINE_B 150 "; print "\n" ;
+						$U=sort($U);
+ print " \t\t\t\t\t\t$U=sort($U); " ; print "LINE_B 151 "; print "\n" ;
+						float $TempU[];
+ print " \t\t\t\t\t\tfloat $TempU[]; " ; print "LINE_B 152 "; print "\n" ;
+						int $Tsize=`size($U)`;
+ print " \t\t\t\t\t\tint $Tsize=`size($U)`; " ; print "LINE_B 153 "; print "\n" ;
+						// if the cuts made to the drawn CRV is greater then one like 2 then you must track what ends are kept
+ print " \t\t\t\t\t\t// if the cuts made to the drawn CRV is greater then one like 2 then you must track what ends are kept " ; print "LINE_B 154 "; print "\n" ;
+						// track items ONE are crv cuts greater then 1? True or false 
+ print " \t\t\t\t\t\t// track items ONE are crv cuts greater then 1? True or false  " ; print "LINE_B 155 "; print "\n" ;
+						// TWO are the firstand last ends kept
+ print " \t\t\t\t\t\t// TWO are the firstand last ends kept " ; print "LINE_B 156 "; print "\n" ;
+						if($Tsize!= 1){
+ print " \t\t\t\t\t\tif($Tsize!= 1){ " ; print "LINE_B 157 "; print "\n" ;
+							$MoreThenOne=1;
+ print " \t\t\t\t\t\t\t$MoreThenOne=1; " ; print "LINE_B 158 "; print "\n" ;
+							float $MperS= ($Arc*($U[0]));
+ print " \t\t\t\t\t\t\tfloat $MperS= ($Arc*($U[0])); " ; print "LINE_B 159 "; print "\n" ;
+							float $MperE= ($Arc*(1-$U[$SizeCuts-1]));					
+ print " \t\t\t\t\t\t\tfloat $MperE= ($Arc*(1-$U[$SizeCuts-1]));\t\t\t\t\t " ; print "LINE_B 160 "; print "\n" ;
+							if( $MperS >= 5.5){
+ print " \t\t\t\t\t\t\tif( $MperS >= 5.5){ " ; print "LINE_B 161 "; print "\n" ;
+								$TempU[`size($TempU)`]=0.0;
+ print " \t\t\t\t\t\t\t\t$TempU[`size($TempU)`]=0.0; " ; print "LINE_B 162 "; print "\n" ;
+								$m_Or_e[`size($m_Or_e)`]=1;
+ print " \t\t\t\t\t\t\t\t$m_Or_e[`size($m_Or_e)`]=1; " ; print "LINE_B 163 "; print "\n" ;
+							}
+ print " \t\t\t\t\t\t\t} " ; print "LINE_B 164 "; print "\n" ;
+							for($iC=0; $iC<$SizeCuts; $iC++){
+ print " \t\t\t\t\t\t\tfor($iC=0; $iC<$SizeCuts; $iC++){ " ; print "LINE_B 165 "; print "\n" ;
+								$TempU[`size($TempU)`]=$U[$iC];							
+ print " \t\t\t\t\t\t\t\t$TempU[`size($TempU)`]=$U[$iC];\t\t\t\t\t\t\t " ; print "LINE_B 166 "; print "\n" ;
+							}
+ print " \t\t\t\t\t\t\t} " ; print "LINE_B 167 "; print "\n" ;
+							for($iC=0; $iC<$SizeCuts-1; $iC++){					
+ print " \t\t\t\t\t\t\tfor($iC=0; $iC<$SizeCuts-1; $iC++){\t\t\t\t\t " ; print "LINE_B 168 "; print "\n" ;
+								$m_Or_e[`size($m_Or_e)`]=0;
+ print " \t\t\t\t\t\t\t\t$m_Or_e[`size($m_Or_e)`]=0; " ; print "LINE_B 169 "; print "\n" ;
+							}
+ print " \t\t\t\t\t\t\t} " ; print "LINE_B 170 "; print "\n" ;
+							if($MperE>=5.5){
+ print " \t\t\t\t\t\t\tif($MperE>=5.5){ " ; print "LINE_B 171 "; print "\n" ;
+								$TempU[`size($TempU)`]=1.0;
+ print " \t\t\t\t\t\t\t\t$TempU[`size($TempU)`]=1.0; " ; print "LINE_B 172 "; print "\n" ;
+								$m_Or_e[`size($m_Or_e)`]=1;
+ print " \t\t\t\t\t\t\t\t$m_Or_e[`size($m_Or_e)`]=1; " ; print "LINE_B 173 "; print "\n" ;
+							}
+ print " \t\t\t\t\t\t\t} " ; print "LINE_B 174 "; print "\n" ;
+							$U=$TempU;
+ print " \t\t\t\t\t\t\t$U=$TempU; " ; print "LINE_B 175 "; print "\n" ;
+						}				
+ print " \t\t\t\t\t\t}\t\t\t\t " ; print "LINE_B 176 "; print "\n" ;
+						if($Tsize== 1){
+ print " \t\t\t\t\t\tif($Tsize== 1){ " ; print "LINE_B 177 "; print "\n" ;
+							float $TempU[];
+ print " \t\t\t\t\t\t\tfloat $TempU[]; " ; print "LINE_B 178 "; print "\n" ;
+							float $TempUi[];
+ print " \t\t\t\t\t\t\tfloat $TempUi[]; " ; print "LINE_B 179 "; print "\n" ;
+							$TempUi[0]=0.0;
+ print " \t\t\t\t\t\t\t$TempUi[0]=0.0; " ; print "LINE_B 180 "; print "\n" ;
+							$TempUi[1]=$U[0];
+ print " \t\t\t\t\t\t\t$TempUi[1]=$U[0]; " ; print "LINE_B 181 "; print "\n" ;
+							$TempUi[2]=1.0;
+ print " \t\t\t\t\t\t\t$TempUi[2]=1.0; " ; print "LINE_B 182 "; print "\n" ;
+							$U=$TempUi;
+ print " \t\t\t\t\t\t\t$U=$TempUi; " ; print "LINE_B 183 "; print "\n" ;
+							float $MperS= (100*($U[1]));
+ print " \t\t\t\t\t\t\tfloat $MperS= (100*($U[1])); " ; print "LINE_B 184 "; print "\n" ;
+							float $MperE= (100*(1-$U[1]));
+ print " \t\t\t\t\t\t\tfloat $MperE= (100*(1-$U[1])); " ; print "LINE_B 185 "; print "\n" ;
+							if( $MperS >= 15){$TempU[`size($TempU)`]=0.0; $m_Or_e[`size($m_Or_e)`]=1;}
+ print " \t\t\t\t\t\t\tif( $MperS >= 15){$TempU[`size($TempU)`]=0.0; $m_Or_e[`size($m_Or_e)`]=1;} " ; print "LINE_B 186 "; print "\n" ;
+							$TempU[`size($TempU)`]=$U[1];	
+ print " \t\t\t\t\t\t\t$TempU[`size($TempU)`]=$U[1];\t " ; print "LINE_B 187 "; print "\n" ;
+							if($MperE>=15){$TempU[`size($TempU)`]=1.0; $m_Or_e[`size($m_Or_e)`]=1;}
+ print " \t\t\t\t\t\t\tif($MperE>=15){$TempU[`size($TempU)`]=1.0; $m_Or_e[`size($m_Or_e)`]=1;} " ; print "LINE_B 188 "; print "\n" ;
+							clear $U;
+ print " \t\t\t\t\t\t\tclear $U; " ; print "LINE_B 189 "; print "\n" ;
+							$U=$TempU;
+ print " \t\t\t\t\t\t\t$U=$TempU; " ; print "LINE_B 190 "; print "\n" ;							
+ print " \t\t\t\t\t\t\t " ; print "LINE_B 191 "; print "\n" ;
+							print ("Tsize = 1 START:"+"\n");
+ print " \t\t\t\t\t\t\tprint (\"Tsize = 1 START:\"+\"\\n\"); " ; print "LINE_B 192 "; print "\n" ;
+							print ("m_Or_e START:"+"\n");
+ print " \t\t\t\t\t\t\tprint (\"m_Or_e START:\"+\"\\n\"); " ; print "LINE_B 193 "; print "\n" ;
+							print $m_Or_e;
+ print " \t\t\t\t\t\t\tprint $m_Or_e; " ; print "LINE_B 194 "; print "\n" ;
+							print ("m_Or_e END"+"\n");
+ print " \t\t\t\t\t\t\tprint (\"m_Or_e END\"+\"\\n\"); " ; print "LINE_B 195 "; print "\n" ;
+							print ("Tsize = 1 END"+"\n");
+ print " \t\t\t\t\t\t\tprint (\"Tsize = 1 END\"+\"\\n\"); " ; print "LINE_B 196 "; print "\n" ;							
+ print " \t\t\t\t\t\t\t " ; print "LINE_B 197 "; print "\n" ;
+						}				
+ print " \t\t\t\t\t\t}\t\t\t\t " ; print "LINE_B 198 "; print "\n" ;
+						string $NewCutCRVs[];
+ print " \t\t\t\t\t\tstring $NewCutCRVs[]; " ; print "LINE_B 199 "; print "\n" ;
+						vector $CRVSEG_A[];		
+ print " \t\t\t\t\t\tvector $CRVSEG_A[];\t\t " ; print "LINE_B 200 "; print "\n" ;
+						float $Hsize= `size($U)`;
+ print " \t\t\t\t\t\tfloat $Hsize= `size($U)`; " ; print "LINE_B 201 "; print "\n" ;
+						$Hsize-=1;
+ print " \t\t\t\t\t\t$Hsize-=1; " ; print "LINE_B 202 "; print "\n" ;
+						for($iC=0; $iC<$Hsize; $iC++){
+ print " \t\t\t\t\t\tfor($iC=0; $iC<$Hsize; $iC++){ " ; print "LINE_B 203 "; print "\n" ;
+							clear $CRVSEG_A;
+ print " \t\t\t\t\t\t\tclear $CRVSEG_A; " ; print "LINE_B 204 "; print "\n" ;
+							float $CrvTSi = $U[$iC];
+ print " \t\t\t\t\t\t\tfloat $CrvTSi = $U[$iC]; " ; print "LINE_B 205 "; print "\n" ;
+							float $CrvTEi = $U[$iC+1];
+ print " \t\t\t\t\t\t\tfloat $CrvTEi = $U[$iC+1]; " ; print "LINE_B 206 "; print "\n" ;
+							float $Mper= ($Arc*($U[$iC+1]-$U[$iC]));
+ print " \t\t\t\t\t\t\tfloat $Mper= ($Arc*($U[$iC+1]-$U[$iC])); " ; print "LINE_B 207 "; print "\n" ;
+							vector $CRVSEG_A[];
+ print " \t\t\t\t\t\t\tvector $CRVSEG_A[]; " ; print "LINE_B 208 "; print "\n" ;
+							$CRVSEG_A=RenderCurveSeg($Sel[0],12,$CrvTSi,$CrvTEi);
+ print " \t\t\t\t\t\t\t$CRVSEG_A=RenderCurveSeg($Sel[0],12,$CrvTSi,$CrvTEi); " ; print "LINE_B 209 "; print "\n" ;
+							$NewCutCRVs[`size($NewCutCRVs)`]=VecArrayToCurveB($CRVSEG_A);
+ print " \t\t\t\t\t\t\t$NewCutCRVs[`size($NewCutCRVs)`]=VecArrayToCurveB($CRVSEG_A); " ; print "LINE_B 210 "; print "\n" ;
+						}				
+ print " \t\t\t\t\t\t}\t\t\t\t " ; print "LINE_B 211 "; print "\n" ;
+						////////////////
+ print " \t\t\t\t\t\t//////////////// " ; print "LINE_B 212 "; print "\n" ;
+						// Place new 
+ print " \t\t\t\t\t\t// Place new  " ; print "LINE_B 213 "; print "\n" ;
+						print ("m_Or_e START:"+"\n");
+ print " \t\t\t\t\t\tprint (\"m_Or_e START:\"+\"\\n\"); " ; print "LINE_B 214 "; print "\n" ;
+						print $m_Or_e;
+ print " \t\t\t\t\t\tprint $m_Or_e; " ; print "LINE_B 215 "; print "\n" ;
+						print ("m_Or_e END"+"\n");
+ print " \t\t\t\t\t\tprint (\"m_Or_e END\"+\"\\n\"); " ; print "LINE_B 216 "; print "\n" ;						
+ print " \t\t\t\t\t\t " ; print "LINE_B 217 "; print "\n" ;						
+ print " \t\t\t\t\t\t " ; print "LINE_B 218 "; print "\n" ;						
+ print " \t\t\t\t\t\t " ; print "LINE_B 219 "; print "\n" ;
+						if(`size($IndexO)`>0){
+ print " \t\t\t\t\t\tif(`size($IndexO)`>0){ " ; print "LINE_B 220 "; print "\n" ;
+							$TempINA =IndexPairArrayFunc($IndexO);							
+ print " \t\t\t\t\t\t\t$TempINA =IndexPairArrayFunc($IndexO);\t\t\t\t\t\t\t " ; print "LINE_B 221 "; print "\n" ;
+							for($Icr=0;  $Icr<$sZ*2; $Icr++){		
+ print " \t\t\t\t\t\t\tfor($Icr=0;  $Icr<$sZ*2; $Icr++){\t\t " ; print "LINE_B 222 "; print "\n" ;
+								$tempVi[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINA[$Icr]]];
+ print " \t\t\t\t\t\t\t\t$tempVi[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINA[$Icr]]]; " ; print "LINE_B 223 "; print "\n" ;
+							}
+ print " \t\t\t\t\t\t\t} " ; print "LINE_B 224 "; print "\n" ;
+						}
+ print " \t\t\t\t\t\t} " ; print "LINE_B 225 "; print "\n" ;
+						/////////////////						
+ print " \t\t\t\t\t\t/////////////////\t\t\t\t\t\t " ; print "LINE_B 226 "; print "\n" ;
+						// this is the curves that DO intersect!!						
+ print " \t\t\t\t\t\t// this is the curves that DO intersect!!\t\t\t\t\t\t " ; print "LINE_B 227 "; print "\n" ;
+						$TempINAi =IndexPairArrayFunc($IndexR);						
+ print " \t\t\t\t\t\t$TempINAi =IndexPairArrayFunc($IndexR);\t\t\t\t\t\t " ; print "LINE_B 228 "; print "\n" ;
+						for($Icr=0;  $Icr<$sZ*2; $Icr++){		
+ print " \t\t\t\t\t\tfor($Icr=0;  $Icr<$sZ*2; $Icr++){\t\t " ; print "LINE_B 229 "; print "\n" ;
+							$tempVii[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINAi[$Icr]]];
+ print " \t\t\t\t\t\t\t$tempVii[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINAi[$Icr]]]; " ; print "LINE_B 230 "; print "\n" ;
+						}
+ print " \t\t\t\t\t\t} " ; print "LINE_B 231 "; print "\n" ;						
+ print " \t\t\t\t\t\t " ; print "LINE_B 232 "; print "\n" ;
+						$SizeSeg =`size($NewCutCRVs)`;
+ print " \t\t\t\t\t\t$SizeSeg =`size($NewCutCRVs)`; " ; print "LINE_B 233 "; print "\n" ;						
+ print " \t\t\t\t\t\t " ; print "LINE_B 234 "; print "\n" ;
+						if($NoCUT==1){	
+ print " \t\t\t\t\t\tif($NoCUT==1){\t " ; print "LINE_B 235 "; print "\n" ;							
+ print " \t\t\t\t\t\t\t " ; print "LINE_B 236 "; print "\n" ;
+							for($iC=0; $iC<$SizeSeg; $iC++)
+ print " \t\t\t\t\t\t\tfor($iC=0; $iC<$SizeSeg; $iC++) " ; print "LINE_B 237 "; print "\n" ;
+							{
+ print " \t\t\t\t\t\t\t{ " ; print "LINE_B 238 "; print "\n" ;																
+ print " \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t " ; print "LINE_B 239 "; print "\n" ;
+								$VecTA=0;
+ print " \t\t\t\t\t\t\t\t$VecTA=0; " ; print "LINE_B 240 "; print "\n" ;
+								$VecTB=0;				
+ print " \t\t\t\t\t\t\t\t$VecTB=0;\t\t\t\t " ; print "LINE_B 241 "; print "\n" ;
+								//END curve and onle the first end can snap to "" OTHER curves					
+ print " \t\t\t\t\t\t\t\t//END curve and onle the first end can snap to \"\" OTHER curves\t\t\t\t\t " ; print "LINE_B 242 "; print "\n" ;
+								$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});
+ print " \t\t\t\t\t\t\t\t$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]}); " ; print "LINE_B 243 "; print "\n" ;
+								/////////////////////////////////////////////////////////////////////////
+ print " \t\t\t\t\t\t\t\t///////////////////////////////////////////////////////////////////////// " ; print "LINE_B 244 "; print "\n" ;
+								//END CRV
+ print " \t\t\t\t\t\t\t\t//END CRV " ; print "LINE_B 245 "; print "\n" ;								
+ print " \t\t\t\t\t\t\t\t " ; print "LINE_B 246 "; print "\n" ;								
+ print " \t\t\t\t\t\t\t\t " ; print "LINE_B 247 "; print "\n" ;								
+ print " \t\t\t\t\t\t\t\t " ; print "LINE_B 248 "; print "\n" ;								
+ print " \t\t\t\t\t\t\t\t " ; print "LINE_B 249 "; print "\n" ;								
+ print " \t\t\t\t\t\t\t\t " ; print "LINE_B 250 "; print "\n" ;								
+ print " \t\t\t\t\t\t\t\t " ; print "LINE_B 251 "; print "\n" ;
+								/////////////////						
+ print " \t\t\t\t\t\t\t\t/////////////////\t\t\t\t\t\t " ; print "LINE_B 252 "; print "\n" ;
+								$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});						
+ print " \t\t\t\t\t\t\t\t$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});\t\t\t\t\t\t " ; print "LINE_B 253 "; print "\n" ;
+								//  so here these vectors Must be the filter index of ONLY OTHER CURVES
+ print " \t\t\t\t\t\t\t\t//  so here these vectors Must be the filter index of ONLY OTHER CURVES " ; print "LINE_B 254 "; print "\n" ;
+								// AND NOTHING ESLE for  if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1))&&($CCi[0]==1)){							
+ print " \t\t\t\t\t\t\t\t// AND NOTHING ESLE for  if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1))&&($CCi[0]==1)){\t\t\t\t\t\t\t " ; print "LINE_B 255 "; print "\n" ;
+								if((($m_Or_e[$iC]==1)&&($iC==0))&&($CCi[1]==1)){
+ print " \t\t\t\t\t\t\t\tif((($m_Or_e[$iC]==1)&&($iC==0))&&($CCi[1]==1)){ " ; print "LINE_B 256 "; print "\n" ;
+									if(`size($IndexO)`>0){
+ print " \t\t\t\t\t\t\t\t\tif(`size($IndexO)`>0){ " ; print "LINE_B 257 "; print "\n" ;
+										$dist_A= ArrayDistancesVecTofloat($tempVi, $DrawnVecEnds [0]);
+ print " \t\t\t\t\t\t\t\t\t\t$dist_A= ArrayDistancesVecTofloat($tempVi, $DrawnVecEnds [0]); " ; print "LINE_B 258 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 259 "; print "\n" ;
+									$dist_B = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [1]);				
+ print " \t\t\t\t\t\t\t\t\t$dist_B = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [1]);\t\t\t\t " ; print "LINE_B 260 "; print "\n" ;
+									if(`size($IndexO)`>0){	$DA=SortNumbersIntIndex($dist_A); $VecTA=$TempINA[$DA[0]];}
+ print " \t\t\t\t\t\t\t\t\tif(`size($IndexO)`>0){\t$DA=SortNumbersIntIndex($dist_A); $VecTA=$TempINA[$DA[0]];} " ; print "LINE_B 261 "; print "\n" ;
+									$DB=SortNumbersIntIndex($dist_B);						
+ print " \t\t\t\t\t\t\t\t\t$DB=SortNumbersIntIndex($dist_B);\t\t\t\t\t\t " ; print "LINE_B 262 "; print "\n" ;
+									if(`size($IndexO)`>0){
+ print " \t\t\t\t\t\t\t\t\tif(`size($IndexO)`>0){ " ; print "LINE_B 263 "; print "\n" ;
+										$SA =$dist_A[$DA[0]];
+ print " \t\t\t\t\t\t\t\t\t\t$SA =$dist_A[$DA[0]]; " ; print "LINE_B 264 "; print "\n" ;
+									}else{$SA=200;}						
+ print " \t\t\t\t\t\t\t\t\t}else{$SA=200;}\t\t\t\t\t\t " ; print "LINE_B 265 "; print "\n" ;
+									$SB =$dist_B[$DB[0]];						
+ print " \t\t\t\t\t\t\t\t\t$SB =$dist_B[$DB[0]];\t\t\t\t\t\t " ; print "LINE_B 266 "; print "\n" ;
+									if($DA[0]==$DB[0]){
+ print " \t\t\t\t\t\t\t\t\tif($DA[0]==$DB[0]){ " ; print "LINE_B 267 "; print "\n" ;
+										if($SA<$SB){
+ print " \t\t\t\t\t\t\t\t\t\tif($SA<$SB){ " ; print "LINE_B 268 "; print "\n" ;
+											$SB=200;
+ print " \t\t\t\t\t\t\t\t\t\t\t$SB=200; " ; print "LINE_B 269 "; print "\n" ;
+										}else{$SA=200;}
+ print " \t\t\t\t\t\t\t\t\t\t}else{$SA=200;} " ; print "LINE_B 270 "; print "\n" ;
+										
+ print " \t\t\t\t\t\t\t\t\t\t " ; print "LINE_B 271 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 272 "; print "\n" ;
+									//$VecTA=$TempINA[$DA[0]];
+ print " \t\t\t\t\t\t\t\t\t//$VecTA=$TempINA[$DA[0]]; " ; print "LINE_B 273 "; print "\n" ;
+									$VecTB=$TempINAi[$DB[0]];									
+ print " \t\t\t\t\t\t\t\t\t$VecTB=$TempINAi[$DB[0]];\t\t\t\t\t\t\t\t\t " ; print "LINE_B 274 "; print "\n" ;
+									if($SA<$DistSSS){
+ print " \t\t\t\t\t\t\t\t\tif($SA<$DistSSS){ " ; print "LINE_B 275 "; print "\n" ;
+										$CCi[0]=1;
+ print " \t\t\t\t\t\t\t\t\t\t$CCi[0]=1; " ; print "LINE_B 276 "; print "\n" ;
+										$SnapEnds[0]=$tempVi[$DA[0]];
+ print " \t\t\t\t\t\t\t\t\t\t$SnapEnds[0]=$tempVi[$DA[0]]; " ; print "LINE_B 277 "; print "\n" ;
+									}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;								
+ print " \t\t\t\t\t\t\t\t\t}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;\t\t\t\t\t\t\t\t " ; print "LINE_B 278 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 279 "; print "\n" ;
+									if($SB<$DistSSS){
+ print " \t\t\t\t\t\t\t\t\tif($SB<$DistSSS){ " ; print "LINE_B 280 "; print "\n" ;
+										$CCi[1]=1;
+ print " \t\t\t\t\t\t\t\t\t\t$CCi[1]=1; " ; print "LINE_B 281 "; print "\n" ;
+										$SnapEnds[1]=$tempVii[$DB[0]];
+ print " \t\t\t\t\t\t\t\t\t\t$SnapEnds[1]=$tempVii[$DB[0]]; " ; print "LINE_B 282 "; print "\n" ;
+									}else{$SnapEnds[1]=$DrawnVecEnds[1]; 	$CCi[1]=0;							
+ print " \t\t\t\t\t\t\t\t\t}else{$SnapEnds[1]=$DrawnVecEnds[1]; \t$CCi[1]=0;\t\t\t\t\t\t\t " ; print "LINE_B 283 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 284 "; print "\n" ;
+								}
+ print " \t\t\t\t\t\t\t\t} " ; print "LINE_B 285 "; print "\n" ;
+								////////////very messy
+ print " \t\t\t\t\t\t\t\t////////////very messy " ; print "LINE_B 286 "; print "\n" ;
+								if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1)))&&($CCi[0]==1)){										
+ print " \t\t\t\t\t\t\t\tif((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1)))&&($CCi[0]==1)){\t\t\t\t\t\t\t\t\t\t " ; print "LINE_B 287 "; print "\n" ;
+									$dist_A= ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [0]);
+ print " \t\t\t\t\t\t\t\t\t$dist_A= ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [0]); " ; print "LINE_B 288 "; print "\n" ;
+									if(`size($IndexO)`>0){	
+ print " \t\t\t\t\t\t\t\t\tif(`size($IndexO)`>0){\t " ; print "LINE_B 289 "; print "\n" ;
+										$dist_B = ArrayDistancesVecTofloat($tempVi, $DrawnVecEnds [1]);
+ print " \t\t\t\t\t\t\t\t\t\t$dist_B = ArrayDistancesVecTofloat($tempVi, $DrawnVecEnds [1]); " ; print "LINE_B 290 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 291 "; print "\n" ;
+									$DA=SortNumbersIntIndex($dist_A);
+ print " \t\t\t\t\t\t\t\t\t$DA=SortNumbersIntIndex($dist_A); " ; print "LINE_B 292 "; print "\n" ;
+									$VecTA=$TempINAi[$DA[0]];
+ print " \t\t\t\t\t\t\t\t\t$VecTA=$TempINAi[$DA[0]]; " ; print "LINE_B 293 "; print "\n" ;
+									
+ print " \t\t\t\t\t\t\t\t\t " ; print "LINE_B 294 "; print "\n" ;
+									if(`size($IndexO)`>0){
+ print " \t\t\t\t\t\t\t\t\tif(`size($IndexO)`>0){ " ; print "LINE_B 295 "; print "\n" ;
+										$DB=SortNumbersIntIndex($dist_B);
+ print " \t\t\t\t\t\t\t\t\t\t$DB=SortNumbersIntIndex($dist_B); " ; print "LINE_B 296 "; print "\n" ;
+										$VecTB=$TempINA[$DB[0]];
+ print " \t\t\t\t\t\t\t\t\t\t$VecTB=$TempINA[$DB[0]]; " ; print "LINE_B 297 "; print "\n" ;
+									}					
+ print " \t\t\t\t\t\t\t\t\t}\t\t\t\t\t " ; print "LINE_B 298 "; print "\n" ;
+									$SA =$dist_A[$DA[0]];							
+ print " \t\t\t\t\t\t\t\t\t$SA =$dist_A[$DA[0]];\t\t\t\t\t\t\t " ; print "LINE_B 299 "; print "\n" ;
+									if(`size($IndexO)`>0){
+ print " \t\t\t\t\t\t\t\t\tif(`size($IndexO)`>0){ " ; print "LINE_B 300 "; print "\n" ;
+										$SB =$dist_B[$DB[0]];
+ print " \t\t\t\t\t\t\t\t\t\t$SB =$dist_B[$DB[0]]; " ; print "LINE_B 301 "; print "\n" ;
+									}else{$SB=200;}							
+ print " \t\t\t\t\t\t\t\t\t}else{$SB=200;}\t\t\t\t\t\t\t " ; print "LINE_B 302 "; print "\n" ;
+									if($SA<$DistSSS){
+ print " \t\t\t\t\t\t\t\t\tif($SA<$DistSSS){ " ; print "LINE_B 303 "; print "\n" ;
+										$CCi[0]=1;
+ print " \t\t\t\t\t\t\t\t\t\t$CCi[0]=1; " ; print "LINE_B 304 "; print "\n" ;
+										$SnapEnds[0]=$tempVi[$DA[0]];
+ print " \t\t\t\t\t\t\t\t\t\t$SnapEnds[0]=$tempVi[$DA[0]]; " ; print "LINE_B 305 "; print "\n" ;
+									}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;							
+ print " \t\t\t\t\t\t\t\t\t}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;\t\t\t\t\t\t\t " ; print "LINE_B 306 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 307 "; print "\n" ;
+									if($SB<$DistSSS){
+ print " \t\t\t\t\t\t\t\t\tif($SB<$DistSSS){ " ; print "LINE_B 308 "; print "\n" ;
+										$CCi[1]=1;
+ print " \t\t\t\t\t\t\t\t\t\t$CCi[1]=1; " ; print "LINE_B 309 "; print "\n" ;
+										$SnapEnds[1]=$tempVii[$DB[0]];
+ print " \t\t\t\t\t\t\t\t\t\t$SnapEnds[1]=$tempVii[$DB[0]]; " ; print "LINE_B 310 "; print "\n" ;
+									}else{$SnapEnds[1]=$DrawnVecEnds[1]; $CCi[1]=0;						
+ print " \t\t\t\t\t\t\t\t\t}else{$SnapEnds[1]=$DrawnVecEnds[1]; $CCi[1]=0;\t\t\t\t\t\t " ; print "LINE_B 311 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 312 "; print "\n" ;
+								}								
+ print " \t\t\t\t\t\t\t\t}\t\t\t\t\t\t\t\t " ; print "LINE_B 313 "; print "\n" ;
+								/////////////////////////////////////////////////////////////////////////
+ print " \t\t\t\t\t\t\t\t///////////////////////////////////////////////////////////////////////// " ; print "LINE_B 314 "; print "\n" ;
+								//Middle curve
+ print " \t\t\t\t\t\t\t\t//Middle curve " ; print "LINE_B 315 "; print "\n" ;
+								if($m_Or_e[$iC]==0){						
+ print " \t\t\t\t\t\t\t\tif($m_Or_e[$iC]==0){\t\t\t\t\t\t " ; print "LINE_B 316 "; print "\n" ;
+									$TempINAi=IndexPairArrayFunc($IndexR);					
+ print " \t\t\t\t\t\t\t\t\t$TempINAi=IndexPairArrayFunc($IndexR);\t\t\t\t\t " ; print "LINE_B 317 "; print "\n" ;
+									for($Icr=0;  $Icr<$sZ*2; $Icr++){		
+ print " \t\t\t\t\t\t\t\t\tfor($Icr=0;  $Icr<$sZ*2; $Icr++){\t\t " ; print "LINE_B 318 "; print "\n" ;
+										$tempVii[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINAi[$Icr]]];
+ print " \t\t\t\t\t\t\t\t\t\t$tempVii[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINAi[$Icr]]]; " ; print "LINE_B 319 "; print "\n" ;
+									}						
+ print " \t\t\t\t\t\t\t\t\t}\t\t\t\t\t\t " ; print "LINE_B 320 "; print "\n" ;
+									$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});						
+ print " \t\t\t\t\t\t\t\t\t$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});\t\t\t\t\t\t " ; print "LINE_B 321 "; print "\n" ;
+									float $dist_A[] = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [0]);
+ print " \t\t\t\t\t\t\t\t\tfloat $dist_A[] = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [0]); " ; print "LINE_B 322 "; print "\n" ;
+									float $dist_B[] = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [1]);					
+ print " \t\t\t\t\t\t\t\t\tfloat $dist_B[] = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [1]);\t\t\t\t\t " ; print "LINE_B 323 "; print "\n" ;
+									$DA=SortNumbersIntIndex($dist_A);
+ print " \t\t\t\t\t\t\t\t\t$DA=SortNumbersIntIndex($dist_A); " ; print "LINE_B 324 "; print "\n" ;
+									$DB=SortNumbersIntIndex($dist_B);
+ print " \t\t\t\t\t\t\t\t\t$DB=SortNumbersIntIndex($dist_B); " ; print "LINE_B 325 "; print "\n" ;
+									$SA =$dist_A[$DA[0]];
+ print " \t\t\t\t\t\t\t\t\t$SA =$dist_A[$DA[0]]; " ; print "LINE_B 326 "; print "\n" ;
+									$SB =$dist_B[$DB[0]];			
+ print " \t\t\t\t\t\t\t\t\t$SB =$dist_B[$DB[0]];\t\t\t " ; print "LINE_B 327 "; print "\n" ;
+									$VecTA=$TempINAi[$DA[0]];
+ print " \t\t\t\t\t\t\t\t\t$VecTA=$TempINAi[$DA[0]]; " ; print "LINE_B 328 "; print "\n" ;
+									$VecTB=$TempINAi[$DB[0]];
+ print " \t\t\t\t\t\t\t\t\t$VecTB=$TempINAi[$DB[0]]; " ; print "LINE_B 329 "; print "\n" ;
+									
+ print " \t\t\t\t\t\t\t\t\t " ; print "LINE_B 330 "; print "\n" ;
+									if($DA[0]==$DB[0]){
+ print " \t\t\t\t\t\t\t\t\tif($DA[0]==$DB[0]){ " ; print "LINE_B 331 "; print "\n" ;
+										if($SA<$SB){
+ print " \t\t\t\t\t\t\t\t\t\tif($SA<$SB){ " ; print "LINE_B 332 "; print "\n" ;
+											$SB=200;
+ print " \t\t\t\t\t\t\t\t\t\t\t$SB=200; " ; print "LINE_B 333 "; print "\n" ;
+										}else{$SA=200;}
+ print " \t\t\t\t\t\t\t\t\t\t}else{$SA=200;} " ; print "LINE_B 334 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 335 "; print "\n" ;
+									if($SA<$DistSSS){
+ print " \t\t\t\t\t\t\t\t\tif($SA<$DistSSS){ " ; print "LINE_B 336 "; print "\n" ;
+										$CCi[0]=1;
+ print " \t\t\t\t\t\t\t\t\t\t$CCi[0]=1; " ; print "LINE_B 337 "; print "\n" ;
+										$SnapEnds[0]=$tempVii[$DA[0]];
+ print " \t\t\t\t\t\t\t\t\t\t$SnapEnds[0]=$tempVii[$DA[0]]; " ; print "LINE_B 338 "; print "\n" ;
+									}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;							
+ print " \t\t\t\t\t\t\t\t\t}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;\t\t\t\t\t\t\t " ; print "LINE_B 339 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 340 "; print "\n" ;
+									if($SB<$DistSSS){
+ print " \t\t\t\t\t\t\t\t\tif($SB<$DistSSS){ " ; print "LINE_B 341 "; print "\n" ;
+										$CCi[1]=1;
+ print " \t\t\t\t\t\t\t\t\t\t$CCi[1]=1; " ; print "LINE_B 342 "; print "\n" ;
+										$SnapEnds[1]=$tempVii[$DB[0]];
+ print " \t\t\t\t\t\t\t\t\t\t$SnapEnds[1]=$tempVii[$DB[0]]; " ; print "LINE_B 343 "; print "\n" ;
+									}else{$SnapEnds[1]=$DrawnVecEnds[1]; $CCi[1]=0;							
+ print " \t\t\t\t\t\t\t\t\t}else{$SnapEnds[1]=$DrawnVecEnds[1]; $CCi[1]=0;\t\t\t\t\t\t\t " ; print "LINE_B 344 "; print "\n" ;
+									}					
+ print " \t\t\t\t\t\t\t\t\t}\t\t\t\t\t " ; print "LINE_B 345 "; print "\n" ;
+								}					
+ print " \t\t\t\t\t\t\t\t}\t\t\t\t\t " ; print "LINE_B 346 "; print "\n" ;
+								//if segment is an end curve and one vector snaps is that vector the start or end of crv?					
+ print " \t\t\t\t\t\t\t\t//if segment is an end curve and one vector snaps is that vector the start or end of crv?\t\t\t\t\t " ; print "LINE_B 347 "; print "\n" ;
+									// this is saying if the fist segment is an end crv OR if the last Curve is an end Crv and One vector snaps
+ print " \t\t\t\t\t\t\t\t\t// this is saying if the fist segment is an end crv OR if the last Curve is an end Crv and One vector snaps " ; print "LINE_B 348 "; print "\n" ;
+									if((($m_Or_e[$iC]==1)&&($iC==0))||(($m_Or_e[$iC]==1)&&( $iC==($SizeSeg-1)))){							
+ print " \t\t\t\t\t\t\t\t\tif((($m_Or_e[$iC]==1)&&($iC==0))||(($m_Or_e[$iC]==1)&&( $iC==($SizeSeg-1)))){\t\t\t\t\t\t\t " ; print "LINE_B 349 "; print "\n" ;
+										// this is saying if the fist segment is an end crv OR if the last Curve is an end Crv and One vector snaps
+ print " \t\t\t\t\t\t\t\t\t\t// this is saying if the fist segment is an end crv OR if the last Curve is an end Crv and One vector snaps " ; print "LINE_B 350 "; print "\n" ;
+										/////// FIRST END SEG NOT MIDDLE
+ print " \t\t\t\t\t\t\t\t\t\t/////// FIRST END SEG NOT MIDDLE " ; print "LINE_B 351 "; print "\n" ;
+										if((($m_Or_e[$iC]==1)&&($iC==0))&&($CCi[1]==1)){
+ print " \t\t\t\t\t\t\t\t\t\tif((($m_Or_e[$iC]==1)&&($iC==0))&&($CCi[1]==1)){ " ; print "LINE_B 352 "; print "\n" ;
+											//XA										
+ print " \t\t\t\t\t\t\t\t\t\t\t//XA\t\t\t\t\t\t\t\t\t\t " ; print "LINE_B 353 "; print "\n" ;
+											if(!($Ocrv>$SizeSeg)){
+ print " \t\t\t\t\t\t\t\t\t\t\tif(!($Ocrv>$SizeSeg)){ " ; print "LINE_B 354 "; print "\n" ;
+											//XAAA
+ print " \t\t\t\t\t\t\t\t\t\t\t//XAAA " ; print "LINE_B 355 "; print "\n" ;
+												string $NewCRVc[];
+ print " \t\t\t\t\t\t\t\t\t\t\t\tstring $NewCRVc[]; " ; print "LINE_B 356 "; print "\n" ;
+												int $CRVnum = CRVIndexPairF($VecTB);
+ print " \t\t\t\t\t\t\t\t\t\t\t\tint $CRVnum = CRVIndexPairF($VecTB); " ; print "LINE_B 357 "; print "\n" ;
+												$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum];
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum]; " ; print "LINE_B 358 "; print "\n" ;
+												//$IndexR[$CRVnum]
+ print " \t\t\t\t\t\t\t\t\t\t\t\t//$IndexR[$CRVnum] " ; print "LINE_B 359 "; print "\n" ;
+												//This creates the MiddleSeg Vector global //
+ print " \t\t\t\t\t\t\t\t\t\t\t\t//This creates the MiddleSeg Vector global // " ; print "LINE_B 360 "; print "\n" ;
+												$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );	
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );\t " ; print "LINE_B 361 "; print "\n" ;
+												// CHANGE when if you sort it							
+ print " \t\t\t\t\t\t\t\t\t\t\t\t// CHANGE when if you sort it\t\t\t\t\t\t\t " ; print "LINE_B 362 "; print "\n" ;
+												int $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]];
+ print " \t\t\t\t\t\t\t\t\t\t\t\tint $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]]; " ; print "LINE_B 363 "; print "\n" ;
+												int $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn});
+ print " \t\t\t\t\t\t\t\t\t\t\t\tint $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn}); " ; print "LINE_B 364 "; print "\n" ;
+												int $ExistCRVVEC = $ENDsAB[0];							
+ print " \t\t\t\t\t\t\t\t\t\t\t\tint $ExistCRVVEC = $ENDsAB[0];\t\t\t\t\t\t\t " ; print "LINE_B 365 "; print "\n" ;
+												IndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]);
+ print " \t\t\t\t\t\t\t\t\t\t\t\tIndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]); " ; print "LINE_B 366 "; print "\n" ;
+												$ExistCRVVEC = $ENDsAB[1];
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$ExistCRVVEC = $ENDsAB[1]; " ; print "LINE_B 367 "; print "\n" ;
+												IndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);										
+ print " \t\t\t\t\t\t\t\t\t\t\t\tIndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);\t\t\t\t\t\t\t\t\t\t " ; print "LINE_B 368 "; print "\n" ;
+												for($eachC in $NewCRVc){
+ print " \t\t\t\t\t\t\t\t\t\t\t\tfor($eachC in $NewCRVc){ " ; print "LINE_B 369 "; print "\n" ;
+													$AllNew[`size($AllNew)`]= $eachC;
+ print " \t\t\t\t\t\t\t\t\t\t\t\t\t$AllNew[`size($AllNew)`]= $eachC; " ; print "LINE_B 370 "; print "\n" ;
+												}
+ print " \t\t\t\t\t\t\t\t\t\t\t\t} " ; print "LINE_B 371 "; print "\n" ;
+												$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]];
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]]; " ; print "LINE_B 372 "; print "\n" ;
+												
+ print " \t\t\t\t\t\t\t\t\t\t\t\t " ; print "LINE_B 373 "; print "\n" ;
+												$Ocrv+=1;
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$Ocrv+=1; " ; print "LINE_B 374 "; print "\n" ;
+											}
+ print " \t\t\t\t\t\t\t\t\t\t\t} " ; print "LINE_B 375 "; print "\n" ;
+										}
+ print " \t\t\t\t\t\t\t\t\t\t} " ; print "LINE_B 376 "; print "\n" ;
+										/////// FIRST END SEG NOT MIDDLE  END			
+ print " \t\t\t\t\t\t\t\t\t\t/////// FIRST END SEG NOT MIDDLE  END\t\t\t " ; print "LINE_B 377 "; print "\n" ;
+										//////////////////////////////////////////////////////// LAST END SEG NOT MIDDLE
+ print " \t\t\t\t\t\t\t\t\t\t//////////////////////////////////////////////////////// LAST END SEG NOT MIDDLE " ; print "LINE_B 378 "; print "\n" ;
+										if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1)))&&($CCi[0]==1)){
+ print " \t\t\t\t\t\t\t\t\t\tif((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1)))&&($CCi[0]==1)){ " ; print "LINE_B 379 "; print "\n" ;
+											//XB 										
+ print " \t\t\t\t\t\t\t\t\t\t\t//XB \t\t\t\t\t\t\t\t\t\t " ; print "LINE_B 380 "; print "\n" ;
+											if(!($Ocrv>$SizeSeg)){
+ print " \t\t\t\t\t\t\t\t\t\t\tif(!($Ocrv>$SizeSeg)){ " ; print "LINE_B 381 "; print "\n" ;
+											//XBBB
+ print " \t\t\t\t\t\t\t\t\t\t\t//XBBB " ; print "LINE_B 382 "; print "\n" ;
+												string $NewCRVc[];
+ print " \t\t\t\t\t\t\t\t\t\t\t\tstring $NewCRVc[]; " ; print "LINE_B 383 "; print "\n" ;
+												string $NewCRVc[];
+ print " \t\t\t\t\t\t\t\t\t\t\t\tstring $NewCRVc[]; " ; print "LINE_B 384 "; print "\n" ;
+												int $CRVnum = CRVIndexPairF($VecTA);
+ print " \t\t\t\t\t\t\t\t\t\t\t\tint $CRVnum = CRVIndexPairF($VecTA); " ; print "LINE_B 385 "; print "\n" ;
+												$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum];
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum]; " ; print "LINE_B 386 "; print "\n" ;
+												//This creates the MiddleSeg Vector global //
+ print " \t\t\t\t\t\t\t\t\t\t\t\t//This creates the MiddleSeg Vector global // " ; print "LINE_B 387 "; print "\n" ;
+												$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );	
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );\t " ; print "LINE_B 388 "; print "\n" ;
+												// CHANGE when if you sort it							
+ print " \t\t\t\t\t\t\t\t\t\t\t\t// CHANGE when if you sort it\t\t\t\t\t\t\t " ; print "LINE_B 389 "; print "\n" ;
+												int $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]];
+ print " \t\t\t\t\t\t\t\t\t\t\t\tint $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]]; " ; print "LINE_B 390 "; print "\n" ;
+												int $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn});
+ print " \t\t\t\t\t\t\t\t\t\t\t\tint $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn}); " ; print "LINE_B 391 "; print "\n" ;
+												int $ExistCRVVEC = $ENDsAB[0];							
+ print " \t\t\t\t\t\t\t\t\t\t\t\tint $ExistCRVVEC = $ENDsAB[0];\t\t\t\t\t\t\t " ; print "LINE_B 392 "; print "\n" ;
+												IndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]);
+ print " \t\t\t\t\t\t\t\t\t\t\t\tIndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]); " ; print "LINE_B 393 "; print "\n" ;
+												$ExistCRVVEC = $ENDsAB[1];
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$ExistCRVVEC = $ENDsAB[1]; " ; print "LINE_B 394 "; print "\n" ;
+												IndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);										
+ print " \t\t\t\t\t\t\t\t\t\t\t\tIndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);\t\t\t\t\t\t\t\t\t\t " ; print "LINE_B 395 "; print "\n" ;
+												for($eachC in $NewCRVc){
+ print " \t\t\t\t\t\t\t\t\t\t\t\tfor($eachC in $NewCRVc){ " ; print "LINE_B 396 "; print "\n" ;
+													$AllNew[`size($AllNew)`]= $eachC;
+ print " \t\t\t\t\t\t\t\t\t\t\t\t\t$AllNew[`size($AllNew)`]= $eachC; " ; print "LINE_B 397 "; print "\n" ;
+												}
+ print " \t\t\t\t\t\t\t\t\t\t\t\t} " ; print "LINE_B 398 "; print "\n" ;
+												$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]];
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]]; " ; print "LINE_B 399 "; print "\n" ;
+												$Ocrv+=1;
+ print " \t\t\t\t\t\t\t\t\t\t\t\t$Ocrv+=1; " ; print "LINE_B 400 "; print "\n" ;
+											}								
+ print " \t\t\t\t\t\t\t\t\t\t\t}\t\t\t\t\t\t\t\t " ; print "LINE_B 401 "; print "\n" ;
+										}
+ print " \t\t\t\t\t\t\t\t\t\t} " ; print "LINE_B 402 "; print "\n" ;
+										//////////////////////////////////////////////////////// LAST END SEG NOT MIDDLE END							
+ print " \t\t\t\t\t\t\t\t\t\t//////////////////////////////////////////////////////// LAST END SEG NOT MIDDLE END\t\t\t\t\t\t\t " ; print "LINE_B 403 "; print "\n" ;
+									}
+ print " \t\t\t\t\t\t\t\t\t} " ; print "LINE_B 404 "; print "\n" ;
+								//IF MIDDLE CRV 					
+ print " \t\t\t\t\t\t\t\t//IF MIDDLE CRV \t\t\t\t\t " ; print "LINE_B 405 "; print "\n" ;
+								if(($m_Or_e[$iC]==0)&&(($SA>$DistSSS)||($SB>$DistSSS))){						
+ print " \t\t\t\t\t\t\t\tif(($m_Or_e[$iC]==0)&&(($SA>$DistSSS)||($SB>$DistSSS))){\t\t\t\t\t\t " ; print "LINE_B 406 "; print "\n" ;
+									if(!($Ocrv>$SizeSeg)){
+ print " \t\t\t\t\t\t\t\t\tif(!($Ocrv>$SizeSeg)){ " ; print "LINE_B 407 "; print "\n" ;
+									//XCCC
+ print " \t\t\t\t\t\t\t\t\t//XCCC " ; print "LINE_B 408 "; print "\n" ;
+										string $NewCRVc[];		
+ print " \t\t\t\t\t\t\t\t\t\tstring $NewCRVc[];\t\t " ; print "LINE_B 409 "; print "\n" ;
+										int $CRVnum = CRVIndexPairF($VecTB);
+ print " \t\t\t\t\t\t\t\t\t\tint $CRVnum = CRVIndexPairF($VecTB); " ; print "LINE_B 410 "; print "\n" ;
+										$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum];
+ print " \t\t\t\t\t\t\t\t\t\t$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum]; " ; print "LINE_B 411 "; print "\n" ;
+										$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );	
+ print " \t\t\t\t\t\t\t\t\t\t$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );\t " ; print "LINE_B 412 "; print "\n" ;
+										// CHANGE when if you sort it							
+ print " \t\t\t\t\t\t\t\t\t\t// CHANGE when if you sort it\t\t\t\t\t\t\t " ; print "LINE_B 413 "; print "\n" ;
+										int $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]];
+ print " \t\t\t\t\t\t\t\t\t\tint $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]]; " ; print "LINE_B 414 "; print "\n" ;
+										int $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn});
+ print " \t\t\t\t\t\t\t\t\t\tint $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn}); " ; print "LINE_B 415 "; print "\n" ;
+										int $ExistCRVVEC = $ENDsAB[0];							
+ print " \t\t\t\t\t\t\t\t\t\tint $ExistCRVVEC = $ENDsAB[0];\t\t\t\t\t\t\t " ; print "LINE_B 416 "; print "\n" ;
+										IndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]);
+ print " \t\t\t\t\t\t\t\t\t\tIndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]); " ; print "LINE_B 417 "; print "\n" ;
+										$ExistCRVVEC = $ENDsAB[1];
+ print " \t\t\t\t\t\t\t\t\t\t$ExistCRVVEC = $ENDsAB[1]; " ; print "LINE_B 418 "; print "\n" ;
+										IndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);										
+ print " \t\t\t\t\t\t\t\t\t\tIndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);\t\t\t\t\t\t\t\t\t\t " ; print "LINE_B 419 "; print "\n" ;
+										for($eachC in $NewCRVc){
+ print " \t\t\t\t\t\t\t\t\t\tfor($eachC in $NewCRVc){ " ; print "LINE_B 420 "; print "\n" ;
+											$AllNew[`size($AllNew)`]= $eachC;
+ print " \t\t\t\t\t\t\t\t\t\t\t$AllNew[`size($AllNew)`]= $eachC; " ; print "LINE_B 421 "; print "\n" ;
+										}
+ print " \t\t\t\t\t\t\t\t\t\t} " ; print "LINE_B 422 "; print "\n" ;
+										$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]];
+ print " \t\t\t\t\t\t\t\t\t\t$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]]; " ; print "LINE_B 423 "; print "\n" ;
+										$Ocrv+=1;
+ print " \t\t\t\t\t\t\t\t\t\t$Ocrv+=1; " ; print "LINE_B 424 "; print "\n" ;
+									}						
+ print " \t\t\t\t\t\t\t\t\t}\t\t\t\t\t\t " ; print "LINE_B 425 "; print "\n" ;
+								}
+ print " \t\t\t\t\t\t\t\t} " ; print "LINE_B 426 "; print "\n" ;
+								if(($SA<$DistSSS)||($SB<$DistSSS)){
+ print " \t\t\t\t\t\t\t\tif(($SA<$DistSSS)||($SB<$DistSSS)){ " ; print "LINE_B 427 "; print "\n" ;
+								//XDDDDDD SNAP START
+ print " \t\t\t\t\t\t\t\t//XDDDDDD SNAP START " ; print "LINE_B 428 "; print "\n" ;
+									vector $CRVPts[];
+ print " \t\t\t\t\t\t\t\t\tvector $CRVPts[]; " ; print "LINE_B 429 "; print "\n" ;
+									$CRVPts  =VecCurveCvs($NewCutCRVs[$iC]);
+ print " \t\t\t\t\t\t\t\t\t$CRVPts  =VecCurveCvs($NewCutCRVs[$iC]); " ; print "LINE_B 430 "; print "\n" ;
+									vector $TranlatedCRV[];
+ print " \t\t\t\t\t\t\t\t\tvector $TranlatedCRV[]; " ; print "LINE_B 431 "; print "\n" ;
+									$TranlatedCRV= Matrix_Curve_Translation2D($DrawnVecEnds,$SnapEnds,$CRVPts);
+ print " \t\t\t\t\t\t\t\t\t$TranlatedCRV= Matrix_Curve_Translation2D($DrawnVecEnds,$SnapEnds,$CRVPts); " ; print "LINE_B 432 "; print "\n" ;
+									delete $NewCutCRVs[$iC];
+ print " \t\t\t\t\t\t\t\t\tdelete $NewCutCRVs[$iC]; " ; print "LINE_B 433 "; print "\n" ;
+									$AllNew[`size($AllNew)`]=VecArrayToCurveB($TranlatedCRV);
+ print " \t\t\t\t\t\t\t\t\t$AllNew[`size($AllNew)`]=VecArrayToCurveB($TranlatedCRV); " ; print "LINE_B 434 "; print "\n" ;
+									IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$VecTA]],$MCurveIndex[$Ind3dV2P[$VecTB]]}, $SnapEnds,$AllNew[`size($AllNew)`-1]);
+ print " \t\t\t\t\t\t\t\t\tIndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$VecTA]],$MCurveIndex[$Ind3dV2P[$VecTB]]}, $SnapEnds,$AllNew[`size($AllNew)`-1]); " ; print "LINE_B 435 "; print "\n" ;
+								//XDDDDDD SNAP END
+ print " \t\t\t\t\t\t\t\t//XDDDDDD SNAP END " ; print "LINE_B 436 "; print "\n" ;
+								}else{ //XDEDEDEDE SNAP START
+ print " \t\t\t\t\t\t\t\t}else{ //XDEDEDEDE SNAP START " ; print "LINE_B 437 "; print "\n" ;
+								IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$VecTA]],$MCurveIndex[$Ind3dV2P[$VecTB]]},$SnapEnds,$NewCutCRVs[$iC]);
+ print " \t\t\t\t\t\t\t\tIndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$VecTA]],$MCurveIndex[$Ind3dV2P[$VecTB]]},$SnapEnds,$NewCutCRVs[$iC]); " ; print "LINE_B 438 "; print "\n" ;
+								//XDEDEDEDE SNAP END
+ print " \t\t\t\t\t\t\t\t//XDEDEDEDE SNAP END " ; print "LINE_B 439 "; print "\n" ;
+								}
+ print " \t\t\t\t\t\t\t\t} " ; print "LINE_B 440 "; print "\n" ;
+								//end of if $SizeCuts	> 0
+ print " \t\t\t\t\t\t\t\t//end of if $SizeCuts\t> 0 " ; print "LINE_B 441 "; print "\n" ;
+							}
+ print " \t\t\t\t\t\t\t} " ; print "LINE_B 442 "; print "\n" ;
+						}
+ print " \t\t\t\t\t\t} " ; print "LINE_B 443 "; print "\n" ;
+					}else if($SizeCuts==0){				
+ print " \t\t\t\t\t}else if($SizeCuts==0){\t\t\t\t " ; print "LINE_B 444 "; print "\n" ;
+						$DrawnVecEnds  =VecCurveEnds({$Sel[0]});
+ print " \t\t\t\t\t\t$DrawnVecEnds  =VecCurveEnds({$Sel[0]}); " ; print "LINE_B 445 "; print "\n" ;
+						vector $allNearVecEnds[];
+ print " \t\t\t\t\t\tvector $allNearVecEnds[]; " ; print "LINE_B 446 "; print "\n" ;
+						$allNearVecEnds=$tempV;
+ print " \t\t\t\t\t\t$allNearVecEnds=$tempV; " ; print "LINE_B 447 "; print "\n" ;
+						float $dist_A[] = ArrayDistancesVecTofloat($allNearVecEnds, $DrawnVecEnds[0]);
+ print " \t\t\t\t\t\tfloat $dist_A[] = ArrayDistancesVecTofloat($allNearVecEnds, $DrawnVecEnds[0]); " ; print "LINE_B 448 "; print "\n" ;
+						float $dist_B[] = ArrayDistancesVecTofloat($allNearVecEnds, $DrawnVecEnds[1]);
+ print " \t\t\t\t\t\tfloat $dist_B[] = ArrayDistancesVecTofloat($allNearVecEnds, $DrawnVecEnds[1]); " ; print "LINE_B 449 "; print "\n" ;
+						int $DistSSSortA[];
+ print " \t\t\t\t\t\tint $DistSSSortA[]; " ; print "LINE_B 450 "; print "\n" ;
+						int $DistSSSortB[];
+ print " \t\t\t\t\t\tint $DistSSSortB[]; " ; print "LINE_B 451 "; print "\n" ;
+						$DistSSSortA=SortNumbersIntIndex($dist_A);
+ print " \t\t\t\t\t\t$DistSSSortA=SortNumbersIntIndex($dist_A); " ; print "LINE_B 452 "; print "\n" ;
+						$DistSSSortB=SortNumbersIntIndex($dist_B);
+ print " \t\t\t\t\t\t$DistSSSortB=SortNumbersIntIndex($dist_B); " ; print "LINE_B 453 "; print "\n" ;
+						float $SmallestDistA =$dist_A[$DistSSSortA[0]];
+ print " \t\t\t\t\t\tfloat $SmallestDistA =$dist_A[$DistSSSortA[0]]; " ; print "LINE_B 454 "; print "\n" ;
+						float $SmallestDistB =$dist_B[$DistSSSortB[0]];	
+ print " \t\t\t\t\t\tfloat $SmallestDistB =$dist_B[$DistSSSortB[0]];\t " ; print "LINE_B 455 "; print "\n" ;
+						
+ print " \t\t\t\t\t\t " ; print "LINE_B 456 "; print "\n" ;
+						if($SmallestDistA<$DistSSS){
+ print " \t\t\t\t\t\tif($SmallestDistA<$DistSSS){ " ; print "LINE_B 457 "; print "\n" ;
+							$SnapEnds[0]=$allNearVecEnds[$DistSSSortA[0]];
+ print " \t\t\t\t\t\t\t$SnapEnds[0]=$allNearVecEnds[$DistSSSortA[0]]; " ; print "LINE_B 458 "; print "\n" ;
+							$CCi[0]=1;
+ print " \t\t\t\t\t\t\t$CCi[0]=1; " ; print "LINE_B 459 "; print "\n" ;
+						}else{$SnapEnds[0]=$DrawnVecEnds[0];
+ print " \t\t\t\t\t\t}else{$SnapEnds[0]=$DrawnVecEnds[0]; " ; print "LINE_B 460 "; print "\n" ;
+							$CCi[0]=0;
+ print " \t\t\t\t\t\t\t$CCi[0]=0; " ; print "LINE_B 461 "; print "\n" ;
+						}
+ print " \t\t\t\t\t\t} " ; print "LINE_B 462 "; print "\n" ;
+						if($SmallestDistB<$DistSSS){
+ print " \t\t\t\t\t\tif($SmallestDistB<$DistSSS){ " ; print "LINE_B 463 "; print "\n" ;
+							$SnapEnds[1]=$allNearVecEnds[$DistSSSortB[0]];
+ print " \t\t\t\t\t\t\t$SnapEnds[1]=$allNearVecEnds[$DistSSSortB[0]]; " ; print "LINE_B 464 "; print "\n" ;
+							$CCi[1]=1;
+ print " \t\t\t\t\t\t\t$CCi[1]=1; " ; print "LINE_B 465 "; print "\n" ;
+						}else{$SnapEnds[1]=$DrawnVecEnds[1];
+ print " \t\t\t\t\t\t}else{$SnapEnds[1]=$DrawnVecEnds[1]; " ; print "LINE_B 466 "; print "\n" ;
+							$CCi[1]=0;
+ print " \t\t\t\t\t\t\t$CCi[1]=0; " ; print "LINE_B 467 "; print "\n" ;
+						}
+ print " \t\t\t\t\t\t} " ; print "LINE_B 468 "; print "\n" ;
+						if(($SmallestDistA<$DistSSS)||($SmallestDistB<$DistSSS)){
+ print " \t\t\t\t\t\tif(($SmallestDistA<$DistSSS)||($SmallestDistB<$DistSSS)){ " ; print "LINE_B 469 "; print "\n" ;
+						//XEEEEEEE SNAP
+ print " \t\t\t\t\t\t//XEEEEEEE SNAP " ; print "LINE_B 470 "; print "\n" ;
+							vector $CRVPts[];
+ print " \t\t\t\t\t\t\tvector $CRVPts[]; " ; print "LINE_B 471 "; print "\n" ;
+							$CRVPts  =VecCurveCvs($Sel[0]);
+ print " \t\t\t\t\t\t\t$CRVPts  =VecCurveCvs($Sel[0]); " ; print "LINE_B 472 "; print "\n" ;
+							vector $TranlatedCRV[];
+ print " \t\t\t\t\t\t\tvector $TranlatedCRV[]; " ; print "LINE_B 473 "; print "\n" ;
+							$TranlatedCRV= Matrix_Curve_Translation2D($DrawnVecEnds,$SnapEnds, $CRVPts);
+ print " \t\t\t\t\t\t\t$TranlatedCRV= Matrix_Curve_Translation2D($DrawnVecEnds,$SnapEnds, $CRVPts); " ; print "LINE_B 474 "; print "\n" ;
+							delete $Sel[0];
+ print " \t\t\t\t\t\t\tdelete $Sel[0]; " ; print "LINE_B 475 "; print "\n" ;
+							$AllNew[`size($AllNew)`]=VecArrayToCurveB($TranlatedCRV);				
+ print " \t\t\t\t\t\t\t$AllNew[`size($AllNew)`]=VecArrayToCurveB($TranlatedCRV);\t\t\t\t " ; print "LINE_B 476 "; print "\n" ;
+							IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$DistSSSortA[0]]],$MCurveIndex[$Ind3dV2P[$DistSSSortB[0]]]}, $SnapEnds,$AllNew[`size($AllNew)`-1]);
+ print " \t\t\t\t\t\t\tIndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$DistSSSortA[0]]],$MCurveIndex[$Ind3dV2P[$DistSSSortB[0]]]}, $SnapEnds,$AllNew[`size($AllNew)`-1]); " ; print "LINE_B 477 "; print "\n" ;
+						//XEEEEEEE SNAP END
+ print " \t\t\t\t\t\t//XEEEEEEE SNAP END " ; print "LINE_B 478 "; print "\n" ;
+						}else{
+ print " \t\t\t\t\t\t}else{ " ; print "LINE_B 479 "; print "\n" ;
+							if(($CCi[0]+$CCi[1])==0){					
+ print " \t\t\t\t\t\t\tif(($CCi[0]+$CCi[1])==0){\t\t\t\t\t " ; print "LINE_B 480 "; print "\n" ;
+								IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$DistSSSortA[0]]],$MCurveIndex[$Ind3dV2P[$DistSSSortB[0]]]}, $SnapEnds,$Sel[0]);
+ print " \t\t\t\t\t\t\t\tIndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$DistSSSortA[0]]],$MCurveIndex[$Ind3dV2P[$DistSSSortB[0]]]}, $SnapEnds,$Sel[0]); " ; print "LINE_B 481 "; print "\n" ;
+								$AllNew[0] =$Sel[0];
+ print " \t\t\t\t\t\t\t\t$AllNew[0] =$Sel[0]; " ; print "LINE_B 482 "; print "\n" ;
+							}
+ print " \t\t\t\t\t\t\t} " ; print "LINE_B 483 "; print "\n" ;
+						}
+ print " \t\t\t\t\t\t} " ; print "LINE_B 484 "; print "\n" ;
+					}
+ print " \t\t\t\t\t} " ; print "LINE_B 485 "; print "\n" ;
+				}else{	
+ print " \t\t\t\t}else{\t " ; print "LINE_B 486 "; print "\n" ;
+					$DrawnVecEnds  =VecCurveEnds({$Sel[0]});		
+ print " \t\t\t\t\t$DrawnVecEnds  =VecCurveEnds({$Sel[0]});\t\t " ; print "LINE_B 487 "; print "\n" ;
+					IndexCRV_VEC({0,0},({0,0}),$DrawnVecEnds,$Sel[0]);		
+ print " \t\t\t\t\tIndexCRV_VEC({0,0},({0,0}),$DrawnVecEnds,$Sel[0]);\t\t " ; print "LINE_B 488 "; print "\n" ;
+					$AllNew[0] =$Sel[0];
+ print " \t\t\t\t\t$AllNew[0] =$Sel[0]; " ; print "LINE_B 489 "; print "\n" ;
+				}
+ print " \t\t\t\t} " ; print "LINE_B 490 "; print "\n" ;				
+ print " \t\t\t\t " ; print "LINE_B 491 "; print "\n" ;
+			}else{	
+ print " \t\t\t}else{\t " ; print "LINE_B 492 "; print "\n" ;
+				$DrawnVecEnds  =VecCurveEnds({$Sel[0]});		
+ print " \t\t\t\t$DrawnVecEnds  =VecCurveEnds({$Sel[0]});\t\t " ; print "LINE_B 493 "; print "\n" ;
+				IndexCRV_VEC({0,0},({0,0}),$DrawnVecEnds,$Sel[0]);		
+ print " \t\t\t\tIndexCRV_VEC({0,0},({0,0}),$DrawnVecEnds,$Sel[0]);\t\t " ; print "LINE_B 494 "; print "\n" ;
+				$AllNew[0] =$Sel[0];
+ print " \t\t\t\t$AllNew[0] =$Sel[0]; " ; print "LINE_B 495 "; print "\n" ;			}			
+ print " \t\t\t}\t\t\t " ; print "LINE_B 496 "; print "\n" ;
+			//if($Ocrv>0){  delete $Sel[0];		
+ print " \t\t\t//if($Ocrv>0){  delete $Sel[0];\t\t " ; print "LINE_B 497 "; print "\n" ;
+		//}				
+ print " \t\t//}\t\t\t\t " ; print "LINE_B 498 "; print "\n" ;
+			if(`size($ListDelete)`>0){
+ print " \t\t\tif(`size($ListDelete)`>0){ " ; print "LINE_B 499 "; print "\n" ;
+				//AppendOrdeleteCRV($ListDelete,0);
+ print " \t\t\t\t//AppendOrdeleteCRV($ListDelete,0); " ; print "LINE_B 500 "; print "\n" ;
+			}
+ print " \t\t\t} " ; print "LINE_B 501 "; print "\n" ;
+ print " \t\t\treturn $AllNew; " ; print "LINE_B 502 "; print "\n" ;
+
+			return $AllNew;
+}
+
+/*
+//GOOD
+
+		proc string [] CRV2Dscript(string $Sel_list[],string $Sel[]){
+		
+			global int $Ind3dV2P[];
+			global float $U[];
+			global string $Tstring[];
+			global float $T_G[];
+			global int $CurveCutIndex[];
+			global float $DistSSS;
+			global string $CrvN_And_Vector[];
+			global int $MCurveIndex[];
+			global vector $AllKnowVecEnds[];
+			global string $CurveNames[];
+			global int $CRVNameIndex[];
+			global int $Ind3d_past[];
+			global int $SizeVABpast[];
+			global vector $MiddleSeg;
+			string $tempCRVNAMES[]= $CurveNames; 
+			string $AllNew[],$TEMP_new[];
+			vector $CUTcrv[];
+			int $MoreThenOne=0;	
+			int $m_Or_e[];
+			//DEBUG  
+			int $NoCUT =1;
+			vector $allNearVecEnds[];	
+			int $DA[];
+			int $DB[];
+			int $TempINA[];
+			int $TempINAi[];
+			vector $tempVi[];
+			vector $tempVii[];
+			int $ListDelete[];
+			int $VecTA;
+			int $VecTB;
+			int $Ocrv=0;
+			float $sortedTG[];					
+			float $dist_A[],$dist_B[],$SA,$SB;
+			vector $DrawnVecEnds[];
+			string $CollectCRV[];
+			int $SizeSeg;
+			int $CRV_IND[];
+			clear $AllNew;
+			int $iC=0;
+			clear $Sel_list;
+			for($iC=0; $iC<`size($CRVNameIndex)`; $iC++){
+				$TEMP_new[$iC]=$tempCRVNAMES[$CRVNameIndex[$iC]];
+			}
+			$Sel_list =$TEMP_new;
+			vector $SnapEnds[];
+			int $CCi[];
+			vector $Ind3di[],$NewVecE[],$DrawnVecEnds[];
+			int $IndexR[];
+			int $IndexO[];
+			$CCi={0,0};
+			//////////////////////////////////////////////
+			//STEP #1
+			int $SizeCuts=0;
+			int $SFoundC=0;
+			int $IndexA[],$sZ;
+			clear $IndexA;
+			int $IndexB[];
+			$IndexA=InsideRectangle($Sel[0],$Sel_list);
+			//get INDEX of ONLY EXISTING CURVES
+			for($iC=0; $iC<`size($IndexA)`; $iC++){
+				$IndexB[$iC]=$CRVNameIndex[$IndexA[$iC]];
+			}
+			$IndexA=$IndexB;	
+			$sZ =`size($IndexA)`;
+			clear $Ind3dV2P;
+			$Ind3dV2P=IndexPairArrayFunc($IndexA);
+			float $Arc;
+			vector $tempV[];
+			
+			if($sZ>0){
+				$Arc =`arclen $Sel[0]`;
+				string $crvsFound[];
+				clear $crvsFound; 
+				for($Icr=0;  $Icr<$sZ; $Icr++){
+					$crvsFound[$Icr]=$Sel_list[$IndexA[$Icr]];
+				}		
+				int $tempStringI[];
+				for($Icr=0;  $Icr<$sZ*2; $Icr++){
+					$tempV[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$Ind3dV2P[$Icr]]];
+					$tempStringI[$Icr] =$MCurveIndex[$Ind3dV2P[$Icr]];
+				}	
+				$allNearVecEnds=$tempV;			
+				//STEP #2		
+				int $FoundCut_Index[];
+				$FoundCut_Index = DoesCurveBBcrossCurve($Sel[0], $crvsFound);
+				string $crvsOther[];
+				clear $crvsOther; 
+				string $crvsFoundCut[];
+				clear $crvsFoundCut; 
+				$sZ =`size($crvsFound)`;
+				int $FC=0;
+				for($Icr=0;  $Icr<$sZ; $Icr++){
+					if($FoundCut_Index[$FC]==$Icr){
+						$IndexR[$FC] =$IndexA[$FoundCut_Index[$FC]];
+						$crvsFoundCut[$FC]=$crvsFound[$FoundCut_Index[$FC]];
+						$FC++;
+					}else{
+						$crvsOther[`size($crvsOther)`]=$crvsFound[$Icr];
+						$IndexO[`size($IndexO)`]=$IndexA[$FoundCut_Index[$FC]];
+					}
+				}
+				
+				$SFoundC =`size($crvsFoundCut)`;
+				
+				if($SFoundC>0){
+					
+					clear $U;
+					//YES  $CurveCutIndex is the int Index of found CRVS  so to track 
+					$CUTcrv = CurvatureUtilitySimple($crvsFoundCut, $Sel[0]);			
+					$CRV_IND=$CurveCutIndex;
+					$SizeCuts =`size($U)`;			
+							print ("SizeCuts START:"+"\n");
+							print $SizeCuts;			
+							print ("SizeCuts END"+"\n");		
+							
+					// $CurveCutIndex  is the  index of the total size of  $crvsFoundCut that Intersects
+					// so the past index Number 
+					////////////////////////NEW
+					int $IndexRb[];
+					int $IndexOb[];
+					$IndexOb=$IndexO;
+					$sZ =`size($crvsFoundCut)`;
+					$FC=0;
+					for($Icr=0;  $Icr<$sZ; $Icr++){
+						
+						if($CRV_IND[$FC]==$Icr){
+							$IndexRb[$FC] =$IndexR[$CRV_IND[$FC]];			
+							$FC++;
+						}else{		
+							$IndexOb[`size($IndexOb)`]=$IndexR[$CRV_IND[$FC]];
+						}
+					}
+					//May need to change this
+					$IndexR=$IndexRb;
+					//May need to change this		
+					$IndexO= $IndexOb;
+					////////////////////////NEW			
+					if($SizeCuts>0){				
+						float $oldUii[]=$U;
+						int $USortK[];
+						$USortK = SortNumbersIntIndex($U);
+						int $tempIN[];
+						
+						for($iC=0; $iC<`size($USortK)`; $iC++){
+							$sortedTG[$iC]= $T_G[$USortK[$iC]];
+							$tempIN[$iC]=$CRV_IND[$USortK[$iC]];				}
+						$USortK=$tempIN;				
+						$U=sort($U);
+						float $TempU[];
+						int $Tsize=`size($U)`;
+						// if the cuts made to the drawn CRV is greater then one like 2 then you must track what ends are kept
+						// track items ONE are crv cuts greater then 1? True or false 
+						// TWO are the firstand last ends kept
+						if($Tsize!= 1){
+							$MoreThenOne=1;
+							float $MperS= ($Arc*($U[0]));
+							float $MperE= ($Arc*(1-$U[$SizeCuts-1]));					
+							if( $MperS >= 5.5){
+								$TempU[`size($TempU)`]=0.0;
+								$m_Or_e[`size($m_Or_e)`]=1;
+							}
+							for($iC=0; $iC<$SizeCuts; $iC++){
+								$TempU[`size($TempU)`]=$U[$iC];							
+							}
+							for($iC=0; $iC<$SizeCuts-1; $iC++){					
+								$m_Or_e[`size($m_Or_e)`]=0;
+							}
+							if($MperE>=5.5){
+								$TempU[`size($TempU)`]=1.0;
+								$m_Or_e[`size($m_Or_e)`]=1;
+							}
+							$U=$TempU;
+						}				
+						if($Tsize== 1){
+							float $TempU[];
+							float $TempUi[];
+							$TempUi[0]=0.0;
+							$TempUi[1]=$U[0];
+							$TempUi[2]=1.0;
+							$U=$TempUi;
+							float $MperS= (100*($U[1]));
+							float $MperE= (100*(1-$U[1]));
+							if( $MperS >= 15){$TempU[`size($TempU)`]=0.0; $m_Or_e[`size($m_Or_e)`]=1;}
+							$TempU[`size($TempU)`]=$U[1];	
+							if($MperE>=15){$TempU[`size($TempU)`]=1.0; $m_Or_e[`size($m_Or_e)`]=1;}
+							clear $U;
+							$U=$TempU;
+							
+							print ("Tsize = 1 START:"+"\n");
+							print ("m_Or_e START:"+"\n");
+							print $m_Or_e;
+							print ("m_Or_e END"+"\n");
+							print ("Tsize = 1 END"+"\n");
+							
+						}				
+						string $NewCutCRVs[];
+						vector $CRVSEG_A[];		
+						float $Hsize= `size($U)`;
+						$Hsize-=1;
+						for($iC=0; $iC<$Hsize; $iC++){
+							clear $CRVSEG_A;
+							float $CrvTSi = $U[$iC];
+							float $CrvTEi = $U[$iC+1];
+							float $Mper= ($Arc*($U[$iC+1]-$U[$iC]));
+							vector $CRVSEG_A[];
+							$CRVSEG_A=RenderCurveSeg($Sel[0],12,$CrvTSi,$CrvTEi);
+							$NewCutCRVs[`size($NewCutCRVs)`]=VecArrayToCurveB($CRVSEG_A);
+						}				
+						////////////////
+						// Place new 
+						print ("m_Or_e START:"+"\n");
+						print $m_Or_e;
+						print ("m_Or_e END"+"\n");
+						
+						
+						
+						if(`size($IndexO)`>0){
+							$TempINA =IndexPairArrayFunc($IndexO);							
+							for($Icr=0;  $Icr<$sZ*2; $Icr++){		
+								$tempVi[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINA[$Icr]]];
+							}
+						}
+						/////////////////						
+						// this is the curves that DO intersect!!						
+						$TempINAi =IndexPairArrayFunc($IndexR);						
+						for($Icr=0;  $Icr<$sZ*2; $Icr++){		
+							$tempVii[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINAi[$Icr]]];
+						}
+						
+						$SizeSeg =`size($NewCutCRVs)`;
+						
+						if($NoCUT==1){	
+							
+							for($iC=0; $iC<$SizeSeg; $iC++)
+							{
+																
+								$VecTA=0;
+								$VecTB=0;				
+								//END curve and onle the first end can snap to "" OTHER curves					
+								$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});
+								/////////////////////////////////////////////////////////////////////////
+								//END CRV
+								
+								
+								
+								
+								
+								
+								/////////////////						
+								$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});						
+								//  so here these vectors Must be the filter index of ONLY OTHER CURVES
+								// AND NOTHING ESLE for  if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1))&&($CCi[0]==1)){							
+								if((($m_Or_e[$iC]==1)&&($iC==0))&&($CCi[1]==1)){
+									if(`size($IndexO)`>0){
+										$dist_A= ArrayDistancesVecTofloat($tempVi, $DrawnVecEnds [0]);
+									}
+									$dist_B = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [1]);				
+									if(`size($IndexO)`>0){	$DA=SortNumbersIntIndex($dist_A); $VecTA=$TempINA[$DA[0]];}
+									$DB=SortNumbersIntIndex($dist_B);						
+									if(`size($IndexO)`>0){
+										$SA =$dist_A[$DA[0]];
+									}else{$SA=200;}						
+									$SB =$dist_B[$DB[0]];						
+									if($DA[0]==$DB[0]){
+										if($SA<$SB){
+											$SB=200;
+										}else{$SA=200;}
+										
+									}
+									//$VecTA=$TempINA[$DA[0]];
+									$VecTB=$TempINAi[$DB[0]];									
+									if($SA<$DistSSS){
+										$CCi[0]=1;
+										$SnapEnds[0]=$tempVi[$DA[0]];
+									}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;								
+									}
+									if($SB<$DistSSS){
+										$CCi[1]=1;
+										$SnapEnds[1]=$tempVii[$DB[0]];
+									}else{$SnapEnds[1]=$DrawnVecEnds[1]; 	$CCi[1]=0;							
+									}
+								}
+								////////////very messy
+								if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1)))&&($CCi[0]==1)){										
+									$dist_A= ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [0]);
+									if(`size($IndexO)`>0){	
+										$dist_B = ArrayDistancesVecTofloat($tempVi, $DrawnVecEnds [1]);
+									}
+									$DA=SortNumbersIntIndex($dist_A);
+									$VecTA=$TempINAi[$DA[0]];
+									
+									if(`size($IndexO)`>0){
+										$DB=SortNumbersIntIndex($dist_B);
+										$VecTB=$TempINA[$DB[0]];
+									}					
+									$SA =$dist_A[$DA[0]];							
+									if(`size($IndexO)`>0){
+										$SB =$dist_B[$DB[0]];
+									}else{$SB=200;}							
+									if($SA<$DistSSS){
+										$CCi[0]=1;
+										$SnapEnds[0]=$tempVi[$DA[0]];
+									}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;							
+									}
+									if($SB<$DistSSS){
+										$CCi[1]=1;
+										$SnapEnds[1]=$tempVii[$DB[0]];
+									}else{$SnapEnds[1]=$DrawnVecEnds[1]; $CCi[1]=0;						
+									}
+								}								
+								/////////////////////////////////////////////////////////////////////////
+								//Middle curve
+								if($m_Or_e[$iC]==0){						
+									$TempINAi=IndexPairArrayFunc($IndexR);					
+									for($Icr=0;  $Icr<$sZ*2; $Icr++){		
+										$tempVii[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINAi[$Icr]]];
+									}						
+									$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});						
+									float $dist_A[] = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [0]);
+									float $dist_B[] = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [1]);					
+									$DA=SortNumbersIntIndex($dist_A);
+									$DB=SortNumbersIntIndex($dist_B);
+									$SA =$dist_A[$DA[0]];
+									$SB =$dist_B[$DB[0]];			
+									$VecTA=$TempINAi[$DA[0]];
+									$VecTB=$TempINAi[$DB[0]];
+									
+									if($DA[0]==$DB[0]){
+										if($SA<$SB){
+											$SB=200;
+										}else{$SA=200;}
+									}
+									if($SA<$DistSSS){
+										$CCi[0]=1;
+										$SnapEnds[0]=$tempVii[$DA[0]];
+									}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;							
+									}
+									if($SB<$DistSSS){
+										$CCi[1]=1;
+										$SnapEnds[1]=$tempVii[$DB[0]];
+									}else{$SnapEnds[1]=$DrawnVecEnds[1]; $CCi[1]=0;							
+									}					
+								}					
+								//if segment is an end curve and one vector snaps is that vector the start or end of crv?					
+									// this is saying if the fist segment is an end crv OR if the last Curve is an end Crv and One vector snaps
+									if((($m_Or_e[$iC]==1)&&($iC==0))||(($m_Or_e[$iC]==1)&&( $iC==($SizeSeg-1)))){							
+										// this is saying if the fist segment is an end crv OR if the last Curve is an end Crv and One vector snaps
+										/////// FIRST END SEG NOT MIDDLE
+										if((($m_Or_e[$iC]==1)&&($iC==0))&&($CCi[1]==1)){
+											//XA										
+											if(!($Ocrv>$SizeSeg)){
+											//XAAA
+												string $NewCRVc[];
+												int $CRVnum = CRVIndexPairF($VecTB);
+												$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum];
+												//$IndexR[$CRVnum]
+												//This creates the MiddleSeg Vector global //
+												$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );	
+												// CHANGE when if you sort it							
+												int $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]];
+												int $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn});
+												int $ExistCRVVEC = $ENDsAB[0];							
+												IndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]);
+												$ExistCRVVEC = $ENDsAB[1];
+												IndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);										
+												for($eachC in $NewCRVc){
+													$AllNew[`size($AllNew)`]= $eachC;
+												}
+												$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]];
+												
+												$Ocrv+=1;
+											}
+										}
+										/////// FIRST END SEG NOT MIDDLE  END			
+										//////////////////////////////////////////////////////// LAST END SEG NOT MIDDLE
+										if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1)))&&($CCi[0]==1)){
+											//XB 										
+											if(!($Ocrv>$SizeSeg)){
+											//XBBB
+												string $NewCRVc[];
+												string $NewCRVc[];
+												int $CRVnum = CRVIndexPairF($VecTA);
+												$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum];
+												//This creates the MiddleSeg Vector global //
+												$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );	
+												// CHANGE when if you sort it							
+												int $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]];
+												int $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn});
+												int $ExistCRVVEC = $ENDsAB[0];							
+												IndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]);
+												$ExistCRVVEC = $ENDsAB[1];
+												IndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);										
+												for($eachC in $NewCRVc){
+													$AllNew[`size($AllNew)`]= $eachC;
+												}
+												$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]];
+												$Ocrv+=1;
+											}								
+										}
+										//////////////////////////////////////////////////////// LAST END SEG NOT MIDDLE END							
+									}
+								//IF MIDDLE CRV 					
+								if(($m_Or_e[$iC]==0)&&(($SA>$DistSSS)||($SB>$DistSSS))){						
+									if(!($Ocrv>$SizeSeg)){
+									//XCCC
+										string $NewCRVc[];		
+										int $CRVnum = CRVIndexPairF($VecTB);
+										$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum];
+										$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );	
+										// CHANGE when if you sort it							
+										int $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]];
+										int $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn});
+										int $ExistCRVVEC = $ENDsAB[0];							
+										IndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]);
+										$ExistCRVVEC = $ENDsAB[1];
+										IndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);										
+										for($eachC in $NewCRVc){
+											$AllNew[`size($AllNew)`]= $eachC;
+										}
+										$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]];
+										$Ocrv+=1;
+									}						
+								}
+								if(($SA<$DistSSS)||($SB<$DistSSS)){
+								//XDDDDDD SNAP START
+									vector $CRVPts[];
+									$CRVPts  =VecCurveCvs($NewCutCRVs[$iC]);
+									vector $TranlatedCRV[];
+									$TranlatedCRV= Matrix_Curve_Translation2D($DrawnVecEnds,$SnapEnds,$CRVPts);
+									delete $NewCutCRVs[$iC];
+									$AllNew[`size($AllNew)`]=VecArrayToCurveB($TranlatedCRV);
+									IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$VecTA]],$MCurveIndex[$Ind3dV2P[$VecTB]]}, $SnapEnds,$AllNew[`size($AllNew)`-1]);
+								//XDDDDDD SNAP END
+								}else{ //XDEDEDEDE SNAP START
+								IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$VecTA]],$MCurveIndex[$Ind3dV2P[$VecTB]]},$SnapEnds,$NewCutCRVs[$iC]);
+								//XDEDEDEDE SNAP END
+								}
+								//end of if $SizeCuts	> 0
+							}
+						}
+					}else if($SizeCuts==0){				
+						$DrawnVecEnds  =VecCurveEnds({$Sel[0]});
+						vector $allNearVecEnds[];
+						$allNearVecEnds=$tempV;
+						float $dist_A[] = ArrayDistancesVecTofloat($allNearVecEnds, $DrawnVecEnds[0]);
+						float $dist_B[] = ArrayDistancesVecTofloat($allNearVecEnds, $DrawnVecEnds[1]);
+						int $DistSSSortA[];
+						int $DistSSSortB[];
+						$DistSSSortA=SortNumbersIntIndex($dist_A);
+						$DistSSSortB=SortNumbersIntIndex($dist_B);
+						float $SmallestDistA =$dist_A[$DistSSSortA[0]];
+						float $SmallestDistB =$dist_B[$DistSSSortB[0]];	
+						
+						if($SmallestDistA<$DistSSS){
+							$SnapEnds[0]=$allNearVecEnds[$DistSSSortA[0]];
+							$CCi[0]=1;
+						}else{$SnapEnds[0]=$DrawnVecEnds[0];
+							$CCi[0]=0;
+						}
+						if($SmallestDistB<$DistSSS){
+							$SnapEnds[1]=$allNearVecEnds[$DistSSSortB[0]];
+							$CCi[1]=1;
+						}else{$SnapEnds[1]=$DrawnVecEnds[1];
+							$CCi[1]=0;
+						}
+						if(($SmallestDistA<$DistSSS)||($SmallestDistB<$DistSSS)){
+						//XEEEEEEE SNAP
+							vector $CRVPts[];
+							$CRVPts  =VecCurveCvs($Sel[0]);
+							vector $TranlatedCRV[];
+							$TranlatedCRV= Matrix_Curve_Translation2D($DrawnVecEnds,$SnapEnds, $CRVPts);
+							delete $Sel[0];
+							$AllNew[`size($AllNew)`]=VecArrayToCurveB($TranlatedCRV);				
+							IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$DistSSSortA[0]]],$MCurveIndex[$Ind3dV2P[$DistSSSortB[0]]]}, $SnapEnds,$AllNew[`size($AllNew)`-1]);
+						//XEEEEEEE SNAP END
+						}else{
+							if(($CCi[0]+$CCi[1])==0){					
+								IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$DistSSSortA[0]]],$MCurveIndex[$Ind3dV2P[$DistSSSortB[0]]]}, $SnapEnds,$Sel[0]);
+								$AllNew[0] =$Sel[0];
+							}
+						}
+					}
+				}else{	
+					$DrawnVecEnds  =VecCurveEnds({$Sel[0]});		
+					IndexCRV_VEC({0,0},({0,0}),$DrawnVecEnds,$Sel[0]);		
+					$AllNew[0] =$Sel[0];
+				}
+				
+			}else{	
+				$DrawnVecEnds  =VecCurveEnds({$Sel[0]});		
+				IndexCRV_VEC({0,0},({0,0}),$DrawnVecEnds,$Sel[0]);		
+				$AllNew[0] =$Sel[0];
+			}			
+			//if($Ocrv>0){  delete $Sel[0];		
+		//}				
+			if(`size($ListDelete)`>0){
+				//AppendOrdeleteCRV($ListDelete,0);
+			}
+			return $AllNew;
+		}
+//END GOOD
+*/
+
+///////////////////////
+
+//////////////////////
+
+/*
+
+		proc string [] CRV2Dscript(string $Sel_list[],string $Sel[])
+		{
+			global int $Ind3dV2P[];
+			global float $U[];
+			global string $Tstring[];
+			global float $T_G[];
+			global int $CurveCutIndex[];
+			global float $DistSSS;
+			global string $CrvN_And_Vector[];
+			global int $MCurveIndex[];
+			global vector $AllKnowVecEnds[];
+			global string $CurveNames[];
+			global int $CRVNameIndex[];
+			global int $Ind3d_past[];
+			global int $SizeVABpast[];
+			global vector $MiddleSeg;
+			string $tempCRVNAMES[]= $CurveNames; 
+			string $AllNew[],$TEMP_new[];
+			vector $CUTcrv[];
+			int $MoreThenOne=0;	
+			int $m_Or_e[];
+			//DEBUG  
+			int $NoCUT =1;
+			vector $allNearVecEnds[];	
+			int $DA[];
+			int $DB[];
+			int $TempINA[];
+			int $TempINAi[];
+			vector $tempVi[];
+			vector $tempVii[];
+			int $ListDelete[];
+			int $VecTA;
+			int $VecTB;
+			int $Ocrv=0;
+			float $sortedTG[];					
+			float $dist_A[],$dist_B[],$SA,$SB;
+			vector $DrawnVecEnds[];
+			string $CollectCRV[];
+			int $SizeSeg;
+			int $CRV_IND[];
+			clear $AllNew;
+			int $iC=0;
+			clear $Sel_list;
+			for($iC=0; $iC<`size($CRVNameIndex)`; $iC++){
+				$TEMP_new[$iC]=$tempCRVNAMES[$CRVNameIndex[$iC]];
+			}
+			$Sel_list =$TEMP_new;
+			vector $SnapEnds[];
+			int $CCi[];
+			vector $Ind3di[],$NewVecE[],$DrawnVecEnds[];
+			int $IndexR[];
+			int $IndexO[];
+			$CCi={0,0};
+			//////////////////////////////////////////////
+			//STEP #1
+			int $SizeCuts=0;
+			int $SFoundC=0;
+			int $IndexA[],$sZ;
+			clear $IndexA;
+			int $IndexB[];
+			$IndexA=InsideRectangle($Sel[0],$Sel_list);
+			//get INDEX of ONLY EXISTING CURVES
+			for($iC=0; $iC<`size($IndexA)`; $iC++){
+				$IndexB[$iC]=$CRVNameIndex[$IndexA[$iC]];
+			}
+			$IndexA=$IndexB;	
+			$sZ =`size($IndexA)`;
+			clear $Ind3dV2P;
+			$Ind3dV2P=IndexPairArrayFunc($IndexA);
+			float $Arc;
+			vector $tempV[];
+			
+			if($sZ>0){
+				$Arc =`arclen $Sel[0]`;
+				string $crvsFound[];
+				clear $crvsFound; 
+				for($Icr=0;  $Icr<$sZ; $Icr++){
+					$crvsFound[$Icr]=$Sel_list[$IndexA[$Icr]];
+				}		
+				int $tempStringI[];
+				for($Icr=0;  $Icr<$sZ*2; $Icr++){
+					$tempV[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$Ind3dV2P[$Icr]]];
+					$tempStringI[$Icr] =$MCurveIndex[$Ind3dV2P[$Icr]];
+				}	
+				$allNearVecEnds=$tempV;			
+				//STEP #2		
+				int $FoundCut_Index[];
+				$FoundCut_Index = DoesCurveBBcrossCurve($Sel[0], $crvsFound);
+				string $crvsOther[];
+				clear $crvsOther; 
+				string $crvsFoundCut[];
+				clear $crvsFoundCut; 
+				$sZ =`size($crvsFound)`;
+				int $FC=0;
+				for($Icr=0;  $Icr<$sZ; $Icr++){
+					if($FoundCut_Index[$FC]==$Icr){
+						$IndexR[$FC] =$IndexA[$FoundCut_Index[$FC]];
+						$crvsFoundCut[$FC]=$crvsFound[$FoundCut_Index[$FC]];
+						$FC++;
+					}else{
+						$crvsOther[`size($crvsOther)`]=$crvsFound[$Icr];
+						$IndexO[`size($IndexO)`]=$IndexA[$FoundCut_Index[$FC]];
+					}
+				}
+				
+				$SFoundC =`size($crvsFoundCut)`;
+				
+				if($SFoundC>0){
+					
+					clear $U;
+					//YES  $CurveCutIndex is the int Index of found CRVS  so to track 
+					$CUTcrv = CurvatureUtilitySimple($crvsFoundCut, $Sel[0]);			
+					$CRV_IND=$CurveCutIndex;
+					$SizeCuts =`size($U)`;			
+							print ("SizeCuts START:"+"\n");
+							print $SizeCuts;			
+							print ("SizeCuts END"+"\n");		
+							
+					// $CurveCutIndex  is the  index of the total size of  $crvsFoundCut that Intersects
+					// so the past index Number 
+					////////////////////////NEW
+					int $IndexRb[];
+					int $IndexOb[];
+					$IndexOb=$IndexO;
+					$sZ =`size($crvsFoundCut)`;
+					$FC=0;
+					for($Icr=0;  $Icr<$sZ; $Icr++){
+						
+						if($CRV_IND[$FC]==$Icr){
+							$IndexRb[$FC] =$IndexR[$CRV_IND[$FC]];			
+							$FC++;
+						}else{		
+							$IndexOb[`size($IndexOb)`]=$IndexR[$CRV_IND[$FC]];
+						}
+					}
+					//May need to change this
+					$IndexR=$IndexRb;
+					//May need to change this		
+					$IndexO= $IndexOb;
+					////////////////////////NEW			
+					if($SizeCuts>0){				
+						float $oldUii[]=$U;
+						int $USortK[];
+						$USortK = SortNumbersIntIndex($U);
+						int $tempIN[];
+						
+						for($iC=0; $iC<`size($USortK)`; $iC++){
+							$sortedTG[$iC]= $T_G[$USortK[$iC]];
+							$tempIN[$iC]=$CRV_IND[$USortK[$iC]];				}
+						$USortK=$tempIN;				
+						$U=sort($U);
+						float $TempU[];
+						int $Tsize=`size($U)`;
+						// if the cuts made to the drawn CRV is greater then one like 2 then you must track what ends are kept
+						// track items ONE are crv cuts greater then 1? True or false 
+						// TWO are the firstand last ends kept
+						if($Tsize!= 1){
+							$MoreThenOne=1;
+							float $MperS= ($Arc*($U[0]));
+							float $MperE= ($Arc*(1-$U[$SizeCuts-1]));					
+							if( $MperS >= 5.5){
+								$TempU[`size($TempU)`]=0.0;
+								$m_Or_e[`size($m_Or_e)`]=1;
+							}
+
+							for($iC=0; $iC<$SizeCuts; $iC++){
+								$TempU[`size($TempU)`]=$U[$iC];							
+							}
+							for($iC=0; $iC<$SizeCuts-1; $iC++){					
+								$m_Or_e[`size($m_Or_e)`]=0;
+							}
+							if($MperE>=5.5){
+								$TempU[`size($TempU)`]=1.0;
+
+								$m_Or_e[`size($m_Or_e)`]=1;
+							}
+							$U=$TempU;
+						}				
+						if($Tsize== 1){
+							float $TempU[];
+							float $TempUi[];
+							$TempUi[0]=0.0;
+							$TempUi[1]=$U[0];
+							$TempUi[2]=1.0;
+							$U=$TempUi;
+							float $MperS= (100*($U[1]));
+							float $MperE= (100*(1-$U[1]));
+							if( $MperS >= 15){$TempU[`size($TempU)`]=0.0; $m_Or_e[`size($m_Or_e)`]=1;}
+							$TempU[`size($TempU)`]=$U[1];	
+							if($MperE>=15){$TempU[`size($TempU)`]=1.0; $m_Or_e[`size($m_Or_e)`]=1;}
+							clear $U;
+							$U=$TempU;
+							
+							print ("Tsize = 1 START:"+"\n");
+							print ("m_Or_e START:"+"\n");
+							print $m_Or_e;
+							print ("m_Or_e END"+"\n");
+							print ("Tsize = 1 END"+"\n");
+							
+						}				
+						string $NewCutCRVs[];
+						vector $CRVSEG_A[];		
+						float $Hsize= `size($U)`;
+						$Hsize-=1;
+						for($iC=0; $iC<$Hsize; $iC++){
+							clear $CRVSEG_A;
+							float $CrvTSi = $U[$iC];
+							float $CrvTEi = $U[$iC+1];
+							float $Mper= ($Arc*($U[$iC+1]-$U[$iC]));
+							vector $CRVSEG_A[];
+							$CRVSEG_A=RenderCurveSeg($Sel[0],12,$CrvTSi,$CrvTEi);
+							$NewCutCRVs[`size($NewCutCRVs)`]=VecArrayToCurveB($CRVSEG_A);
+						}				
+						////////////////
+						// Place new 
+						print ("m_Or_e START:"+"\n");
+						print $m_Or_e;
+						print ("m_Or_e END"+"\n");
+						
+						
+						
+						if(`size($IndexO)`>0){
+							$TempINA =IndexPairArrayFunc($IndexO);							
+							for($Icr=0;  $Icr<$sZ*2; $Icr++){		
+								$tempVi[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINA[$Icr]]];
+							}
+						}
+						/////////////////						
+						// this is the curves that DO intersect!!						
+						$TempINAi =IndexPairArrayFunc($IndexR);						
+						for($Icr=0;  $Icr<$sZ*2; $Icr++){		
+							$tempVii[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINAi[$Icr]]];
+						}
+						
+						$SizeSeg =`size($NewCutCRVs)`;
+						
+						if($NoCUT==1){	
+							
+							for($iC=0; $iC<$SizeSeg; $iC++)
+							{
+																
+								$VecTA=0;
+								$VecTB=0;				
+								//END curve and onle the first end can snap to "" OTHER curves					
+								$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});
+								/////////////////////////////////////////////////////////////////////////
+								//END CRV
+								
+								
+								
+								
+								
+								
+								/////////////////						
+								$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});						
+								//  so here these vectors Must be the filter index of ONLY OTHER CURVES
+								// AND NOTHING ESLE for  if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1))&&($CCi[0]==1)){							
+								if((($m_Or_e[$iC]==1)&&($iC==0))&&($CCi[1]==1)){
+									if(`size($IndexO)`>0){
+										$dist_A= ArrayDistancesVecTofloat($tempVi, $DrawnVecEnds [0]);
+									}
+									$dist_B = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [1]);				
+									if(`size($IndexO)`>0){	$DA=SortNumbersIntIndex($dist_A); $VecTA=$TempINA[$DA[0]];}
+									$DB=SortNumbersIntIndex($dist_B);						
+									if(`size($IndexO)`>0){
+										$SA =$dist_A[$DA[0]];
+									}else{$SA=200;}						
+									$SB =$dist_B[$DB[0]];						
+									if($DA[0]==$DB[0]){
+										if($SA<$SB){
+											$SB=200;
+										}else{$SA=200;}
+										
+									}
+									//$VecTA=$TempINA[$DA[0]];
+									$VecTB=$TempINAi[$DB[0]];									
+									if($SA<$DistSSS){
+										$CCi[0]=1;
+										$SnapEnds[0]=$tempVi[$DA[0]];
+									}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;								
+									}
+									if($SB<$DistSSS){
+										$CCi[1]=1;
+										$SnapEnds[1]=$tempVii[$DB[0]];
+									}else{$SnapEnds[1]=$DrawnVecEnds[1]; 	$CCi[1]=0;							
+									}
+								}
+								////////////very messy
+								if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1)))&&($CCi[0]==1)){	
+									
+									$dist_A= ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [0]);
+									if(`size($IndexO)`>0){	
+										$dist_B = ArrayDistancesVecTofloat($tempVi, $DrawnVecEnds [1]);
+									}
+									$DA=SortNumbersIntIndex($dist_A);
+									$VecTA=$TempINAi[$DA[0]];
+									
+									if(`size($IndexO)`>0){
+										$DB=SortNumbersIntIndex($dist_B);
+										$VecTB=$TempINA[$DB[0]];
+									}					
+									$SA =$dist_A[$DA[0]];							
+									if(`size($IndexO)`>0){
+										$SB =$dist_B[$DB[0]];
+									}else{$SB=200;}							
+									if($SA<$DistSSS){
+										$CCi[0]=1;
+										$SnapEnds[0]=$tempVi[$DA[0]];
+									}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;							
+									}
+									if($SB<$DistSSS){
+										$CCi[1]=1;
+										$SnapEnds[1]=$tempVii[$DB[0]];
+									}else{$SnapEnds[1]=$DrawnVecEnds[1]; $CCi[1]=0;						
+									}
+								}						
+								
+								/////////////////////////////////////////////////////////////////////////
+								//Middle curve
+								if($m_Or_e[$iC]==0){						
+									$TempINAi=IndexPairArrayFunc($IndexR);					
+									for($Icr=0;  $Icr<$sZ*2; $Icr++){		
+										$tempVii[$Icr]=  $AllKnowVecEnds[$MCurveIndex[$TempINAi[$Icr]]];
+									}						
+									$DrawnVecEnds  =VecCurveEnds({$NewCutCRVs[$iC]});						
+									float $dist_A[] = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [0]);
+									float $dist_B[] = ArrayDistancesVecTofloat($tempVii, $DrawnVecEnds [1]);					
+									$DA=SortNumbersIntIndex($dist_A);
+									$DB=SortNumbersIntIndex($dist_B);
+									$SA =$dist_A[$DA[0]];
+									$SB =$dist_B[$DB[0]];			
+									$VecTA=$TempINAi[$DA[0]];
+									$VecTB=$TempINAi[$DB[0]];
+									
+									if($DA[0]==$DB[0]){
+										if($SA<$SB){
+											$SB=200;
+										}else{$SA=200;}
+									}
+									if($SA<$DistSSS){
+										$CCi[0]=1;
+										$SnapEnds[0]=$tempVii[$DA[0]];
+									}else{$SnapEnds[0]=$DrawnVecEnds[0]; $CCi[0]=0;							
+									}
+									if($SB<$DistSSS){
+										$CCi[1]=1;
+										$SnapEnds[1]=$tempVii[$DB[0]];
+									}else{$SnapEnds[1]=$DrawnVecEnds[1]; $CCi[1]=0;							
+									}					
+								}					
+								//if segment is an end curve and one vector snaps is that vector the start or end of crv?
+								if(($SA<$DistSSS)||($SB<$DistSSS)){
+									// this is saying if the fist segment is an end crv OR if the last Curve is an end Crv and One vector snaps
+									if((($m_Or_e[$iC]==1)&&($iC==0))||(($m_Or_e[$iC]==1)&&( $iC==($SizeSeg-1)))){							
+										// this is saying if the fist segment is an end crv OR if the last Curve is an end Crv and One vector snaps
+										//////////////////////////////////////////////////////// FIRST END SEG NOT MIDDLE
+										if((($m_Or_e[$iC]==1)&&($iC==0))&&($CCi[1]==1)){								
+											if(!($Ocrv>$SizeSeg)){
+												string $NewCRVc[];
+												int $CRVnum = CRVIndexPairF($VecTB);
+												$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum];
+												//$IndexR[$CRVnum]
+												//This creates the MiddleSeg Vector global //
+												$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );	
+												// CHANGE when if you sort it							
+												int $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]];
+												int $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn});
+												int $ExistCRVVEC = $ENDsAB[0];							
+												IndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]);
+												$ExistCRVVEC = $ENDsAB[1];
+												IndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);										
+												for($eachC in $NewCRVc){
+													$AllNew[`size($AllNew)`]= $eachC;
+												}
+												$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]];
+												
+												$Ocrv+=1;
+											}
+										}
+										//////////////////////////////////////////////////////// FIRST END SEG NOT MIDDLE  END							
+										
+										//////////////////////////////////////////////////////// LAST END SEG NOT MIDDLE
+										if((($m_Or_e[$iC]==1)&&($iC==($SizeSeg-1)))&&($CCi[0]==1)){										
+											if(!($Ocrv>$SizeSeg)){
+												string $NewCRVc[];
+												string $NewCRVc[];
+												int $CRVnum = CRVIndexPairF($VecTA);
+												$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum];
+												//This creates the MiddleSeg Vector global //
+												$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );	
+												// CHANGE when if you sort it							
+												int $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]];
+												int $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn});
+												int $ExistCRVVEC = $ENDsAB[0];							
+												IndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]);
+												$ExistCRVVEC = $ENDsAB[1];
+												IndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);										
+												for($eachC in $NewCRVc){
+													$AllNew[`size($AllNew)`]= $eachC;
+												}
+												$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]];
+												$Ocrv+=1;
+											}								
+										}
+										//////////////////////////////////////////////////////// LAST END SEG NOT MIDDLE END							
+									}
+								}					
+								//IF MIDDLE CRV 					
+								if(($m_Or_e[$iC]==0)&&(($SA<$DistSSS)||($SB<$DistSSS))){						
+									if(!($Ocrv>$SizeSeg)){
+										string $NewCRVc[];		
+										int $CRVnum = CRVIndexPairF($VecTB);
+										$ListDelete[`size($ListDelete)`]=$IndexR[$CRVnum];
+										$NewCRVc=CutExisting($sortedTG[$IndexR[$CRVnum]], $crvsFoundCut[$USortK[$IndexR[$CRVnum]]] );	
+										// CHANGE when if you sort it							
+										int $ExistCRVn =$IndexR[$USortK[$IndexR[$CRVnum]]];
+										int $ENDsAB[] =IndexPairArrayFunc({$ExistCRVn});
+										int $ExistCRVVEC = $ENDsAB[0];							
+										IndexCRV_VEC({1,0},{$ExistCRVVEC,0}, {$SnapEnds[0],$MiddleSeg},$NewCRVc[0]);
+										$ExistCRVVEC = $ENDsAB[1];
+										IndexCRV_VEC({1,1},{$SizeVABpast[0],$ExistCRVVEC}, {$MiddleSeg,$MiddleSeg},$NewCRVc[1]);										
+										for($eachC in $NewCRVc){
+											$AllNew[`size($AllNew)`]= $eachC;
+										}
+										$CollectCRV[`size($CollectCRV)`]= $crvsFoundCut[$USortK[$IndexR[$CRVnum]]];
+										$Ocrv+=1;
+									}						
+								}
+								if(($SA<$DistSSS)||($SB<$DistSSS)){
+									vector $CRVPts[];
+									$CRVPts  =VecCurveCvs($NewCutCRVs[$iC]);
+									vector $TranlatedCRV[];
+									$TranlatedCRV= Matrix_Curve_Translation2D($DrawnVecEnds,$SnapEnds,$CRVPts);
+									delete $NewCutCRVs[$iC];
+									$AllNew[`size($AllNew)`]=VecArrayToCurveB($TranlatedCRV);
+									IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$VecTA]],$MCurveIndex[$Ind3dV2P[$VecTB]]}, $SnapEnds,$AllNew[`size($AllNew)`-1]);
+								}else{IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$VecTA]],$MCurveIndex[$Ind3dV2P[$VecTB]]},$SnapEnds,$NewCutCRVs[$iC]);
+								}														
+								
+
+								
+								
+								
+								//end of if $SizeCuts	> 0
+							}
+						}										
+						
+						
+						
+						
+					}else if($SizeCuts==0){				
+						$DrawnVecEnds  =VecCurveEnds({$Sel[0]});
+						vector $allNearVecEnds[];
+						$allNearVecEnds=$tempV;
+						float $dist_A[] = ArrayDistancesVecTofloat($allNearVecEnds, $DrawnVecEnds[0]);
+						float $dist_B[] = ArrayDistancesVecTofloat($allNearVecEnds, $DrawnVecEnds[1]);
+						int $DistSSSortA[];
+						int $DistSSSortB[];
+						$DistSSSortA=SortNumbersIntIndex($dist_A);
+						$DistSSSortB=SortNumbersIntIndex($dist_B);
+						float $SmallestDistA =$dist_A[$DistSSSortA[0]];
+						float $SmallestDistB =$dist_B[$DistSSSortB[0]];	
+						
+						if($SmallestDistA<$DistSSS){
+							$SnapEnds[0]=$allNearVecEnds[$DistSSSortA[0]];
+							$CCi[0]=1;
+						}else{$SnapEnds[0]=$DrawnVecEnds[0];
+							$CCi[0]=0;
+						}
+						if($SmallestDistB<$DistSSS){
+							$SnapEnds[1]=$allNearVecEnds[$DistSSSortB[0]];
+							$CCi[1]=1;
+						}else{$SnapEnds[1]=$DrawnVecEnds[1];
+							$CCi[1]=0;
+						}
+						if(($SmallestDistA<$DistSSS)||($SmallestDistB<$DistSSS)){
+							vector $CRVPts[];
+							$CRVPts  =VecCurveCvs($Sel[0]);
+							vector $TranlatedCRV[];
+							$TranlatedCRV= Matrix_Curve_Translation2D($DrawnVecEnds,$SnapEnds, $CRVPts);
+							delete $Sel[0];
+							$AllNew[`size($AllNew)`]=VecArrayToCurveB($TranlatedCRV);				
+							IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$DistSSSortA[0]]],$MCurveIndex[$Ind3dV2P[$DistSSSortB[0]]]}, $SnapEnds,$AllNew[`size($AllNew)`-1]);
+						}else{
+							if(($CCi[0]+$CCi[1])==0){					
+								IndexCRV_VEC( $CCi,{$MCurveIndex[$Ind3dV2P[$DistSSSortA[0]]],$MCurveIndex[$Ind3dV2P[$DistSSSortB[0]]]}, $SnapEnds,$Sel[0]);
+								$AllNew[0] =$Sel[0];
+							}
+						}
+					}
+				}else{	
+					$DrawnVecEnds  =VecCurveEnds({$Sel[0]});		
+					IndexCRV_VEC({0,0},({0,0}),$DrawnVecEnds,$Sel[0]);		
+					$AllNew[0] =$Sel[0];
+				}
+				
+			}else{	
+				$DrawnVecEnds  =VecCurveEnds({$Sel[0]});		
+				IndexCRV_VEC({0,0},({0,0}),$DrawnVecEnds,$Sel[0]);		
+				$AllNew[0] =$Sel[0];
+			}
+			
+			
+			
+			//if($Ocrv>0){  delete $Sel[0];		
+		//}	
+			
+			if(`size($ListDelete)`>0){
+				//AppendOrdeleteCRV($ListDelete,0);
+			}
+			return $AllNew;
+		}
+///////////////////////////////////////////////////////////////////////////////END 2d
+
+*/
+
