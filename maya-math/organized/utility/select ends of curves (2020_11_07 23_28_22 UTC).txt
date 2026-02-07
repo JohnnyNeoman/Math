@@ -1,0 +1,48 @@
+string $selection[] = `ls -sl`; 
+SelectCurveCVsAll;
+hilite $selection; 
+selectType -ocm -alc false; 
+selectType -ocm -cv on;
+
+selectCurveCV last;
+
+cluster -relative;
+
+
+select -r $selection;
+SelectCurveCVsAll;
+hilite $selection; 
+selectType -ocm -alc false; 
+selectType -ocm -cv on;
+
+
+selectCurveCV first;
+
+cluster -relative;
+
+
+////
+
+//distance from Z axis
+
+        float $pos[];
+	
+	$pos = `pointPosition -w`;
+
+curve -d 1 -p 0 $pos[1] $pos[2] -p $pos[0] $pos[1] $pos[2] -k 0 -k 1 -name connectCurve ;
+
+
+X 157.87 
+
+60.862 
+
+
+
+
+
+
+
+
+
+
+
