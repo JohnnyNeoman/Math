@@ -1,0 +1,19 @@
+string $comment = "this, is a line with numbers like 0.25 and: stuff!";
+string $regex = "[^a-zA-Z0-9_"]";
+string $replace = "_";
+
+print ($comment+"\n");
+int $i = 0;
+string $match;
+int $totalChars = `size($comment)`;
+
+for ($i = 0; $i < $totalChars; $i++) {
+  $match  = `match $regex $comment`;
+  $comment = `substitute $regex $comment $replace`;
+  if ($match == "") break;
+} 
+
+print $comment;
+print "\n";
+
+// returns "this__is_a_line_with_numbers_like_0_25_and__stuff_"
