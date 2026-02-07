@@ -1,0 +1,289 @@
+//AdvanceClosPointNode
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+string $allobjects_selected[] = `ls -sl`;
+select -r $allobjects_selected[0];
+string $poly[] = eval("ls -type mesh `listRelatives -s $allobjects_selected[0]`");  
+select -r $allobjects_selected[1];
+string $crv[] = eval("ls -type nurbsCurve `listRelatives -s $allobjects_selected[1]`");
+
+selectCurveCV all;
+string $CurveCVz[0] = `ls -sl -fl`; 
+string $CurveCVzCount = size ($CurveCVz);
+int $placenumber = $CurveCVzCount;
+ string $selectEPs = ( $crv[0] + ".ep[0:" + $placenumber + "]" );
+
+select -r $selectEPs ;
+
+string $LocTo_EPs[] = `ls -sl -fl`;
+
+  for ($EachVertex in $LocTo_EPs ) {
+
+select -r $EachVertex;  
+
+   //get point position
+	float $pointPos[];
+	$pointPos = `pointPosition -w ($EachVertex )`;
+
+string $locatorz[] = `spaceLocator -p 0 0 0 -n Locatorz`;
+ move -ws $pointPos[0] $pointPos[1] $pointPos[2] $locatorz[0];
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+
+select -r $allobjects_selected[0];
+makeIdentity -apply true -t 0 -r 0 -s 1 -n 0;
+
+//FREEZE SCALE!!!
+//makeIdentity -apply true -t 0 -r 0 -s 1 -n 0
+
+string $shortName = "Locatorz*";
+select -r $shortName;
+string $shortName = "*Shape*";
+select -d $shortName;
+
+
+//Start of loop
+////////////////////////////////////////////////////////////////////////////////
+
+string $LocatorCount = size (`ls -sl`);
+int $LocatorCount_number = ($LocatorCount);  
+$x = 0;
+while($x++ < $LocatorCount_number){
+
+string $selectobject[] = `ls -sl`;
+playButtonStepForward;
+
+string $EachLoc[] = `ls -sl -tl 1`;
+select -r $EachLoc;
+playButtonStepForward;
+
+//closestPointOnMesh
+
+select -r $allobjects_selected[0];
+playButtonStepForward;
+  string $cubeB[] = `ls -sl`;
+
+//create closestPointOnMesh
+      $myCPOM = `createNode closestPointOnMesh`;
+
+//connect closestPointOnMesh Node to selected Mesh
+      connectAttr ($cubeB[0] + ".worldMesh") ($myCPOM + ".inMesh");
+
+//create Locator to be connected to closestPointNode's position //
+     string $spaceLocatorB[] = `spaceLocator -p 0 0 0 -n LocatorX`; 
+playButtonStepForward;
+
+// connect created Locator to closestPointNode //    
+   $connectPositionToPointNode = `connectAttr ($myCPOM + ".position") ($spaceLocatorB[0] + ".translate")`;
+
+// THE MAIN CONNECTION
+// select Pre Existing locator    
+   $connectIntoPointNode = `connectAttr ($EachLoc[0] + ".translate") ($myCPOM + ".inPosition")`;
+
+/////////////////////////-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+playButtonStepForward;
+
+
+//##############################################CHANGE WITH OTHER VARIATIONS
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//////Number SWITCH //if else//
+
+int $xNum = (0);
+
+/////////
+/////////STart of switch
+
+if ( $xNum > 0 ){
+
+//MakeCurveBetween2points---------------------------
+
+        float $LocposA[];	
+	$LocposA = `pointPosition -w ( $EachLoc[0] )`;
+        float $LocposB[];	
+	$LocposB = `pointPosition -w ( $spaceLocatorB[0] )`;
+curve -d 1 -p $LocposA[0] $LocposA[1] $LocposA[2] -p $LocposB[0] $LocposB[1] $LocposB[2] -k 0 -k 2 -n closestPointVVCurveXX  ;
+
+}
+
+if ( $xNum <= 0 ){
+
+select -r $EachLoc[0] $spaceLocatorB[0]; 
+
+{
+
+string $selectedObjects[];
+string $selectedObjects[] = `ls -sl`;
+vector $pointOne;
+$pointOne = `xform -q -ws -sp $selectedObjects[0]`;
+vector $pointTwo;
+$pointTwo = `xform -q -ws -sp $selectedObjects[1]`;
+curve -d 1 -p ($pointOne.x) ($pointOne.y) ($pointOne.z) -p ($pointTwo.x) ($pointTwo.y) ($pointTwo.z) -k 0 -k 1 -n closestPointVVCurveXX ;
+
+///clusterCurve modified from Maya procedures----------------------------------------------------------
+
+	//get selected curves
+	string $selectedObjects[];
+	string $curves[] = `listRelatives -shapes -type "nurbsCurve"`;
+
+	//test to see if user has selected curve components
+	if (size ($curves) == 0){
+		$curves = `listRelatives -parent -type "nurbsCurve"`;
+	}
+	
+	//error out if there is nothing to cluster
+	if (size ($curves) == 0){
+		error "No curves selected to cluster CVs.";
+	}
+
+	//for each curve
+	for ($curve in $curves){
+		//find number of CVs in curve
+		int $numCVs = `getAttr -size ($curve + ".controlPoints")`;
+		//loop for each CV
+		int $i = 0;
+		for ($i; $i < $numCVs; $i++){
+			//make CV into a cluster
+			string $number = $i + 1;
+			cluster -n ("cluster_" + $selectedObjects[0] + $selectedObjects[1]+ "_" + $number) -relative ($curve + ".cv[" + $i + "]"); 
+		}
+	}
+
+string $clusterOne;
+string $clusterOne = ("cluster_" + $selectedObjects[0] + $selectedObjects[1] + "_" + "1Handle");
+string $clusterTwo;
+string $clusterTwo = ("cluster_" + $selectedObjects[0] + $selectedObjects[1] + "_" + "2Handle");
+
+pointConstraint -offset 0 0 0 -weight 1 $selectedObjects[0] $clusterOne;
+pointConstraint -offset 0 0 0 -weight 1 $selectedObjects[1] $clusterTwo;
+
+hide $clusterOne $clusterTwo; 
+
+}
+
+
+}
+
+////########################################################################
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+playButtonStepForward;
+////-------------------------------------------------
+
+
+select -r $selectobject;
+playButtonStepForward;
+
+select -d $EachLoc;
+playButtonStepForward;
+string $selectobject[] = `ls -sl`;
+playButtonStepForward;
+select -r $selectobject;
+playButtonStepForward;
+
+}
+
+
+
+string $shortName = "closestPointVVCurveXX*";
+select -r $shortName;
+string $shortName = "*Shape*";
+select -d $shortName;
+doPerformLoft("1", {"1","1","1","0","3","4","0","1"} );
+
+
+////CREATE curve between the new locators and loft with 
+//////////////
+
+string $shortName = "LocatorX*";
+select -r $shortName;
+string $shortName = "*Shape*";
+select -d $shortName;
+string $AllNewLoc[] = `ls -sl`;
+
+//////////////////////////////////////////
+//OLD.... but might help some other place...
+//int $i = 1;
+//$tostrings = ("$LocposA" + $i++);
+//$stringit = evalEcho($tostrings +";");
+//eval("float" + " " + $tostrings + "[]" + "=" + " " + "`" + "pointPosition" + " " + "-w" + "(" + "$EachNewLoc[0]" + ")" + "`" );
+/////////////////////////////////////////
+
+string $FirstTwoLoc[] = `ls -sl -hd 2`;
+
+        float $LocposX[];	
+	$LocposX = `pointPosition -w ( $FirstTwoLoc[0] )`;
+        float $LocposZ[];	
+	$LocposZ = `pointPosition -w ( $FirstTwoLoc[1] )`;
+$firstCurvezz = `curve -d 1 -p $LocposX[0] $LocposX[1] $LocposX[2] -p $LocposZ[0] $LocposZ[1] $LocposZ[2] -k 0 -k 2 -n closestPointVVCurveZZ`;
+
+
+performRebuildCurveSet 1 1 0 0.001 0 3 1 2 0 0 0 1 0.05;
+
+///// performPolyToCurve ?
+
+select -r $AllNewLoc;
+select -d $FirstTwoLoc;
+string $AllNewLoc[] = `ls -sl`;
+
+
+ 
+string $AllNewLocCount = size ($AllNewLoc);
+int $AllNewLoc_selectednumbers = $AllNewLocCount;
+int $x = 0;
+while($x++ < $AllNewLoc_selectednumbers ){
+
+
+
+}
+
+string $value[];
+ $value[0] = "2";
+	float 	$arrayx[];
+
+$arrayx = `pointPosition -w  ls -sl`;
+
+int 	$arrayzz[];
+	
+		for($i=0;$i<$count;$i++)
+		{ 
+			$arrayzz[size($arrayzz)]=$value;
+		}
+
+
+curve -os -a -p 1.566356 0 1.160229 $firstCurvezz ;
+
+
+curve -d 1 -p 1.23996 0 -3.70917 -k 0 ;
+
+
+
+string $appendedStrings[];
+$appendedStrings[0] = $text;
+
+$text = "-p ";
+string $p0[];
+$p0[0] = $text;
+
+	//for each NewLoc
+	for ($eachNewLoc in $AllNewLoc){
+select -r $eachNewLoc;
+
+float $LocposA[];
+
+$LocposA = `pointPosition -w ( $EachNewLoc )`;
