@@ -1,0 +1,181 @@
+global proc CIRCLESCRIPTZ() {
+
+/////////CIRCLE SCRIPT
+
+string $ObjectCurve[];
+$ObjectCurve = `ls -selection`;
+xform -cp;
+resetPivot;
+
+duplicatePreset(1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1);
+string $ObjectCurveduplicate[];
+$ObjectCurveduplicate = `ls -selection`;
+
+setAttr ($ObjectCurveduplicate[0] + ".translate") 0 0 0;
+setAttr ($ObjectCurveduplicate[0] + ".rotate") 0 0 0;
+
+playButtonStepForward; select -cl  ;
+
+
+float $rotationz[];
+$rotationz = `xform -q -rotation $ObjectCurve`;
+
+
+float $translationz[];
+$translationz = `xform -q -translation $ObjectCurve`;
+
+
+
+float $bbox[] = `exactWorldBoundingBox $ObjectCurveduplicate`;
+print("Bounding box ranges from: " +
+      $bbox[0] + "," + $bbox[1] + "," + $bbox[2] + ", to " +
+      $bbox[3] + "," + $bbox[4] + "," + $bbox[5] + ".\n");
+
+spaceLocator -p 0 0 0 -n BoxspaceLocatorA;
+move -ws $bbox[0] $bbox[1] $bbox[2] BoxspaceLocatorA;
+spaceLocator -p 0 0 0 -n BoxspaceLocatorB;
+move -ws $bbox[3] $bbox[4] $bbox[5] BoxspaceLocatorB;
+spaceLocator -p 0 0 0 -n BoxspaceLocatorC;
+move -ws $bbox[3] $bbox[1] $bbox[2] BoxspaceLocatorC;
+spaceLocator -p 0 0 0 -n BoxspaceLocatorD;
+move -ws $bbox[0] $bbox[4] $bbox[5] BoxspaceLocatorD;
+spaceLocator -p 0 0 0 -n BoxspaceLocatorMiddle;
+
+playButtonStepForward; select -r BoxspaceLocatorA BoxspaceLocatorMiddle BoxspaceLocatorB;
+
+string $object[] = `ls -sl`;
+shadingNode -asUtility plusMinusAverage;
+rename plusMinusAverageA;
+setAttr plusMinusAverageA.operation 3;                                              
+connectAttr -force plusMinusAverageA.output3D ( "|" + $object[1] + ".translate");
+connectAttr -f ( $object[0] + ".translate") plusMinusAverageA.input3D[1];
+connectAttr -f ( $object[2] + ".translate") plusMinusAverageA.input3D[0];
+
+float $translationzMiddle[];
+$translationzMiddle = `xform -q -translation BoxspaceLocatorMiddle`;
+
+playButtonStepForward; select -r BoxspaceLocatorC;
+playButtonStepForward; select -tgl BoxspaceLocatorB ;
+string $ObjectspaceLoc[];
+$ObjectspaceLoc = `ls -sl`;
+float $pointA1[];
+float $pointA2[];
+	$pointA1 = `xform -query -worldSpace -translation ($ObjectspaceLoc[0])`;
+	$pointA2 = `xform -query -worldSpace -translation ($ObjectspaceLoc[1])`;
+$dAx = $pointA1[0] - $pointA2[0];
+$dAy = $pointA1[1] - $pointA2[1];
+$dAz = $pointA1[2] - $pointA2[2];
+float $dAistance;
+$distanceA = `sqrt( ($dAx * $dAx) + ($dAy * $dAy) + ($dAz * $dAz) )`;
+
+playButtonStepForward; select -r BoxspaceLocatorB;
+playButtonStepForward; select -tgl BoxspaceLocatorD ;
+string $ObjectspaceLoc[];
+$ObjectspaceLoc = `ls -sl`;
+float $pointA1[];
+float $pointA2[];
+	$pointA1 = `xform -query -worldSpace -translation ($ObjectspaceLoc[0])`;
+	$pointA2 = `xform -query -worldSpace -translation ($ObjectspaceLoc[1])`;
+$dAx = $pointA1[0] - $pointA2[0];
+$dAy = $pointA1[1] - $pointA2[1];
+$dAz = $pointA1[2] - $pointA2[2];
+float $dAistance;
+$distanceB = `sqrt( ($dAx * $dAx) + ($dAy * $dAy) + ($dAz * $dAz) )`;
+
+$distanceAverage =  (($distanceA + $distanceB) * (0.5)) ;
+$radiusX = ( $distanceAverage / 2);
+
+//if / then 
+float $squarePercentA;
+float $squarePercentB;
+
+if ( $distanceA > $distanceAverage) {
+$squarePercentA = (( $distanceAverage / $distanceA ) * (100));
+}
+
+if ( $distanceA < $distanceAverage) {
+$squarePercentA = (( $distanceA / $distanceAverage ) * (100));
+}
+
+if ( $distanceB > $distanceAverage) {
+$squarePercentA = (( $distanceAverage / $distanceB ) * (100));
+}
+
+if ( $distanceB < $distanceAverage) {
+$squarePercentB = (( $distanceB / $distanceAverage ) * (100));
+
+}
+/////////////////////
+int $squareA;
+$squareA = 0;
+int $squareB;
+$squareB = 0;
+print $squarePercentA ;
+if ( $squarePercentA > 55)  {
+
+$squareA = (0 + 1); 
+
+} else {
+
+$squareA = (0);
+
+}
+
+print $squareA;
+print $squarePercentB ;
+
+if ( $squarePercentB > 55)  {
+
+$squareB = ($squareB + 1); 
+
+} else {
+
+$squareB = (0);
+
+}
+
+$addSquareResults = ($squareA + $squareB);
+if ( $addSquareResults == 2 ){
+
+circle -nr 0 1 0 -c $translationzMiddle[0] $translationzMiddle[1] $translationzMiddle[2] -r $radiusX;
+
+string $CIRCLEX[];
+$CIRCLEX = `ls -selection`;
+
+float $rotationz[];
+$rotationz = `xform -q -rotation $ObjectCurve`;
+
+setAttr ($CIRCLEX[0] + ".rotateX") $rotationz[0];
+setAttr ($CIRCLEX[0] + ".rotateY") $rotationz[1];
+setAttr ($CIRCLEX[0] + ".rotateZ") $rotationz[2];
+
+float $translationz[];
+$translationz = `xform -q -translation $ObjectCurve`;
+
+setAttr ($CIRCLEX[0] + ".translateX") $translationz[0];
+setAttr ($CIRCLEX[0] + ".translateY") $translationz[1];
+setAttr ($CIRCLEX[0] + ".translateZ") $translationz[2];
+
+//TEMP CHANGE
+string $currPanel = `getPanel -withFocus` , $camera ;
+$camera = `modelPanel -q -camera $currPanel`;
+setAttr ($CIRCLEX[0] + ".rotateX") (`getAttr ($camera + ".rotateX")`+90);
+setAttr ($CIRCLEX[0] + ".rotateY") `getAttr ($camera + ".rotateY")`;
+setAttr ($CIRCLEX[0] + ".rotateZ") `getAttr ($camera + ".rotateZ")`;
+
+playButtonStepForward; select -r $ObjectCurve $ObjectCurveduplicate BoxspaceLocatorA BoxspaceLocatorB BoxspaceLocatorC BoxspaceLocatorD BoxspaceLocatorMiddle;
+delete;
+
+}
+
+else {
+
+playButtonStepForward; select -r $ObjectCurveduplicate BoxspaceLocatorA BoxspaceLocatorB BoxspaceLocatorC BoxspaceLocatorD BoxspaceLocatorMiddle;
+delete;
+}
+
+}
+
+$scriptt_jobNum = `scriptJob -event DagObjectCreated CIRCLESCRIPTZ -protected`;
+
+
