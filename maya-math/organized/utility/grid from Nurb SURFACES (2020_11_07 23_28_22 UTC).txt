@@ -1,0 +1,140 @@
+
+spFrSurface($nurbAllz, 2, 3);
+
+string $nurbAllz[] = `ls -sl`;
+
+
+
+global proc spFrSurface(string $nurbsAll[], int $u, int $v)
+{
+
+string $nurb = $nurbsAll[0];
+string $nurb2 = $nurbsAll[1];
+gridSurface($nurb, $u,$v);
+gridSurface($nurb2, $u,$v);
+
+float $u_inc = 1.0/$u;
+float $v_inc = 1.0/$v;
+float $cv[], $cv2[], $cv3[];
+
+float $i2, $k2;
+
+// get U information
+
+$u = $u + 2;
+$v = $v + 2;
+
+for($i=0;$i<$u;$i++)
+{
+for($k=0;$k<$v;$k++)
+{
+
+$i2 = $u_inc * $i;
+print ("u:" + $i2 + " | ");
+$k2 = $v_inc * $k;
+print ("v:" + $k2 + " | ");
+$cv = `pointOnSurface -u $i2 -v $k2 -position $nurb`;
+print( $cv[0] +" "+ $cv[1] +" "+ $cv[2]  + " | ");
+
+$cv2 = `pointOnSurface -u $i2 -v $k2 -position $nurb2`;
+print( $cv2[0] +" "+ $cv2[1] +" "+ $cv2[2] +"\n");
+
+curve -d 1 -p $cv[0] $cv[1] $cv[2] -p $cv2[0] $cv2[1] $cv2[2] -k 0 -k 1;
+
+// print CV
+
+//$x[$k] = $cv[0];
+//$y[$k] = $cv[1];
+//$z[$k] = $cv[2];
+
+}
+
+//$curveName[$i] = `curve -p $x[0] $y[0] $z[0] -p $x[1] $y[1] $z[1] -p $x[2] $y[2] $z[2] -p $x[3] $y[3] $z[3] -p $x[4] $y[4] $z[4] -p $x[5] $y[5] $z[5] -p $x[6] $y[6] $z[6] -p $x[7] $y[7] $z[7]`;
+}
+}
+
+
+
+
+// LONGITUDINAL MEMBERS
+
+
+global proc gridSurface(string $nurb, int $u, int $v)
+{
+float $u_inc = 1.0/$u;
+float $v_inc = 1.0/$v;
+float $cv[], $cv2[], $cv3[];
+
+float $i2, $k2;
+
+// get U information
+
+$u = $u + 1;
+
+for($i=0; $i<$u; $i++)
+{
+for($k=0; $k<$v; $k++)
+{
+
+$i2 = $u_inc * $i;
+print ("u:" + $i2 + " | ");
+$k2 = $v_inc * $k;
+print ("v:" + $k2 + " | ");
+$cv = `pointOnSurface -u $i2 -v $k2 -position $nurb`;
+print( $cv[0] +" "+ $cv[1] +" "+ $cv[2]  + " | ");
+
+$k3 = $v_inc * ($k+1);
+
+$cv2 = `pointOnSurface -u $i2 -v $k3 -position $nurb`;
+print ( $cv2[0] +" "+ $cv2[1] +" "+ $cv2[2] +"\n");
+
+curve -d 1 -p $cv[0] $cv[1] $cv[2] -p $cv2[0] $cv2[1] $cv2[2] -k 0 -k 1;
+
+// print CV
+
+//$x[$k] = $cv[0];
+//$y[$k] = $cv[1];
+//$z[$k] = $cv[2];
+
+}
+
+//$curveName[$i] = `curve -p $x[0] $y[0] $z[0] -p $x[1] $y[1] $z[1] -p $x[2] $y[2] $z[2] -p $x[3] $y[3] $z[3] -p $x[4] $y[4] $z[4] -p $x[5] $y[5] $z[5] -p $x[6] $y[6] $z[6] -p $x[7] $y[7] $z[7]`;
+
+}
+
+// get U information
+
+$v = ($v + 1);
+$u = ($u - 1);
+
+for($i=0;$i<$v;$i++)
+{
+for($k=0;$k<$u;$k++)
+{
+
+$i2 = $u_inc * $k;
+print ("u:" + $i2 + " | ");
+$k2 = $v_inc * $i;
+print ("v:" + $k2 + " | ");
+$cv = `pointOnSurface -u $i2 -v $k2 -position $nurb`;
+print( $cv[0] +" "+ $cv[1] +" "+ $cv[2]  + " | ");
+
+$i3 = $u_inc * ($k+1);
+
+$cv2 = `pointOnSurface -u $i3 -v $k2 -position $nurb`;
+print( $cv2[0] +" "+ $cv2[1] +" "+ $cv2[2] +"\n");
+
+curve -d 1 -p $cv[0] $cv[1] $cv[2] -p $cv2[0] $cv2[1] $cv2[2] -k 0 -k 1;
+
+// print CV
+
+//$x[$k] = $cv[0];
+//$y[$k] = $cv[1];
+//$z[$k] = $cv[2];
+
+}
+
+//$curveName[$i] = `curve -p $x[0] $y[0] $z[0] -p $x[1] $y[1] $z[1] -p $x[2] $y[2] $z[2] -p $x[3] $y[3] $z[3] -p $x[4] $y[4] $z[4] -p $x[5] $y[5] $z[5] -p $x[6] $y[6] $z[6] -p $x[7] $y[7] $z[7]`;
+}
+}
+
