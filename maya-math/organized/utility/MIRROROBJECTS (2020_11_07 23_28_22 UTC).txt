@@ -1,0 +1,186 @@
+polyExtrudeFacet -kft -localTranslateZ
+
+-localDirectionZ
+
+polyExtrudeFacet -constructionHistory 1 -keepFacesTogether 1 -divisions 1 -twist 0 -taper 1 -off 0 -smoothingAngle 30 -localTranslateZ -0.6 -localScale 0.5 0.5 0.5 ;
+
+
+
+
+//MIRROROBJECTS
+
+
+string $newSet1 = `sets -name mirroredobjectsset`;
+
+group -w; xform -os -piv 0 0 0;
+
+duplicate -rr -renameChildren; scale -r -1 1 1;
+
+
+select -r mirroredobjectsset;
+
+
+
+
+
+///////TRANS Z
+
+ string $select[] = `ls -sl`;
+
+ //capture trans, rot, and scale of object to match
+        $outmmesh = ($select[0] + ".translateZ"); 
+        $inmmesh = ($select[1] + ".translateZ");
+{
+
+$connect = `connectAttr -f ($select[0] + ".translateZ") $inmmesh`;
+
+
+}
+
+///////TRANS Y
+
+ string $select[] = `ls -sl`;
+
+ //capture trans, rot, and scale of object to match
+        $outmmesh = ($select[0] + ".translateY"); 
+        $inmmesh = ($select[1] + ".translateY");
+{
+
+$connect = `connectAttr -f ($select[0] + ".translateY") $inmmesh`;
+
+
+}
+
+
+///////TRANS X
+
+ string $select[] = `ls -sl`;
+
+ //capture trans, rot, and scale of object to match
+        $outmmesh = ($select[0] + ".translateX"); 
+        $inmmesh = ($select[1] + ".translateX");
+{
+
+$connect = `connectAttr -f ($select[0] + ".translateX") $inmmesh`;
+
+
+}
+
+
+
+///////ROT Z
+
+ string $select[] = `ls -sl`;
+
+ //capture ROT, rot, and scale of object to match
+        $outmmesh = ($select[0] + ".rotateZ"); 
+        $inmmesh = ($select[1] + ".rotateZ");
+{
+
+$connect = `connectAttr -f ($select[0] + ".rotateZ") $inmmesh`;
+
+
+}
+
+///////ROT Y
+
+ string $select[] = `ls -sl`;
+
+ //capture ROT, rot, and scale of object to match
+        $outmmesh = ($select[0] + ".rotateY"); 
+        $inmmesh = ($select[1] + ".rotateY");
+{
+
+$connect = `connectAttr -f ($select[0] + ".rotateY") $inmmesh`;
+
+
+}
+
+
+///////ROT X
+
+ string $select[] = `ls -sl`;
+
+ //capture ROT, rot, and scale of object to match
+        $outmmesh = ($select[0] + ".rotateX"); 
+        $inmmesh = ($select[1] + ".rotateX");
+{
+
+$connect = `connectAttr -f ($select[0] + ".rotateX") $inmmesh`;
+
+
+}
+
+
+
+///////SCALE Z
+
+ string $select[] = `ls -sl`;
+
+ //capture SCALE, SCALE, and scale of object to match
+        $outmmesh = ($select[0] + ".scaleZ"); 
+        $inmmesh = ($select[1] + ".scaleZ");
+{
+
+$connect = `connectAttr -f ($select[0] + ".scaleZ") $inmmesh`;
+
+
+}
+
+///////SCALE Y
+
+ string $select[] = `ls -sl`;
+
+ //capture SCALE, SCALE, and scale of object to match
+        $outmmesh = ($select[0] + ".scaleY"); 
+        $inmmesh = ($select[1] + ".scaleY");
+{
+
+$connect = `connectAttr -f ($select[0] + ".scaleY") $inmmesh`;
+
+
+}
+
+
+///////SCALE X
+
+ string $select[] = `ls -sl`;
+
+ //capture SCALE, SCALE, and scale of object to match
+        $outmmesh = ($select[0] + ".scaleX"); 
+        $inmmesh = ($select[1] + ".scaleX");
+{
+
+$connect = `connectAttr -f ($select[0] + ".scaleX") $inmmesh`;
+
+
+}
+
+
+
+ string $select[] = `ls -sl`;
+
+ //capture trans, rot, and scale of object to match
+        $outmmesh = ($select[0] + ".outMesh"); 
+        $inmmesh = ($select[1] + ".inMesh");
+{
+
+$connect = `connectAttr -f ($select[0] + ".outMesh") $inmmesh`;
+
+
+}
+
+
+select -r mirroredobjectsset;
+
+sets -remove mirroredobjectsset `ls -sl`;
+
+select -cl;
+
+string $shortName = "mirroredobjectsset*";
+select -r -ne $shortName;
+
+doDelete;
+
+
+//ENDofSCRIPT
