@@ -1,0 +1,2990 @@
+proc float [] AnglesofTriangle(float $SideA, float $SideB, float $SideC){
+
+float $Pi = 3.1415926535;
+float $Arcangle = acos((((`pow $SideA 2.000`) + (`pow $SideB 2.000`) - (`pow $SideC 2.000`) )/(2.000*$SideA*$SideB)));
+float $AngleNPi =  ($Arcangle*180)/$Pi;
+float $AngleNA = $AngleNPi;
+
+float $ArcangleB = acos((((`pow $SideA 2.000`) + (`pow $SideC 2.000`) - (`pow $SideB 2.000`) )/(2.000*$SideA*$SideC)));
+float $AngleNPiB =  ($ArcangleB*180)/$Pi;
+float $AngleNB = $AngleNPiB;
+
+float $ArcangleC = acos((((`pow $SideB 2.000`) + (`pow $SideC 2.000`) - (`pow $SideA 2.000`) )/(2.000*$SideB*$SideC)));
+float $AngleNPiC =  ($ArcangleC*180)/$Pi;
+float $AngleNC = $AngleNPiC;
+
+// acos is the Arc Cos which is sometime called cos pow-1 which does not mean cos raised to the Neg One power but
+// is the opposite angle called acos if you move cos to the other side of the equal sign when solving an equation.
+//simple ass hell.. but wont find these answers any place but from me since reality is fucked. Luck has it the internet exists. 
+//and knowledge WANTS to grow.
+// acos atan asin same thing
+
+float $Angle_a = $AngleNA; 
+float $Angle_b = $AngleNB; 
+float $Angle_c = $AngleNC;
+float $Add = $Angle_a + $Angle_b + $Angle_c;
+float $Angle_ABC[] = {$Angle_a, $Angle_b, $Angle_c} ;
+return $Angle_ABC;
+}
+
+///////////////////////////
+
+proc float [] MultLenToDirAddToPoint(float $Length, float $Dir[], float $Pos[]){
+float $MultLengthDir[] = multiplyFloat($Length, $Dir);
+float $AddMultDirPos[] = AddFloats($Pos, $MultLengthDir);
+return $AddMultDirPos;
+}
+
+proc float [] RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], int $PosOrNegOne, float $Length, float $DirNormAx[], float $Radian){
+vector $DirecOfPointAB = FloatToVec ( DirectionF($PosA, $PosB));
+$DirecOfPointAB = FloatToVec ( multiplyFloat($PosOrNegOne, $DirecOfPointAB));
+vector $DirNorm = FloatToVec ($DirNormAx);
+float $rotatsA[] = `rot $DirecOfPointAB $DirNorm $Radian`;
+float $MultLengthDir[] = multiplyFloat($Length, $rotatsA);
+float $AddMultDirPos[] = AddFloats($PosA, $MultLengthDir);
+return $AddMultDirPos;
+}
+
+/////////////////////////////////////////////////////////////
+
+proc float [] RotDirToPoint(float $PosA[], float $PosB[], int $PosOrNegOne, float $DirNormAx[], float $Radian){
+vector $DirecOfPointAB = FloatToVec ( DirectionF($PosA, $PosB));
+float $Length = distance2Pts ($PosA, $PosB);
+$DirecOfPointAB = FloatToVec ( multiplyFloat($PosOrNegOne, $DirecOfPointAB));
+vector $DirNorm = FloatToVec ($DirNormAx);
+float $rotatsA[] = `rot $DirecOfPointAB $DirNorm $Radian`;
+float $MultLengthDir[] = multiplyFloat($Length, $rotatsA);
+float $AddMultDirPos[] = AddFloats($PosA, $MultLengthDir);
+return $AddMultDirPos;
+}
+////////////////
+/*
+string $CurveItemZ[]=`ls -sl`;
+vector $AllLocPositionsZ[];
+clear $AllLocPositionsZ;
+$AllLocPositionsZ = VecCurveEps($CurveItemZ[0] );
+float $DirectionLineFi[] =  DirectionF($AllLocPositionsZ[0], $AllLocPositionsZ[1]);
+
+select -r $CurveItemZ[1];
+float $PointN[] =TransObjSelectedWorld();
+float $InterSectLinePoint[] = ClosestPoint2Line($DirectionLineFi, $AllLocPositionsZ[0], $PointN);
+
+*/
+
+proc float [] ClosestPoint2Line(float $DirectionLineF[], float $PointOnLine[], float $PointN[]){
+		float $MultDirOne[] = multiplyFloat(1.0, $DirectionLineF);
+	float $AddMultF[] = AddFloats($PointOnLine, $MultDirOne);
+float $FDirNorA[] = Normal3Points($PointOnLine, $AddMultF, $PointN);
+float $DistToLineSTart = distance2Pts( $PointN , $PointOnLine);
+
+		float $MultDirMx[] = multiplyFloat($DistToLineSTart,  $FDirNorA);
+	float $AddMultMiiFx[] = AddFloats($PointOnLine, $MultDirMx);
+float $FDirNorB[] = Normal3Points($PointOnLine, $AddMultMiiFx, $AddMultF);
+
+		float $MultDirMxz[] = multiplyFloat($DistToLineSTart,  $FDirNorB);
+	float $AddMultMiiFxz[] = AddFloats($PointOnLine, $MultDirMxz);
+float $locsA[] = lineIntersection($PointN, $FDirNorB, $PointOnLine, $DirectionLineF);
+Loc $locsA;
+curve2points($PointN,$locsA);
+return $locsA;
+}
+///////////////
+
+
+proc float [] ArcLengthArray(string $Objs[]){
+float $ArcLengths[];
+for($each in $Objs){
+$ArcLengths[`size($ArcLengths)`]= `arclen $each`;
+}
+return $ArcLengths;
+}
+
+proc vector TwoVecsOrFloats(float $p1p2[], float $p1p3[]){
+vector $Ui = FloatToVec($p1p2);
+vector $Vi = FloatToVec($p1p3);
+vector $VEcLine = << ($Ui.x - $Vi.x), ($Ui.y - $Vi.y),($Ui.z - $Vi.z)>>;
+return $VEcLine;
+}
+
+
+proc vector [] Vector3pt(float $p1[], float $p2[], float $p3[]){
+
+	// Get the vector p1-p2, p1-p3	
+	float $p1p2[3];
+	float $p1p3[3];
+	$p1p2[0] = $p2[0]-$p1[0]; 		$p1p2[1] = $p2[1]-$p1[1]; 		$p1p2[2]= $p2[2]-$p1[2];
+	$p1p3[0] = $p3[0]-$p1[0]; 		$p1p3[1] = $p3[1]-$p1[1]; 		$p1p3[2]= $p3[2]-$p1[2];
+vector $Combined[];
+$Combined[0] = << $p1p2[0], $p1p2[1], $p1p2[2]>>;
+$Combined[1] = <<$p1p3[0], $p1p3[1], $p1p3[2]>>;
+return $Combined;
+}
+
+proc RotateItX(float $Rotation[]){
+rotate -r -ws $Rotation[0] $Rotation[1] $Rotation[2];
+}
+
+
+proc float [] EulerAng(float $pointB1[], float $pointB2[]){
+float $EulerAngleA[] = `angleBetween -euler -v1  $pointB1[0] $pointB1[1] $pointB1[2] -v2  $pointB2[0] $pointB2[1]  $pointB2[2]`;
+return $EulerAngleA;
+}
+
+proc string [] GetNearestINDEX(int $Nn, string $index[],float $pointA1[], vector $objectListV[]){
+float $distanceA[];
+for ($eachVecs in $objectListV){
+$distanceA[`size($distanceA)`] = distance2Pts( $pointA1 , $eachVecs);
+}
+string $EmptyStringX[];
+clear $EmptyStringX;
+float $NewfloatsX[];
+$NewfloatsX = SortFloatArrayAndString($distanceA, $index, $EmptyStringX);
+$EmptyStringX = ReverseStringArray($EmptyStringX);
+float $NewfloatsXi[] = ReverseFloatArray($NewfloatsX);
+string $returnZi[];
+int $iX= 0;
+while ($Nn > $iX){
+$returnZi[`size($returnZi)`] = $EmptyStringX[$iX];
+$iX++; 
+}
+return $returnZi;
+}
+
+
+proc string [] GetNearest(int $Nn, string $OneObject, string $diff[]){
+string $objectList[] = $diff;
+float $pointA1[];
+$pointA1 = `xform -query -worldSpace - translation ($OneObject)`;
+float $distanceA[];
+clear  $distanceA;
+int $Indx=0;
+float $pointA2[];
+for ($eachZx in $objectList){
+if (catch($pointA2 = `xform -q -ws -t $objectList[$Indx]`)){
+$pointA2 = `pointPosition -w $objectList[$Indx]`;
+} 
+
+$Indx++;
+$dAx = $pointA1[0] - $pointA2[0];
+$dAy = $pointA1[1] - $pointA2[1];
+$dAz = $pointA1[2] - $pointA2[2];
+$distanceA[`size($distanceA)`] = `sqrt( ($dAx * $dAx) + ($dAy * $dAy)  + ($dAz * $dAz) )`;
+}
+
+
+string $EmptyStringX[];
+clear $EmptyStringX;
+float $NewfloatsX[];
+$NewfloatsX = SortFloatArrayAndString($distanceA, $objectList, $EmptyStringX);
+$EmptyStringX = ReverseStringArray($EmptyStringX);
+float $NewfloatsXi[] = ReverseFloatArray($NewfloatsX);
+
+string $returnZi[];
+int $iX= 0;
+while ($Nn > $iX){
+$returnZi[`size($returnZi)`] = $EmptyStringX[$iX];
+$iX++; 
+}
+
+return $returnZi;
+}
+
+
+
+proc int Partition(float $a[], int $Index[], int $p, int $r) {
+  float $x = $a[$r];
+  int $xIndex = $Index[$r];
+  int $j = $p - 1;
+	int $i;
+  for (  $i = $p; $i < $r; $i++) {
+    if ($x <= $a[$i]) {
+      $j = $j + 1;
+
+      float $temp = $a[$j];
+      float $tempIndex = $Index[$j];
+
+      $a[$j] = $a[$i];
+      $Index[$j] = $Index[$i];
+
+      $a[$i] = $temp;
+      $Index[$i] = $tempIndex;
+    }
+  }
+  $a[$r] = $a[$j + 1];
+$Index[$r] = $Index[$j + 1];
+
+    $a[$j + 1] = $x;
+$Index[$j + 1] = $xIndex;
+
+  return ($j + 1);
+}
+
+proc  quickSort(float $a[], int $Index[], int $p, int $r) {
+  if ($p < $r) {
+    int $q = Partition($a, $Index, $p, $r);
+    quickSort($a, $Index, $p, $q - 1);
+    quickSort($a, $Index, $q + 1, $r);
+  }
+}
+
+
+
+proc float [] SortFloatArrayAndString( float $allFloatToSort[], string $ObjsCurve[], string $EmptyStringNewOrder[]){
+float $Floatlist[] = $allFloatToSort;
+int $sIze = `size($allFloatToSort)`-1;
+
+//float $aF[] = { 1.0, 9.2, 0.445, 5.3, 0.6, 7.0, -0.8, -2.22, 4.133, 3.002};
+   float $aF[] = $allFloatToSort;
+int $IndexTrack[] = CreateIntIndex(`size($aF)`);
+quickSort($aF, $IndexTrack, 0, $sIze);
+string $stringIndexTrack[]= IntArrayToStringArray($IndexTrack);
+string $newOrderArray[] = NewArrayOrderWithIndexKey($stringIndexTrack, $ObjsCurve);
+$EmptyStringNewOrder = $newOrderArray;
+return $aF;
+
+}
+
+
+
+
+proc float [] SortFloatArrayAndStringN(int $n ,float $allFloatToSort[], string $ObjsCurve[], string $EmptyStringNewOrder[]){
+float $Floatlist[] = $allFloatToSort;
+int $sIze = `size($allFloatToSort)`;
+if (($n==$sIze)||($n>$sIze)){
+$n = $sIze-1;
+}
+//float $aF[] = { 1.0, 9.2, 0.445, 5.3, 0.6, 7.0, -0.8, -2.22, 4.133, 3.002};
+   float $aF[] = $allFloatToSort;
+int $IndexTrack[] = CreateIntIndex(`size($aF)`);
+quickSort($aF, $IndexTrack, 0, $n);
+string $stringIndexTrack[]= IntArrayToStringArray($IndexTrack);
+string $newOrderArray[] = NewArrayOrderWithIndexKey($stringIndexTrack, $ObjsCurve);
+$EmptyStringNewOrder = $newOrderArray;
+return $aF;
+
+}
+
+
+/*
+float $N1 = 2;
+float $N2 = 5;
+float $GCD = greatestCommonDivisor($N1, $N2);
+print($GCD);
+float $cal1 =  $GCD /$N1;
+float $cal2 =  $GCD /$N2;
+
+float $cal3 = $N2/$cal1;
+float $cal4 = $N1/$cal2;
+*/
+
+proc float greatestCommonDivisor(float $a, float $b) {
+float $dividerA; 
+float $dividendA; 
+ float $gdivisorA;
+    if ($a < $b) { 
+float $divider; 
+float $dividend; 
+      $divider = $a;
+      $dividend = $b;
+$dividerA = $divider;
+$dividendA = $dividend;
+    float $gdivisor  =  1.0+ $divider+ $dividend;
+$gdivisorA=$gdivisor;
+    }
+    else {
+float $divider; 
+float $dividend; 
+      $divider = $b;
+      $dividend = $a;
+$dividerA = $divider;
+$dividendA = $dividend;
+ float $gdivisor  =  1.0+ $divider+ $dividend;
+$gdivisorA=$gdivisor;
+    }
+
+    if ($dividendA % $dividerA == 0) {  
+      return $dividerA;
+    }
+    else {  
+      greatestCommonDivisor($dividerA, $dividendA % $dividerA);
+    }
+    return $gdivisorA; 
+  }
+
+
+
+
+proc ShakeHands(){
+string $itemA[] = `ls -sl`;
+string $itemBackUp[] = $itemA;
+int $Xvi =0;
+for($each in $itemBackUp){
+  string $itemsToRemove[] = { $itemA[0] };
+  string $diff[] = stringArrayRemoveExact($itemsToRemove, $itemA);
+for($eachOther in $diff){
+select -r $eachOther $itemsToRemove;
+playButtonStepForward;
+CreateCurveFromTwoSelected;
+playButtonStepForward;
+}
+$itemA = $diff;
+
+}
+}
+
+proc float [] EulerAngB(float $pointB1[], float $pointB2[]){
+float $EulerAngleA[] = `angleBetween -v1  $pointB1[0] $pointB1[1] $pointB1[2] -v2  $pointB2[0] $pointB2[1]  $pointB2[2]`;
+return $EulerAngleA;
+}
+
+
+
+
+proc string [] MostRightClockWise (string $ObjectList[], vector $Vecs[], int $Two[]){
+
+string $ThreePoints[] = { "0", "1", "2"};
+
+// Get the vector p1-p2, p3-p4
+	// Get the vector  p3-p4
+//THREE POINTS get angel that is point 2 & 3 to point 1 (the V shape joining at first point)
+
+///////////////////////////////////////////////////////////
+float $point1[] =  FloatToVec($Vecs[0]);
+float $point2[] =  FloatToVec($Vecs[1]);
+float $point3[] =  FloatToVec($Vecs[2]);
+
+vector $U1 = TwoVecsOrFloats($point2, $point1);
+vector $V1 = TwoVecsOrFloats($point3, $point1);
+vector $U2 = TwoVecsOrFloats($point3, $point1);
+vector $V2 = TwoVecsOrFloats($point2, $point1);
+
+//vector $U2 = TwoVecsOrFloats($point3, $point2);
+//vector $V2 = TwoVecsOrFloats($point1, $point2);
+
+vector $U3 = TwoVecsOrFloats($point1, $point3);
+vector $V3 = TwoVecsOrFloats($point2, $point3);
+
+
+	vector $normalV[];
+clear $normalV;
+	$normalV[0] = FloatToVec( crossProduct( $U1, $V1, 0, 1 ) );
+$normalV[1] = FloatToVec( crossProduct( $U2, $V2, 0, 1 ) );
+
+//float $normal[] = `unit ($normalV[0])`;
+
+float $normalA[] = `unit ($normalV[0])`;
+float $normalB[] = `unit ($normalV[1])`;
+
+float $normalAAdd = $normalA[0] + $normalA[1];
+float $normalAAdd2 = $normalB[0] + $normalB[1];
+int $TwoNew[];
+string $ReturnObj[];
+if( $normalAAdd< $normalAAdd2){
+//select -r $ObjectList[2];
+$TwoNew ={$Two[1], $Two[0]};
+$ReturnObj ={ $ObjectList[1], $ObjectList[0]};
+
+}else{ 
+//select -r $ObjectList[1];
+$TwoNew ={$Two[0], $Two[1]};
+$ReturnObj ={ $ObjectList[0], $ObjectList[1]};
+}
+
+$Two = $TwoNew;
+
+return $ReturnObj;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+
+//TANGENTSS;
+
+
+
+//
+proc CreateVectorInfoAtSelected(){
+
+string $oneItemz[] = `ls -sl -fl`;
+for ($each in $oneItemz){
+xform -cp $each;
+	vector $worldPos = `xform -q -ws -t  $each`;
+string $type = getTypeItemString({$each});
+if(!($type == "controlPoint")){
+			move -rpr 0 0 0 $each;
+			makeIdentity -apply true  -t 1 -r 0 -s 0 $each;
+			xform -t ($worldPos.x)  ($worldPos.y) ($worldPos.z) $each;
+}
+
+float $worldPosF[] = `xform -q -ws -t $each`;
+string $resultZa =("<< " +  $worldPos+" >>");
+string $textN[] = `textCurves -ch 0 -f "Times New Roman|h-2|w400|c0" -t $resultZa`;
+toggle -cv -state 0-ep -hull -normal -sf -origin;
+move -ws $worldPosF[0] $worldPosF[1] $worldPosF[2] $textN;
+string $UserCaM = `modelEditor -q -camera modelPanel4`; 
+aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 0 1 -upVector 0 1 0 -worldUpType "vector" -worldUpVector 0 1 0 $UserCaM $textN;
+}
+}
+//
+
+proc string Circles_Direction(float $Point[], float $FloatDir[], float $FloatNum){
+string $circleItem[] = `circle -c $Point[0] $Point[1] $Point[2] 
+-nr $FloatDir[0] $FloatDir[1] $FloatDir[2] 
+-sw 360 
+-r $FloatNum 
+-d 3 -ut 0 -tol 0.001 -s 8 -ch 1`;
+
+//setRotationAxisFloat(string $objectitem1[], float $rotationsA[])
+return $circleItem[0];
+}
+
+proc ResetTransEachSL(){
+string $oneItemz[] = `ls -sl`;
+for ($each in $oneItemz){
+xform -cp $each;
+	vector $worldPos = `xform -q -ws -rp $each`;
+			move -rpr 0 0 0 $each;
+			makeIdentity -apply true -t 1 -r 0 -s 0 $each;
+			xform -t ($worldPos.x) ($worldPos.y) ($worldPos.z) $each;
+}
+}
+
+//
+
+proc float [] ArcLengthArray(string $Objs[]){
+float $ArcLengths[];
+for($each in $Objs){
+$ArcLengths[`size($ArcLengths)`]= `arclen $each`;
+}
+return $ArcLengths;
+}
+
+//CircleFromCurveZYX 0 0 1;
+
+	proc CircleFromCurveT(){
+string $StraitCurve[] = `ls -sl`;
+ResetTransEachSL;
+float $ArcLengthOne = `arclen $StraitCurve[0]`;
+$ArcLengthOne = $ArcLengthOne/2;
+float $CurvPos[] = `xform -q -ws -rp $StraitCurve[0]`;
+float $tangent[] = `pointOnCurve -t -pr 0.5 $StraitCurve[0]`;
+$tangent = `unit <<$tangent[0], $tangent[1], $tangent[2]>>`;
+string $circles = Circles_Direction($CurvPos, $tangent, $ArcLengthOne);
+ResetTransEachSL;
+}
+
+proc float [] lineIntersectionF(float $PosA[], float $PosB[], float $PosC[], float $PosD[]){ 
+float $DirAB[] = DirectionF ($PosA, $PosB);
+float $DirCD[] = DirectionF ($PosC, $PosD);
+ float $locsA[] = lineIntersection($PosA, $DirAB, $PosC, $DirCD);
+return $locsA;
+}
+
+	proc CircleFromCurveN(int $X, int $Y, int $Z ){
+string $StraitCurve[] = `ls -sl`;
+ResetTransEachSL;
+float $ArcLengthOne = `arclen $StraitCurve[0]`;
+$ArcLengthOne = $ArcLengthOne/2;
+float $CurvPos[] = `xform -q -ws -rp $StraitCurve[0]`;
+float $t[3], $n[3];
+  vector $tan, $norm, $bi;
+
+   //$t $n are just directions....
+    $t = `pointOnCurve -ch off -pr 0.5 -nt $StraitCurve[0]`;
+    $n = `pointOnCurve -ch off -pr 0.5 -nn $StraitCurve[0]`;
+    // Maya promises normalized tangent and normal,
+    // but they really aren't.    
+    $tan  = `unit << $t[0], $t[1], $t[2] >>`;
+//## Note the int One 1 inthe middle...
+    $norm = `unit << $n[0], $n[0], $n[0] >>`;    
+    // Calculate the binormal.   
+    $bi = `cross << ($tan.x),  ($tan.y),  ($tan.z)  >>
+                 << ($norm.x), ($norm.y), ($norm.z) >>`;
+    $bi = `unit $bi`;
+string $circles = Circles_Direction($CurvPos,$bi, $ArcLengthOne);
+ResetTransEachSL;
+}
+
+// CircleFromCurveZYX 1 0 0;
+
+	proc CircleFromCurveZYX(int $X, int $Y, int $Z ){
+string $StraitCurve[] = `ls -sl`;
+ResetTransEachSL;
+float $ArcLengthOne = `arclen $StraitCurve[0]`;
+$ArcLengthOne = $ArcLengthOne/2;
+float $CurvPos[] = `xform -q -ws -rp $StraitCurve[0]`;
+float $t[3], $n[3];
+  vector $tan, $norm, $bi;
+   //$t $n are just directions....
+    $t = `pointOnCurve -ch off -pr 0.5 -nt $StraitCurve[0]`;
+    $n = `pointOnCurve -ch off -pr 0.5 -nn $StraitCurve[0]`;
+    // Maya promises normalized tangent and normal,
+    // but they really aren't.    
+    $tan  = `unit << $t[0], $t[1], $t[2] >>`;
+//## Note the int One 1 inthe middle...
+    $norm = `unit << $X, $Y, $Z >>`;    
+    // Calculate the binormal.   
+    $bi = `cross << ($tan.x),  ($tan.y),  ($tan.z)  >>
+                 << ($norm.x), ($norm.y), ($norm.z) >>`;
+    $bi = `unit $bi`;
+string $circles = Circles_Direction($CurvPos,$bi, $ArcLengthOne);
+ResetTransEachSL;
+}
+
+proc float CirclesRadius(string $selectedObjects[]){
+string $CurveSelectionA[] = `ls -fl ($selectedObjects[0]+".ep[0]")`; 
+ float $FloatPointA[] = `pointPosition -w  $CurveSelectionA[0]`;
+ float $worldPosA[];
+       $worldPosA = `xform -q -ws -a -rp $selectedObjects[0]`;
+ float $CircleRadiusA = getDistance($FloatPointA, $worldPosA);
+return $CircleRadiusA;
+}
+
+
+proc float [] CirclesRadiusDirection(vector $directionAB[], vector $PosAB[]){
+
+string $selectedObjects[];
+clear $selectedObjects;
+$selectedObjects = `ls -sl`;
+string $CurveSelectionA[] = `ls -fl ($selectedObjects[0]+".ep[0]")`; 
+string $CurveSelection_a2[] = `ls -fl ($selectedObjects[0]+".ep[3]")`; 
+
+string $CurveSelectionB[] = `ls -fl ($selectedObjects[1]+".ep[0]")`; 
+string $CurveSelection_b2[] = `ls -fl ($selectedObjects[1]+".ep[3]")`; 
+
+ float $FloatPointa2[] = `pointPosition -w  $CurveSelection_a2[0]`; 
+
+ float $FloatPointb2[] = `pointPosition -w  $CurveSelection_b2[0]`;	
+ float $FloatPointA[] = `pointPosition -w  $CurveSelectionA[0]`;
+ float $FloatPointB[] = `pointPosition -w  $CurveSelectionB[0]`;
+
+ float $worldPosA[];
+       $worldPosA = `xform -q -ws -a -rp $selectedObjects[0]`;
+ float $CircleRadiusA = getDistance($FloatPointA, $worldPosA);
+ float $worldPosB[];
+	$worldPosB= `xform -q -ws -a -rp $selectedObjects[1]`;
+
+$directionAB[0] = FloatToVec (DirectionF($worldPosA,$worldPosB));
+$directionAB[1] = FloatToVec (DirectionF($worldPosB,$worldPosA));
+$PosAB[0] = FloatToVec ($worldPosA);
+$PosAB[1] = FloatToVec ($worldPosB);
+ float $CirclesDistance  = getDistance ($worldPosA, $worldPosB);
+
+float $FloatDirNormalCurveA[] = Normal3Points($worldPosA,$FloatPointa2,$FloatPointA);
+$directionAB[2] = FloatToVec ($FloatDirNormalCurveA);
+
+ float $CircleRadiusB = getDistance ($FloatPointB, $worldPosB);
+ float $RadiusAB[] = {$CircleRadiusA, $CircleRadiusB,$CirclesDistance};
+return $RadiusAB;
+}
+
+proc string Circles_Direction(float $Point[], float $FloatDir[], float $FloatNum){
+string $circleItem[] = `circle -c $Point[0] $Point[1] $Point[2] 
+-nr $FloatDir[0] $FloatDir[1] $FloatDir[2] 
+-sw 360 
+-r $FloatNum 
+-d 3 -ut 0 -tol 0.001 -s 8 -ch 1`;
+
+//setRotationAxisFloat(string $objectitem1[], float $rotationsA[])
+return $circleItem[0];
+}
+
+proc MoveObject2(float $addfloatVector1[]){
+string $VectorUnitLoc[] = `ls -sl`;
+move -r $addfloatVector1[0] $addfloatVector1[1] $addfloatVector1[2] $VectorUnitLoc[0];
+}
+
+/*
+
+proc vector [] PointToCircleTangents(float $CircleRadiusA, float $worldPosA[], float $worldPosB[], float $FloatDirNormal[]){
+
+vector $directionABs[];
+float $R1 = $CircleRadiusA;
+
+$directionABs[0] = FloatToVec (DirectionF($worldPosA,$worldPosB));
+$directionABs[1] = FloatToVec (DirectionF($worldPosB,$worldPosA));
+
+// P is the distance between 2 circles
+float $P = distance2Pts ($worldPosA, $worldPosB);
+float $r1 = $R1;
+float $r1Z = $R1*2;
+//HightsOfIsoscelesTriangle($P, $r1Z, $P);
+float $Pi = 3.1415926535;
+float $Arcangle = acos((((`pow $P 2.000`) + (`pow $r1Z 2.000`) - (`pow $P 2.000`) )/(2.000*$P*$r1Z)));
+float $AngleNPi =  ($Arcangle*180)/$Pi;
+float $AngleN =   $AngleNPi;
+//float $ts = atand( (`abs ($r1 - $r2)`) /$P);
+float $MultDirPC1[] = multiplyFloat($r1, $directionABs[0]);
+float $AddMultDirPCA1[] = AddFloats($worldPosA, $MultDirPC1);
+
+$AngleN = $Arcangle;
+float $tsDAR = ( $AngleN)*-1;
+float $tsDBR = ( $AngleN)*1;
+//The first argument represents a point, the second an axis and the third an angle in radians
+float $rotatsA[] = `rot $directionABs[0] $FloatDirNormal $tsDAR`;
+float $MultDirPC1[] = multiplyFloat($r1, $rotatsA);
+float $AddMultDirPCA1[] = AddFloats($worldPosA, $MultDirPC1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+float $rotatsB[] = `rot $directionABs[0] $FloatDirNormal $tsDBR`;
+float $MultDirPC2[] = multiplyFloat($r1, $rotatsB);
+float $AddMultDirPCA2[] = AddFloats($worldPosA, $MultDirPC2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA2);
+
+vector $pointsT[];
+$pointsT[0] = FloatToVec ($AddMultDirPCA1);
+$pointsT[1] = FloatToVec ($AddMultDirPCA2);
+return $pointsT;
+}
+
+*/
+
+
+
+
+proc vector[] PointArrayT(string $ObjectList[]){
+
+float $pointAZ1[];
+vector $VecArray[];
+int $XiV = 0;
+for ($each in $ObjectList){
+if (catch($pointAZ1 = `xform -q -ws -t ($each)`)){
+$pointAZ1 = `pointPosition -w ($each)`;
+} 
+$VecArray[$XiV] = <<$pointAZ1[0], $pointAZ1[1], $pointAZ1[2]>>;
+$XiV++;
+}
+return $VecArray;
+}
+
+
+
+
+proc TangentPointCircles(){
+
+ResetTransEachSL;
+vector $directionABs[];
+vector $PosABs[];
+float $ObjsCircles[] = CirclesRadiusDirection($directionABs, $PosABs);
+//float $FloatDirXn[] = DirectionF($AverageVecXYZsOnP, $VecXYZs[0]);
+float $R1=$ObjsCircles[0];
+
+// P is the distance between 2 circles
+float $P = $ObjsCircles[2];
+float $r1 = $R1;
+float $r1Z = $R1*2;
+HightsOfIsoscelesTriangle($P, $r1Z, $P);
+float $Pi = 3.1415926535;
+float $Arcangle = acos((((`pow $P 2.000`) + (`pow $r1Z 2.000`) - (`pow $P 2.000`) )/(2.000*$P*$r1Z)));
+float $AngleNPi =  ($Arcangle*180)/$Pi;
+float $AngleN =   $AngleNPi;
+//float $ts = atand( (`abs ($r1 - $r2)`) /$P);
+float $MultDirPC1[] = multiplyFloat($r1, $directionABs[0]);
+float $AddMultDirPCA1[] = AddFloats($PosABs[0], $MultDirPC1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+
+$AngleN = $Arcangle;
+float $tsDAR = ( $AngleN)*-1;
+float $tsDBR = ( $AngleN)*1;
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+float $rotatsA[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPC1[] = multiplyFloat($r1, $rotatsA);
+float $AddMultDirPCA1[] = AddFloats($PosABs[0], $MultDirPC1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+float $rotatsB[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPC2[] = multiplyFloat($r1, $rotatsB);
+float $AddMultDirPCA2[] = AddFloats($PosABs[0], $MultDirPC2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA2);
+
+
+float $rotatsC[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPCB1[] = multiplyFloat($r1, $rotatsC);
+float $AddMultDirPCB1[] = AddFloats($PosABs[1], $MultDirPCB1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCB1);
+float $rotatsD[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPCB2[] = multiplyFloat($r1, $rotatsD);
+float $AddMultDirPCB2[] = AddFloats($PosABs[1], $MultDirPCB2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCB2);
+curve2points($AddMultDirPCA1, $AddMultDirPCB1);
+curve2points($AddMultDirPCA2, $AddMultDirPCB2);
+
+curve2points($AddMultDirPCA1, $PosABs[0]);
+curve2points($AddMultDirPCA2, $PosABs[0]);
+curve2points($AddMultDirPCA1, $PosABs[1]);
+curve2points($AddMultDirPCA2, $PosABs[1]);
+
+}
+
+
+
+//Loc { 5 , 5,5};
+
+proc Loc(float $Points[]){
+string $LocObjects[] = `spaceLocator -p 0 0 0`;
+setAttr ($LocObjects[0]+".translate")  $Points[0] $Points[1] $Points[2];
+}
+
+
+proc CircleBetweenCircle(){
+
+string $selectedObjects[];
+clear $selectedObjects;
+$selectedObjects = `ls -sl`;
+
+// select -r $selectedObjects[0]; // CIRCLE A
+string $CurveSelectionA[] = `ls -fl ($selectedObjects[0]+".ep[0]")`; 
+string $CurveSelectionB[] = `ls -fl ($selectedObjects[1]+".ep[0]")`; 
+ float $FloatPointA[];	
+	$FloatPointA = `pointPosition -w  $CurveSelectionA[0]`;
+ float $worldPosA[];
+       $worldPosA = `xform -q -ws -a -rp $selectedObjects[0]`;
+ float $CircleRadiusA = getDistance($FloatPointA, $worldPosA);
+
+ float $FloatPointB[];	
+	$FloatPointB = `pointPosition -w  $CurveSelectionB[0]`;
+float $worldPosB[];
+	$worldPosB= `xform -q -ws -a -rp $selectedObjects[1]`;
+ float $CircleRadiusB = getDistance ($FloatPointB, $worldPosB);
+
+float $MidPoints[];
+$MidPoints = MidPoint($worldPosA,  $worldPosB);
+spaceLocator -p $MidPoints[0] $MidPoints[1] $MidPoints[2];
+ResetTransEachSL;
+float $DirectionToMid[] = DirectionTwoPoints($worldPosA, $worldPosB);
+float $DirectionToMid2R[] = DirectionTwoPoints($worldPosB, $worldPosA);
+/////////////////////////
+float $PointA[] = multiplyFloat($CircleRadiusA, $DirectionToMid2R);
+//then Add $PointToMid to
+float $CircPointA[] = AddFloats($worldPosA,$PointA);
+Loc($CircPointA);
+
+
+/////////////////////////
+float $PointB[] = multiplyFloat($CircleRadiusB, $DirectionToMid);
+//then Add $PointToMid to
+float $CircPointB[] = AddFloats($worldPosB,$PointB);
+Loc($CircPointB);
+/////////////////////////
+float $GlobalMiddle[] = MidPoint($CircPointA, $CircPointB);
+Loc($GlobalMiddle);
+float $CircleDistanceAB = `getDistance $worldPosB $worldPosA`;
+float $GlobalDistanceAB = (`getDistance $CircPointA $CircPointB`)/2;
+float $DistanceABRadusB = $CircleDistanceAB/2;
+
+
+////////////////
+float $CircleSTotalDistanceD =  $DistanceABRadusB + $CircleRadiusA + $CircleRadiusB;
+float $FinalRadus = `abs ($CircleDistanceAB - $CircleRadiusA - $CircleRadiusB)`;
+float $FinalRadusB = $FinalRadus/2;
+float $DistanceToMiddle = $FinalRadusB + $CircleRadiusB;
+$DistanceToMiddle = $DistanceToMiddle *-1;
+float $PointToMid[] = multiplyFloat($DistanceToMiddle, $DirectionToMid);
+Loc($PointToMid);
+
+//then Add $PointToMid to
+float $CirclePoint[] = AddFloats($worldPosB,$PointToMid);
+Loc($CirclePoint);
+string $circlesDAB[] = `circle -c $CirclePoint[0] $CirclePoint[1] $CirclePoint[2] -nr 0 1 0 -sw 360 -r $FinalRadusB -d 3 -ut 0 -tol 0.001 -s 8 -ch 1`;
+ResetTransEachSL;
+
+}
+
+/////////////////////////////////////////////////////////
+
+/*
+float $ObjsCirclesRad[];
+vector $PosABs[];
+vector $directionABs[];
+vector $CurveInter[] = TangentPointCirVectors( $ObjsCirclesRad, $PosABs, $directionABs);
+*/
+
+
+/////////////////////////////////////////////////////
+proc vector [] TangentPointCirVectors(float $ObjsCirclesRad[], vector $PosABs[], vector $directionABs2[] ){
+
+vector $CircIntersectABs[];
+float $R1=$ObjsCirclesRad[0];
+float $R2=$ObjsCirclesRad[1];
+// P is the distance between 2 circles
+vector $directionABs[];
+float $P = distance2Pts ($PosABs[0], $PosABs[1]);
+$directionABs[0] = FloatToVec (DirectionF($PosABs[0],$PosABs[1]));
+$directionABs[1] = FloatToVec (DirectionF($PosABs[1],$PosABs[0]));
+float $r1 = $R1;
+float $r2 = $R2;
+float $Pi = 3.1415926535;
+float $Arcangle = acos((((`pow $P 2.000`) + (`pow $r1 2.000`) - (`pow $r2 2.000`) )/(2.000*$P*$r1)));
+float $AngleNPi =  ($Arcangle*180)/$Pi;
+float $AngleN = $AngleNPi;
+float $Lengths[] = HightsOfIsoscelesTriangle($P, $r1, $r2);
+float $MultDirPCR1[] = multiplyFloat($r1, $directionABs[0]);
+float $AddMultDirPCR1[] = AddFloats($PosABs[0], $MultDirPCR1);
+float $MultDirPCR2[] = multiplyFloat($r2, $directionABs[1]);
+float $AddMultDirPCR2[] = AddFloats($PosABs[1], $MultDirPCR2);
+float $MidPointsA[];
+$MidPointsA = MidPoint($AddMultDirPCR1, $AddMultDirPCR2);
+float $distCircToMid = distance2Pts ($PosABs[0], $MidPointsA);
+float $distCircToMidZ = distance2Pts ($AddMultDirPCR1, $AddMultDirPCR2);
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+$AngleN = $Arcangle;
+float $tsDAR = ( $AngleN)*-1;
+float $tsDBR = ( $AngleN)*1;
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+float $rotatsA[] = `rot $directionABs[0] $directionABs2[0] $tsDAR`;
+float $MultDirPC1[] = multiplyFloat($r1, $rotatsA);
+float $AddMultDirPCA1[] = AddFloats($PosABs[0], $MultDirPC1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+float $rotatsB[] = `rot $directionABs[0] $directionABs2[0] $tsDBR`;
+float $MultDirPC2[] = multiplyFloat($r1, $rotatsB);
+float $AddMultDirPCA2[] = AddFloats($PosABs[0], $MultDirPC2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA2);
+
+$CircIntersectABs[0] = << $AddMultDirPCA1[0], $AddMultDirPCA1[1], $AddMultDirPCA1[2] >>;
+$CircIntersectABs[1] = << $AddMultDirPCA2[0], $AddMultDirPCA2[1], $AddMultDirPCA2[2] >>;
+return $CircIntersectABs;
+}
+
+
+
+proc vector [] TangentPointCirclesVec2(){
+ResetTransEachSL;
+vector $CircIntersectABs[];
+vector $directionABs[];
+vector $PosABs[];
+float $ObjsCircles[] = CirclesRadiusDirection($directionABs, $PosABs);
+float $R1=$ObjsCircles[0];
+float $R2=$ObjsCircles[1];
+// P is the distance between 2 circles
+
+float $P = distance2Pts ($PosABs[0], $PosABs[1]);
+float $r1 = $R1;
+float $r2 = $R2;
+float $Pi = 3.1415926535;
+float $Arcangle = acos ((((`pow $P 2.000`) + (`pow $r1 2.000`) - (`pow $r2 2.000`) )/(2.000*$P*$r1))) ;
+float $AngleNPi =  ($Arcangle*180)/$Pi;
+float $AngleN = $AngleNPi;
+float $Lengths[] = HightsOfIsoscelesTriangle($P, $r1, $r2);
+float $MultDirPCR1[] = multiplyFloat($r1, $directionABs[0]);
+float $AddMultDirPCR1[] = AddFloats($PosABs[0], $MultDirPCR1);
+float $MultDirPCR2[] = multiplyFloat($r2, $directionABs[1]);
+float $AddMultDirPCR2[] = AddFloats($PosABs[1], $MultDirPCR2);
+float $MidPointsA[];
+$MidPointsA = MidPoint($AddMultDirPCR1, $AddMultDirPCR2);
+float $distCircToMid = distance2Pts ($PosABs[0], $MidPointsA);
+float $distCircToMidZ = distance2Pts ($AddMultDirPCR1, $AddMultDirPCR2);
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+$AngleN = $Arcangle;
+float $tsDAR = ( $AngleN)*-1;
+float $tsDBR = ( $AngleN)*1;
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+float $rotatsA[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPC1[] = multiplyFloat($r1, $rotatsA);
+float $AddMultDirPCA1[] = AddFloats($PosABs[0], $MultDirPC1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+float $rotatsB[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPC2[] = multiplyFloat($r1, $rotatsB);
+float $AddMultDirPCA2[] = AddFloats($PosABs[0], $MultDirPC2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA2);
+
+$CircIntersectABs[0] = << $AddMultDirPCA1[0], $AddMultDirPCA1[1], $AddMultDirPCA1[2] >>;
+$CircIntersectABs[1] = << $AddMultDirPCA2[0], $AddMultDirPCA2[1], $AddMultDirPCA2[2] >>;
+return $CircIntersectABs;
+}
+
+/////////////////////////
+
+proc float[] EulerAngleofCurve(){
+string $CurveItem[];
+$CurveItem = `ls -sl`;
+string $CurveSelection[];
+int $numCVs = `getAttr -size ($CurveItem[0] +  ".controlPoints")`;
+int $numCVrealNum = ( $numCVs -1 );
+$CurveSelection[0] = ($CurveItem[0] + ".cv[0]") ;	 		
+$CurveSelection[1] = ($CurveItem[0] + ".cv[" +  $numCVrealNum + "]") ;
+float $EACHCVposAZ[];
+float $EACHCVposBZ[];	
+int $numIntZB = 0;
+for ($eachZA in $CurveSelection) {
+        float $eachCVpos[];		
+	$eachCVpos = `pointPosition -w ( $eachZA   )`;
+$numIntZB = $numIntZB + 1;
+if ( $numIntZB == 1 ){
+$EACHCVposAZ = $eachCVpos;
+}
+if ( $numIntZB == 2 ){
+$EACHCVposBZ = $eachCVpos;
+}
+}
+vector $vectorZ1 = << $EACHCVposAZ [0],$EACHCVposAZ[1], $EACHCVposAZ[2] >> ;
+vector $vectorZ2 = << $EACHCVposBZ[0],  $EACHCVposBZ[1], $EACHCVposBZ[2] >> ;
+float $MagVectorZ1 = mag($vectorZ1); 
+float $MagVectorZ2 = mag($vectorZ2);
+float $EACHCVposHigher[];
+float $EACHCVposLower[];
+if ( $MagVectorZ1 > $MagVectorZ2 ){
+print (" posA is Higher " + "\n");
+$EACHCVposHigher = $EACHCVposAZ;
+$EACHCVposLower = $EACHCVposBZ;
+}
+if ( $MagVectorZ1 < $MagVectorZ2  ){
+print (" posB is Higher " + "\n");
+$EACHCVposHigher = $EACHCVposBZ;
+$EACHCVposLower = $EACHCVposAZ;
+}
+float $pointCVAB_MidPoint[] = MidPointBetween ($EACHCVposHigher, $EACHCVposLower);
+/////////////////////////////////////
+vector $UnitVectorMagPosHigher[] =  MagTimesUnitVecs($EACHCVposHigher,  $pointCVAB_MidPoint);
+float $vector_SubUnitMagVec1[];
+$vector_SubUnitMagVec1 = SubtractFloats ($EACHCVposHigher,$UnitVectorMagPosHigher[1]); 
+vector $UnitVectorMagPosLower[] =  MagTimesUnitVecs($EACHCVposLower,  $pointCVAB_MidPoint);
+float $vector_SubUnitMagVec2[];
+$vector_SubUnitMagVec2 = SubtractFloats ($EACHCVposLower,$UnitVectorMagPosLower[1]); 
+///////////////////////////////////////////////// ////
+float $curveArclenZ  = `arclen $CurveItem`;
+float $DivideIt  = $curveArclenZ / 2.0;
+float $DivideIt2  = $DivideIt * -1;
+float $pointB1[] = {0.0 , 0.0 , $DivideIt} ;
+float $pointB2[] = {0.0 , 0.0 , $DivideIt2} ;
+/// NOTE curve ENds will not allways Line up and  may be inverted
+//let $F1 be the first CV $F2 the last .. $F3  third point
+int $Z = FindclosetTOcurveENDz($pointB1,  $pointB2, $vector_SubUnitMagVec2);
+if ($Z == 1){ print "new floats"; $pointB1 =  $pointB2; $pointB2 = {0.0 , 0.0 , $DivideIt}; }
+float $EulerAngleA[] = `angleBetween -euler -v1  $pointB1[0] $pointB1[1] $pointB1[2] -v2   $vector_SubUnitMagVec2[0] $vector_SubUnitMagVec2 [1] $vector_SubUnitMagVec2[2]`;
+float $EulerAngleB[] = `angleBetween -euler -v1  $pointB2[0] $pointB2[1] $pointB2[2] -v2  $vector_SubUnitMagVec1[0] $vector_SubUnitMagVec1 [1] $vector_SubUnitMagVec1[2]`;
+
+return $EulerAngleA;
+}
+
+
+
+proc float [] xyzRotation( float $theta, float $axis[])
+//
+//	Description:
+//		Given an angle for rotation (in radians) and an axis about which to 
+//		do the rotation, return the rotation about the X,Y,Z axes (in $rotation).
+//
+{
+
+float $rotation[] ;
+	// set up the xyzw quaternion values
+	//
+	$theta *= 0.5;
+	float $w = cos($theta);
+	float $factor = sin($theta);
+	float $axisLen2 = dotProduct( $axis, $axis, 0 );
+	if ( $axisLen2 != 1.0 && $axisLen2 != 0.0 ) $factor /= sqrt($axisLen2);
+	float $x = $factor * $axis[0];
+	float $y = $factor * $axis[1];
+	float $z = $factor * $axis[2];
+
+	// setup rotation in a matrix
+	//
+	float $matrix[];
+	float $ww = $w*$w;
+	float $xx = $x*$x;
+	float $yy = $y*$y;
+	float $zz = $z*$z;
+	float $s = 2.0 / ($ww + $xx + $yy + $zz);
+	float $xy = $x*$y;
+	float $xz = $x*$z;
+	float $yz = $y*$z;
+	float $wx = $w*$x;
+	float $wy = $w*$y;
+	float $wz = $w*$z;
+	$matrix[0] = 1.0 - $s * ($yy + $zz);
+	$matrix[1] = $s * ($xy + $wz);
+	$matrix[2] = $s * ($xz - $wy);
+	$matrix[5] = 1.0 - $s * ($xx + $zz);
+	$matrix[6] = $s * ($yz + $wx);
+	$matrix[9] = $s * ($yz - $wx);
+	$matrix[10] = 1.0 - $s * ($xx + $yy);
+
+	// get x,y,z values for rotation
+	//
+	float $solution1[];
+	float $solution2[];
+	float $cosB = sqrt($matrix[0]*$matrix[0] + $matrix[1]*$matrix[1]);
+	if ( $cosB > 1.0e-10 )
+	{
+		float $a, $b, $c;
+		float $pi = 3.14159265;
+ 
+		$solution1[0] = $a = atan2( $matrix[6], $matrix[10]);
+		$solution1[1] = $b = atan2(-$matrix[2], $cosB);
+		$solution1[2] = $c = atan2( $matrix[1], $matrix[0]);
+
+		$solution2[0] = $a + (($a < $pi) ? $pi : -$pi);
+		$solution2[1] = (($b > -$pi) ? $pi : -$pi) - $b;
+		$solution2[2] = $c + (($c < $pi) ? $pi : -$pi);    
+
+		if ( abs($solution2[0]) + abs($solution2[1]) + abs($solution2[2]) <
+			abs($solution1[0]) + abs($solution1[1]) + abs($solution1[2]) )
+		{
+			$rotation = $solution2;
+		}
+		else 
+		{
+			$rotation = $solution1;
+		}
+	}
+	else
+	{
+		$rotation[0] = atan2(-$matrix[9], $matrix[5]);
+		$rotation[1] = atan2(-$matrix[2], $cosB);
+		$rotation[2] = 0.0;
+	}
+
+
+
+return $rotation;
+}
+
+
+///////////////////////////////////
+
+
+
+proc vector [] PointToCircleTangents(float $CircleRadiusA, float $worldPosA[], float $worldPosB[], float $DirNormalF[]){
+
+vector $directionABs[];
+float $R1 = $CircleRadiusA;
+vector $DirNormal = FloatToVec ($DirNormalF);
+$directionABs[0] = FloatToVec (DirectionF($worldPosA,$worldPosB));
+$directionABs[1] = FloatToVec (DirectionF($worldPosB,$worldPosA));
+
+// P is the distance between 2 circles
+float $P = distance2Pts ($worldPosA, $worldPosB);
+float $r1 = $R1;
+float $r1Z = $R1*2;
+//HightsOfIsoscelesTriangle($P, $r1Z, $P);
+float $Pi = 3.1415926535;
+float $Arcangle = acos((((`pow $P 2.000`) +  ((`pow $r1Z 2.000`) - (`pow $P 2.000`)) ) /(2.000*$P*$r1Z)));
+float $AngleNPi =  ($Arcangle*180)/$Pi;
+float $AngleN =   $AngleNPi;
+//float $ts = atand( (`abs ($r1 - $r2)`) /$P);
+float $MultDirPC1[] = multiplyFloat($r1, $directionABs[0]);
+float $AddMultDirPCA1[] = AddFloats($worldPosA, $MultDirPC1);
+
+$AngleN = $Arcangle;
+float $tsDAR = ( $AngleN)*-1;
+float $tsDBR = ( $AngleN)*1;
+//The first argument represents a point, the second an axis and the third an angle in radians
+//$directionABs[1] is reverse for a reason
+float $rotatsA[] = `rot $directionABs[1] $DirNormal $tsDAR`;
+float $MultDirPC1[] = multiplyFloat($r1, $rotatsA);
+float $AddMultDirPCA1[] = AddFloats($worldPosA, $MultDirPC1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+float $rotatsB[] = `rot $directionABs[0] $DirNormal $tsDBR`;
+float $MultDirPC2[] = multiplyFloat($r1, $rotatsB);
+float $AddMultDirPCA2[] = AddFloats($worldPosA, $MultDirPC2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA2);
+
+vector $pointsT[];
+$pointsT[0] = FloatToVec ($AddMultDirPCA1);
+$pointsT[1] = FloatToVec ($AddMultDirPCA2);
+return $pointsT;
+}
+
+
+
+
+proc TangentPointCircles2(){
+ResetTransEachSL;
+vector $directionABs[];
+vector $PosABs[];
+float $ObjsCircles[] = CirclesRadiusDirection($directionABs, $PosABs);
+//float $FloatDirXn[] = DirectionF($AverageVecXYZsOnP, $VecXYZs[0]);
+float $R1=$ObjsCircles[0];
+float $R2=$ObjsCircles[1];
+
+// P is the distance between 2 circles
+float $P = $ObjsCircles[2];
+float $r1 = $R1;
+float $r2 = $R2;
+
+float $Pi = 3.1415926535;
+float $Arcangle = acos((((`pow $P 2.000`) + (`pow $r1 2.000`) - (`pow $r2 2.000`) )/(2.000*$P*$r1)));
+float $AngleNPi =  ($Arcangle*180)/$Pi;
+float $AngleN = $AngleNPi;
+float $Lengths[] = HightsOfIsoscelesTriangle($P, $r1, $r2);
+
+//rotate -r -os 0 0 -29.65067 ;
+// Result: Hight 4.990127 // 
+// Result: BASE 8.77128 // 
+// Result: BASE 5.953653 // 
+
+//float $ts = atand( (`abs ($r1 - $r2)`) /$P);
+
+float $MultDirPCR1[] = multiplyFloat($r1, $directionABs[0]);
+float $AddMultDirPCR1[] = AddFloats($PosABs[0], $MultDirPCR1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCR1);
+float $MultDirPCR2[] = multiplyFloat($r2, $directionABs[1]);
+float $AddMultDirPCR2[] = AddFloats($PosABs[1], $MultDirPCR2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCR2);
+
+float $MidPointsA[];
+$MidPointsA = MidPoint($AddMultDirPCR1, $AddMultDirPCR2);
+spaceLocator -p 0 0 0;
+MoveObject2($MidPointsA);
+float $distCircToMid = distance2Pts ($PosABs[0], $MidPointsA);
+float $distCircToMidZ = distance2Pts ($AddMultDirPCR1, $AddMultDirPCR2);
+spaceLocator -p 0 0 0;
+MoveObject2($PosABs[0]);
+
+
+////////////////////////////////////////////////
+float $rRiP = $R1 + $R2;
+float $PercentA = ((  $R2 /$rRiP) * (100.0) );
+float $percentOf = $distCircToMidZ/ (100.0/$PercentA);
+////////////////////////////////////////////////
+
+float $distCircToMidA = $R1 - $percentOf;
+
+float $MultDirPCRr1[] = multiplyFloat($distCircToMidA, $directionABs[0]);
+float $AddMultDirPCRr1[] = AddFloats($PosABs[0], $MultDirPCRr1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCRr1);
+
+//float $r1Z = $distCircToMidA*2;
+
+
+$AngleN = $Arcangle;
+float $tsDAR = ( $AngleN)*-1;
+float $tsDBR = ( $AngleN)*1;
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+float $rotatsA[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPC1[] = multiplyFloat($r1, $rotatsA);
+float $AddMultDirPCA1[] = AddFloats($PosABs[0], $MultDirPC1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+float $rotatsB[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPC2[] = multiplyFloat($r1, $rotatsB);
+float $AddMultDirPCA2[] = AddFloats($PosABs[0], $MultDirPC2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA2);
+
+
+float $rotatsC[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPCB1[] = multiplyFloat($r1, $rotatsC);
+float $AddMultDirPCB1[] = AddFloats($PosABs[1], $MultDirPCB1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCB1);
+float $rotatsD[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPCB2[] = multiplyFloat($r1, $rotatsD);
+float $AddMultDirPCB2[] = AddFloats($PosABs[1], $MultDirPCB2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCB2);
+curve2points($AddMultDirPCA1, $AddMultDirPCB1);
+curve2points($AddMultDirPCA2, $AddMultDirPCB2);
+
+curve2points($AddMultDirPCA1, $PosABs[0]);
+curve2points($AddMultDirPCA2, $PosABs[0]);
+curve2points($AddMultDirPCA1, $PosABs[1]);
+curve2points($AddMultDirPCA2, $PosABs[1]);
+
+}
+
+
+
+//TangentPointCircles;
+//CircleBetweenCircle;
+//TangentCircles;
+
+
+
+proc TangentCircles(){
+ResetTransEachSL;
+vector $directionABs[];
+vector $PosABs[];
+float $ObjsCircles[] = CirclesRadiusDirection($directionABs, $PosABs);
+//float $FloatDirXn[] = DirectionF($AverageVecXYZsOnP, $VecXYZs[0]);
+float $R1=$ObjsCircles[0];
+float $R2=$ObjsCircles[1];
+
+// P is the distance between 2 circles
+float $P = $ObjsCircles[2];
+
+float $DiCircleInBetween = $P -($R1 + $R2);
+float $RadiCircleInBetween = $DiCircleInBetween/2;
+float $DisCircBetweenFromR1 = $R1+$RadiCircleInBetween ;
+//mult Direction Circ1 to Circ 2 by distance DisCircBetweenFromR1 
+//add to Pos Circ R1 
+
+float $MultDirM[] = multiplyFloat($DisCircBetweenFromR1, $directionABs[0]);
+float $AddMultM[] = AddFloats($PosABs[0], $MultDirM);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultM);
+string $circlesM = Circles_Direction($AddMultM,$directionABs[2], $RadiCircleInBetween);
+
+float $Rn1 =  (1.0/(`sqrt $R1`)) + (1.0/(`sqrt $R2` ));
+float $Rn = 1.0/$Rn1;
+float $R = `pow $Rn 2`;
+float $xc = `sqrt (4*$R1*$R)`;
+float $yc = `sqrt (4*$R2*$R)`;
+float $CurveL = $xc+$yc;
+float $pi = 3.1415926535;
+
+float $r1 = $R1;
+float $r2 = $R2;
+//float $ts = atand( (`abs ($r1 - $r2)`) /$P);
+
+float $ts = acos ( (`abs ($r1 - $r2)`) /$P);
+float $tsD = (`rad_to_deg $ts`);
+float $tsDA = (`rad_to_deg $ts`)*1;
+float $tsDB = (`rad_to_deg $ts`)*-1;
+float $tsDAR = ( $ts)*1;
+float $tsDBR = ( $ts)*-1;
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+float $rotatsA[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPC1[] = multiplyFloat($r1, $rotatsA);
+float $AddMultDirPCA1[] = AddFloats($PosABs[0], $MultDirPC1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+float $rotatsB[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPC2[] = multiplyFloat($r1, $rotatsB);
+float $AddMultDirPCA2[] = AddFloats($PosABs[0], $MultDirPC2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA2);
+float $rotatsC[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPCB1[] = multiplyFloat($r2, $rotatsC);
+float $AddMultDirPCB1[] = AddFloats($PosABs[1], $MultDirPCB1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCB1);
+float $rotatsD[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPCB2[] = multiplyFloat($r2, $rotatsD);
+float $AddMultDirPCB2[] = AddFloats($PosABs[1], $MultDirPCB2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCB2);
+curve2points($AddMultDirPCA1, $AddMultDirPCB1);
+curve2points($AddMultDirPCA2, $AddMultDirPCB2);
+
+
+float $FloatDirectionTa1Tb2[] = DirectionF($AddMultDirPCA1, $AddMultDirPCB1);
+float $MultDirT[] = multiplyFloat($xc, $FloatDirectionTa1Tb2);
+float $FloatDirT[] = AddFloats($AddMultDirPCA1, $MultDirT);
+float $FloatDirectionTCa[] = DirectionF($AddMultDirPCA1, $PosABs[0]);
+float $MultDirTCa[] = multiplyFloat($R, $FloatDirectionTCa);
+float $FloatDirTc[] = AddFloats($FloatDirT, $MultDirTCa);
+spaceLocator -p 0 0 0;
+MoveObject2($FloatDirTc);
+string $circlesA = Circles_Direction($FloatDirTc,$directionABs[2], $R);
+float $FloatDirectionTa1Tb3[] = DirectionF($AddMultDirPCA2, $AddMultDirPCB2);
+float $MultDirTCb[] = multiplyFloat($xc, $FloatDirectionTa1Tb3);
+float $FloatDirTb[] = AddFloats($AddMultDirPCA2, $MultDirTCb);
+float $FloatDirectionTCb[] = DirectionF($AddMultDirPCA2, $PosABs[0]);
+float $MultDirTCb[] = multiplyFloat($R, $FloatDirectionTCb);
+float $FloatDirTcb[] = AddFloats($FloatDirTb, $MultDirTCb);
+spaceLocator -p 0 0 0;
+MoveObject2($FloatDirTcb);
+string $circlesA = Circles_Direction($FloatDirTcb,$directionABs[2], $R);
+
+}
+
+
+///////////
+
+proc  CreateCurveFromTwoSelected(){ 
+string $selectedObjects[] = `ls -sl`;
+vector $pointOne;
+$pointOne = `xform -q -ws -sp $selectedObjects[0]`;
+vector $pointTwo;
+$pointTwo = `xform -q -ws -sp $selectedObjects[1]`;
+curve2points $pointOne $pointTwo;
+ResetTransEachSL;
+}
+
+proc float [] CirclesRadiiPos(string $CirObjects[], vector $PosAB[] ){
+
+string $PointA[], $PointB[];
+float $FloatPointA[], $FloatPointB[], $worldPosA[], $CircleRadii[];
+
+for ($each in $CirObjects){
+$PointA= `ls -fl ($each+".ep[0]")`; 
+$PointB = `ls -fl ($each+".ep[3]")`; 
+	$FloatPointA = `pointPosition -w  $PointA`;
+	$FloatPointB = `pointPosition -w  $PointB`;	
+       $worldPosA = `xform -q -ws -a -rp $each`;
+$CircleRadii[`size($CircleRadii)`] = distance2Pts ($FloatPointA,$worldPosA) ;
+$PosAB[`size($PosAB)`]= FloatToVec ($worldPosA);
+}
+return $CircleRadii;
+}
+
+
+//TANGENTSS;
+proc float [] CircNormal(string $eachCirV){
+
+string $PointA[], $PointB[];
+float $FloatPointA[], $FloatPointB[], $worldPosA[];
+
+$PointA = `ls -fl ($eachCirV+".ep[0]")`; 
+$PointB = `ls -fl ($eachCirV+".ep[3]")`; 
+	$FloatPointA = `pointPosition -w  $PointA `;
+	$FloatPointB = `pointPosition -w  $PointB`;
+     $worldPosA = `xform -q -ws -a -rp $eachCirV`;	
+ float $FloatDirNormalCurveA[] = Normal3Points($worldPosA, $FloatPointA, $FloatPointB);
+return $FloatDirNormalCurveA;
+}
+
+/*
+int $indexNumberZ[] = stringArrayGmatchArrayIndex($diffBZ, $KnowObjList);
+
+int $indexX= 0;
+for ($eachVec in $indexNumberZ){
+$firstReduction[`size($firstReduction)`]= $objVecMain[$eachVec];
+}
+}
+*/
+
+
+//////////////////////////////
+///////////////////////////
+//////////////////////////////
+/*
+
+vector $TangentZ[]  = `TANGENTSS`;
+int $SizeZ = `size( $TangentZ)`+2;
+int $intX[] = CreatePairIntIndex($SizeZ);
+
+
+*/
+
+/*
+
+int $ix;  
+vector $IVec[];
+vector $IVecMid[];
+for ($eachVecZ in $TangentZ ){
+if($ix==0){$IVec[0] = $eachVecZ;}
+
+if($ix==1){$IVec[1] = $eachVecZ;
+ $IVecMid[`size($IVecMid)`]=  FloatToVec(MidPoint($IVec[0], $IVec[1]));
+
+$ix=-1;}
+
+$ix++;
+}
+
+
+print  $IVecMid;
+for ($eachVecZ in $IVecMid ){
+Loc $eachVecZ;
+}
+*/
+
+//////////////////////////////
+
+proc vector [] TANGENTSS(){
+
+string $circles[] = `ls -sl`;
+string $circlesShape[];
+clear $circlesShape;
+vector $TangZ[];
+vector $TangMidZ[];
+for ($eachCir in $circles){
+$circlesShape[`size($circlesShape)`]  = stringArrayToString( `listRelatives $eachCir` , " ");
+}
+print $circlesShape;
+ float $normalAxis[] = CircNormal($circles[0]);
+
+ResetTransEachSL;
+vector $directionABs[];
+vector $PosABs[];
+clear $PosABs;
+float $ObjsCircles[] = CirclesRadiiPos($circles, $PosABs);
+
+int $CirA;
+int $CirB;
+
+string $itemA[] = $circles;
+string $itemEach[], $diff[];
+string $itemBackUp[] = $itemA; 
+int $indexNumberZ[];
+string $TwoItemsZ[];
+for($each in $itemBackUp){
+//isolate one from list remove from list
+//itemA will be reduced to zero
+
+	string $itemEach[] = { $itemA[0] };
+	$diff = stringArrayRemoveExact($itemEach, $itemA);
+for($eachOther in $diff){
+playButtonStepForward;
+// $eachOther $itemEach;
+
+
+$TwoItemsZ  = {$eachOther, $itemEach[0]};
+$indexNumberZ= stringArrayGmatchArrayIndex($TwoItemsZ, $circles);
+
+$CirA = $indexNumberZ[0];
+$CirB = $indexNumberZ[1];
+
+float $R1=$ObjsCircles[$CirA];
+float $R2=$ObjsCircles[$CirB];
+if($R1<$R2){$CirA = $indexNumberZ[1]; $CirB = $indexNumberZ[0];
+ $R1=$ObjsCircles[$CirA];
+ $R2=$ObjsCircles[$CirB];}
+
+////////
+playButtonStepForward;
+select -r $circles[$CirA]; select -r $circles[$CirB];
+///////
+
+float $FloatDirXn[] = DirectionF($PosABs[$CirA], $PosABs[$CirB]);
+float $R1=$ObjsCircles[$CirA];
+float $R2=$ObjsCircles[$CirB];
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+//$R1 = $R1+2.0;
+//$R2 =$R2+2.0;
+float $Rn1 =  (1.0/(`sqrt $R1`)) + (1.0/(`sqrt $R2` ));
+float $Rn = 1.0/$Rn1;
+float $R = `pow $Rn 2`;
+float $xc = `sqrt (4*$R1*$R)`;
+float $yc = `sqrt (4*$R2*$R)`;
+float $CurveL = $xc+$yc;
+float $pi = 3.1415926535;
+
+float $r1 = $R1;
+float $r2 = $R2;
+
+// P is the distance between 2 circles
+float $P = distance2Pts($PosABs[$CirA], $PosABs[$CirB]);
+float $FloatDirXn[] = DirectionF($PosABs[$CirA], $PosABs[$CirB]);
+
+
+
+float $DiCircleInBetween = `abs ($P -($R1 + $R2))`;
+float $RadiCircleInBetween = $DiCircleInBetween/2;
+float $DisCircBetweenFromR1 = $R1+$RadiCircleInBetween ;
+//mult Direction Circ1 to Circ 2 by distance DisCircBetweenFromR1 
+//add to Pos Circ R1 
+
+float $MultDirM[] = multiplyFloat($DisCircBetweenFromR1,  $FloatDirXn);
+float $AddMultM[] = AddFloats($PosABs[$CirA], $MultDirM);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultM);
+string $circlesM = Circles_Direction($AddMultM,$normalAxis, $RadiCircleInBetween);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+float $ts = acos ( (`abs ($r1 - $r2)`) /$P);
+float $tsD = (`rad_to_deg $ts`);
+float $tsDA = (`rad_to_deg $ts`)*1;
+float $tsDB = (`rad_to_deg $ts`)*-1;
+float $tsDAR = ( $ts)*1;
+float $tsDBR = ( $ts)*-1;
+
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+
+
+float $rotatsA[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1, $normalAxis, $tsDAR);
+float $rotatsB[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $r1, $normalAxis, $tsDBR);
+float $rotatsC[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2, $normalAxis, $tsDBR);
+float $rotatsD[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $r2, $normalAxis, $tsDAR);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsA);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsB);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsC);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsD);
+
+float $mid1[] = MidPoint($rotatsA, $rotatsD);
+float $mid2[] = MidPoint($rotatsB, $rotatsC);
+
+Loc $mid1;
+Loc $mid2;
+
+float $midAD3[] = MidPoint($rotatsA, $mid1);
+float $midAD4[] = MidPoint($rotatsD, $mid1);
+
+float $midBC3[] = MidPoint($rotatsB, $mid2);
+float $midBC4[] = MidPoint($rotatsC, $mid2);
+
+float $FloatDirCentMidZ[] = DirectionF($PosABs[$CirA], $midAD3);
+
+float $MultDirMidzCirc[] = multiplyFloat($r1, $FloatDirCentMidZ);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirA]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midAD3);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+
+float $FloatDirCentMidZ[] = DirectionF($PosABs[$CirA], $midBC3);
+
+float $MultDirMidzCirc[] = multiplyFloat($r1, $FloatDirCentMidZ);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirA]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midBC3);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+
+float $FloatDirCentMidZ[] = DirectionF($PosABs[$CirB], $midAD4);
+
+float $MultDirMidzCirc[] = multiplyFloat($r2, $FloatDirCentMidZ);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirB]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midAD4);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+float $FloatDirCentMidZ[] = DirectionF($PosABs[$CirB], $midBC4);
+
+float $MultDirMidzCirc[] = multiplyFloat($r2, $FloatDirCentMidZ);
+float $FAddMULTDcirc[] = AddFloats($MultDirMidzCirc, $PosABs[$CirB]);
+Loc $FAddMULTDcirc;
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+curve2points($FAddMULTDcirc, $midBC4);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+
+Loc $midAD3;
+Loc $midAD4;
+
+Loc $midBC3;
+Loc $midBC4;
+
+$TangMidZ[`size($TangMidZ)`]= FloatToVec($mid1);
+$TangMidZ[`size($TangMidZ)`]= FloatToVec($mid2);
+
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsA);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsB);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsC);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsD);
+
+
+curve2points($rotatsA, $rotatsD);
+curve2points($rotatsB,$rotatsC);
+
+playButtonStepForward;
+}
+$itemA = $diff;
+
+}
+return $TangZ;
+}
+
+
+//float $CirMidZ = (distance2Pts($PosABs[$CirA], $midAD3))-$r1;
+
+proc vector [] TANGENTSS(){
+
+string $circles[] = `ls -sl`;
+string $circlesShape[];
+clear $circlesShape;
+vector $TangZ[];
+vector $TangMidZ[];
+for ($eachCir in $circles){
+$circlesShape[`size($circlesShape)`]  = stringArrayToString( `listRelatives $eachCir` , " ");
+}
+print $circlesShape;
+ float $normalAxis[] = CircNormal($circles[0]);
+
+ResetTransEachSL;
+vector $directionABs[];
+vector $PosABs[];
+clear $PosABs;
+float $ObjsCircles[] = CirclesRadiiPos($circles, $PosABs);
+
+int $CirA;
+int $CirB;
+
+string $itemA[] = $circles;
+string $itemEach[], $diff[];
+string $itemBackUp[] = $itemA; 
+int $indexNumberZ[];
+string $TwoItemsZ[];
+for($each in $itemBackUp){
+//isolate one from list remove from list
+//itemA will be reduced to zero
+
+	string $itemEach[] = { $itemA[0] };
+	$diff = stringArrayRemoveExact($itemEach, $itemA);
+for($eachOther in $diff){
+playButtonStepForward;
+// $eachOther $itemEach;
+
+
+$TwoItemsZ  = {$eachOther, $itemEach[0]};
+$indexNumberZ= stringArrayGmatchArrayIndex($TwoItemsZ, $circles);
+
+$CirA = $indexNumberZ[0];
+$CirB = $indexNumberZ[1];
+
+float $R1=$ObjsCircles[$CirA];
+float $R2=$ObjsCircles[$CirB];
+if($R1<$R2){$CirA = $indexNumberZ[1]; $CirB = $indexNumberZ[0];
+ $R1=$ObjsCircles[$CirA];
+ $R2=$ObjsCircles[$CirB];}
+
+////////
+playButtonStepForward;
+select -r $circles[$CirA]; select -r $circles[$CirB];
+///////
+
+float $FloatDirXn[] = DirectionF($PosABs[$CirA], $PosABs[$CirB]);
+float $R1=$ObjsCircles[$CirA];
+float $R2=$ObjsCircles[$CirB];
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+$R1 = $R1+2.0;
+$R2 =$R2+2.0;
+float $Rn1 =  (1.0/(`sqrt $R1`)) + (1.0/(`sqrt $R2` ));
+float $Rn = 1.0/$Rn1;
+float $R = `pow $Rn 2`;
+float $xc = `sqrt (4*$R1*$R)`;
+float $yc = `sqrt (4*$R2*$R)`;
+float $CurveL = $xc+$yc;
+float $pi = 3.1415926535;
+
+float $r1 = $R1;
+float $r2 = $R2;
+
+// P is the distance between 2 circles
+float $P = distance2Pts($PosABs[$CirA], $PosABs[$CirB]);
+float $FloatDirXn[] = DirectionF($PosABs[$CirA], $PosABs[$CirB]);
+
+float $DiCircleInBetween = `abs ($P -($R1 + $R2))`;
+float $RadiCircleInBetween = $DiCircleInBetween/2;
+float $DisCircBetweenFromR1 = $R1+$RadiCircleInBetween ;
+//mult Direction Circ1 to Circ 2 by distance DisCircBetweenFromR1 
+//add to Pos Circ R1 
+
+float $MultDirM[] = multiplyFloat($DisCircBetweenFromR1,  $FloatDirXn);
+float $AddMultM[] = AddFloats($PosABs[$CirA], $MultDirM);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultM);
+string $circlesM = Circles_Direction($AddMultM,$normalAxis, $RadiCircleInBetween);
+string $CirTemp[] = `ls -sl`;
+SetItemColorString ($CirTemp[0], 12);
+
+float $ts = acos ( (`abs ($r1 - $r2)`) /$P);
+float $tsD = (`rad_to_deg $ts`);
+float $tsDA = (`rad_to_deg $ts`)*1;
+float $tsDB = (`rad_to_deg $ts`)*-1;
+float $tsDAR = ( $ts)*1;
+float $tsDBR = ( $ts)*-1;
+
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+
+
+float $rotatsA[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $ObjsCircles[$CirA], $normalAxis, $tsDAR);
+float $rotatsB[] = RotMultLenToDirAddToPoint($PosABs[$CirA], $PosABs[$CirB], 1, $ObjsCircles[$CirA], $normalAxis, $tsDBR);
+float $rotatsC[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $ObjsCircles[$CirB], $normalAxis, $tsDBR);
+float $rotatsD[] = RotMultLenToDirAddToPoint($PosABs[$CirB], $PosABs[$CirA], -1, $ObjsCircles[$CirB], $normalAxis, $tsDAR);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsA);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsB);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsC);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsD);
+
+float $mid1[] = MidPoint($rotatsA, $rotatsD);
+float $mid2[] = MidPoint($rotatsB, $rotatsC);
+
+Loc $mid1;
+Loc $mid2;
+
+float $midAD3[] = MidPoint($rotatsA, $mid1);
+float $midAD4[] = MidPoint($rotatsD, $mid1);
+
+float $midBC3[] = MidPoint($rotatsB, $mid2);
+float $midBC4[] = MidPoint($rotatsC, $mid2);
+
+Loc $midAD3;
+Loc $midAD4;
+
+Loc $midBC3;
+Loc $midBC4;
+
+$TangMidZ[`size($TangMidZ)`]= FloatToVec($mid1);
+$TangMidZ[`size($TangMidZ)`]= FloatToVec($mid2);
+
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsA);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsB);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsC);
+$TangZ[`size($TangZ)`]= FloatToVec($rotatsD);
+
+
+curve2points($rotatsA, $rotatsD);
+curve2points($rotatsB,$rotatsC);
+
+playButtonStepForward;
+}
+$itemA = $diff;
+
+}
+return $TangZ;
+}
+
+
+
+
+//////////////////////////////////////
+
+
+
+
+/*
+0 1' 2 3 4' 5 6 7 8 9' 10 11 12 13 14 15 16`
+
+float $Test = 10.0 * 10.0;
+
+0 - 10
+
+10 - 100
+
+float $FRac  =  100.0/3;
+
+float $FRac  =   4/16.0;
+int $OneNum = $FRac;
+float $FRacR = $FRac - $OneNum;
+
+float $ai  = 9.0;
+float $bi  = 16.0;
+float $percentOf ;
+float $percent;
+float $Perc;
+ $percent =  100.0/($bi/$ai );
+
+float $times = $bi*  $percent;
+
+$Perc = 100.0/$percent;
+$percentOf = $bi/ $Perc;
+
+*/
+
+
+proc cubic(float $a, float $b, float $c, float $d, float $resultReal[] , float $resultImaginary[]) {
+
+
+/*
+  if ( abs(a) < 0.000001) { 
+// 
+if a=0 equation is quadratic
+    // handle seperately to avoid divide by zero
+	quadratic(b,c,d,$resultReal,$resultImaginary);
+	// the quadratic function is defined on this page:
+    // http://www.euclideanspace.com/maths/algebra/equations/polynomial/quadratic/
+	return;
+  }
+*/
+
+
+float $a = 7.5;
+ float $b = 3.4;
+ float $c = 5.3;
+ float $d = 1.7;
+ float $resultReal[] , $resultImaginary[];
+  // recuring terms
+
+//proc cubic(float $a, float $b, float $c, float $d, float $resultReal[] , float $resultImaginary[]) {
+  float $t1=((2*$a*$a*$a) - (9*$a*$b) +(27*$c));
+  float $t2=((-$a*$a) + (3*$b));
+  float $t3= $t1*$t1 + 4*$t2*$t2*$t2;
+
+  // if ($t3<0) handle complex roots;
+
+  float $t4=((-$t1 + (`sqrt $t3`))/54);
+  float $t41=((-$t1 - (`sqrt $t3`))/54);
+  float $t5=((-$a*$a) + (3*$b));
+  float $t6= `sqrt($t1*$t1 + (4*$t5*$t5*$t5))`;
+  float $t7=((-$t1 - $t6)/54);
+float $TimesOne = 1.0;
+if($t7<0){ $TimesOne = -1.0;}
+//print $t4;
+//print $t7;
+//print $t41;
+ float $N=1;
+if($t7<0){$N=-1;}
+float $Ni=1;
+if($t41<0){$Ni=-1;}
+  $resultReal[0] = (-$a/3) + (` pow  $t4 (1.0/3.0)` ) +  $N*(` pow  ($t7*$N) (1.0/3.0)  `) ;
+  $resultReal[1] = (-$a/3) - (0.5*(`pow $t4 (1.0/3.0)`)) +  (-0.5*(`pow $t4 (1.0/3.0) `));
+  $resultReal[2] = (-$a/3) + (`pow $t4 (1.0/3.0) `) + $Ni*(`pow ($Ni*$t41) (1.0/3.0) `);
+  $resultImaginary[0] = 0;
+  $resultImaginary[1] =  (`sqrt $t3`) * 0.5 * (`pow $t4 (1.0/3.0)`) +  (`sqrt $t3` )*0.5*(`pow $t4 (1.0/3.0) `) ;
+  $resultImaginary[2] = 0;
+print $resultReal;
+print("\n");
+print  $resultImaginary;
+print("\n");
+} 
+
+
+proc float DoubleDeterminant(matrix $mat[][]) {
+    float $valueA;
+    float $valueB;
+    float $valueC;
+    float $valueD;
+    float $valueE;
+    float $valueF;
+    float $valueG;
+$valueA = $mat[0][3] * $mat[1][2] * $mat[2][1] * $mat[3][0]-$mat[0][2] * $mat[1][3] * $mat[2][1] * $mat[3][0];
+$valueB = $mat[0][3] * $mat[1][1] * $mat[2][2] * $mat[3][0]+$mat[0][1] * $mat[1][3] * $mat[2][2] * $mat[3][0]+ $mat[0][2] * $mat[1][1] * $mat[2][3] * $mat[3][0]-$mat[0][1] * $mat[1][2] * $mat[2][3] * $mat[3][0];
+$valueC = $mat[0][3] * $mat[1][2] * $mat[2][0] * $mat[3][1]+$mat[0][2] * $mat[1][3] * $mat[2][0] * $mat[3][1]+ $mat[0][3] * $mat[1][0] * $mat[2][2] * $mat[3][1]-$mat[0][0] * $mat[1][3] * $mat[2][2] * $mat[3][1];
+$valueD = $mat[0][2] * $mat[1][0] * $mat[2][3] * $mat[3][1]+$mat[0][0] * $mat[1][2] * $mat[2][3] * $mat[3][1]+ $mat[0][3] * $mat[1][1] * $mat[2][0] * $mat[3][2]-$mat[0][1] * $mat[1][3] * $mat[2][0] * $mat[3][2];
+$valueE = $mat[0][3] * $mat[1][0] * $mat[2][1] * $mat[3][2]+$mat[0][0] * $mat[1][3] * $mat[2][1] * $mat[3][2]+ $mat[0][1] * $mat[1][0] * $mat[2][3] * $mat[3][2]-$mat[0][0] * $mat[1][1] * $mat[2][3] * $mat[3][2];
+$valueF = $mat[0][2] * $mat[1][1] * $mat[2][0] * $mat[3][3]+$mat[0][1] * $mat[1][2] * $mat[2][0] * $mat[3][3]+ $mat[0][2] * $mat[1][0] * $mat[2][1] * $mat[3][3]-$mat[0][0] * $mat[1][2] * $mat[2][1] * $mat[3][3];
+$valueG = $mat[0][1] * $mat[1][0] * $mat[2][2] * $mat[3][3]+$mat[0][0] * $mat[1][1] * $mat[2][2] * $mat[3][3];
+
+float $value = $valueA - $valueB - $valueC - $valueD - $valueE - $valueF - $valueG;
+
+    return $value;
+  }
+
+///////////////////////////////////////////
+
+
+proc TangentCircleBetweenCircle(){
+
+
+string $circles[] = `ls -sl`;
+string $circlesShape[];
+clear $circlesShape;
+for ($eachCir in $circles){
+$circlesShape[`size($circlesShape)`]  = stringArrayToString( `listRelatives $eachCir` , " ");
+}
+print $circlesShape;
+ float $normalAxis[] = CircNormal($circles[0]);
+
+ResetTransEachSL;
+vector $directionABs[];
+vector $PosABs[];
+clear $PosABs;
+float $ObjsCircles[] = CirclesRadiiPos($circles, $PosABs);
+
+//float $ObjsCircles[] = CirclesRadiusDirection($directionABs, $PosABs);
+//from each to every other 
+
+
+float $FloatDirXn[] = DirectionF($PosABs[0], $PosABs[1]);
+
+//ResetTransEachSL;
+//vector $directionABs[];
+//vector $PosABs[];
+//float $ObjsCircles[] = CirclesRadiusDirection($directionABs, $PosABs);
+
+
+float $R1=$ObjsCircles[0];
+float $R2=$ObjsCircles[1];
+
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+
+float $Rn1 =  (1.0/(`sqrt $R1`)) + (1.0/(`sqrt $R2` ));
+float $Rn = 1.0/$Rn1;
+float $R = `pow $Rn 2`;
+
+float $xc = `sqrt (4*$R1*$R)`;
+float $yc = `sqrt (4*$R2*$R)`;
+float $CurveL = $xc+$yc;
+float $pi = 3.1415926535;
+
+// P is the distance between 2 circles
+float $P = distance2Pts($PosABs[0], $PosABs[1]);
+float $r1 = $R1;
+float $r2 = $R2;
+//float $ts = atand( (`abs ($r1 - $r2)`) /$P);
+
+float $DiCircleInBetween = `abs ($P -($R1 + $R2))`;
+float $RadiCircleInBetween = $DiCircleInBetween/2;
+float $DisCircBetweenFromR1 = $R1+$RadiCircleInBetween ;
+//mult Direction Circ1 to Circ 2 by distance DisCircBetweenFromR1 
+//add to Pos Circ R1 
+
+float $MultDirM[] = multiplyFloat($DisCircBetweenFromR1, $directionABs[0]);
+float $AddMultM[] = AddFloats($PosABs[0], $MultDirM);
+float $MidPoints[];
+$MidPoints = $AddMultM;
+
+float $ts = acos ( (`abs ($r1 - $r2)`) /$P);
+float $tsD = (`rad_to_deg $ts`);
+float $tsDA = (`rad_to_deg $ts`)*1;
+float $tsDB = (`rad_to_deg $ts`)*-1;
+float $tsDAR = ( $ts)*1;
+float $tsDBR = ( $ts)*-1;
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+float $FloatDirXn[] = DirectionF($PosABs[0], $PosABs[1]);
+
+float $rotatsA[] = RotMultLenToDirAddToPoint($PosABs[0], $PosABs[1], 1, $ObjsCircles[0], $normalAxis, $tsDAR);
+
+float $rotatsB[] = RotMultLenToDirAddToPoint($PosABs[0], $PosABs[1], 1, $ObjsCircles[0], $normalAxis, $tsDBR);
+
+float $rotatsC[] = RotMultLenToDirAddToPoint($PosABs[1], $PosABs[0], 1, $ObjsCircles[1], $normalAxis, $tsDAR);
+
+float $rotatsD[] = RotMultLenToDirAddToPoint($PosABs[1], $PosABs[0], 1, $ObjsCircles[1], $normalAxis, $tsDBR);
+curve2points($rotatsA, $rotatsD);
+curve2points($rotatsB,$rotatsC);
+
+
+
+print ($directionABs[0] +"\n");
+print ($directionABs[2] +"\n");
+print ($tsDAR +"\n");
+$normalAxis = $directionABs[2];
+
+float $rotatsA[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPC1[] = multiplyFloat($r1, $rotatsA);
+float $AddMultDirPCA1[] = AddFloats($PosABs[0], $MultDirPC1);
+
+//print $directionABs[0];
+
+vector $DirecOfPointAB = FloatToVec ( DirectionF($PosABs[0], $PosABs[1]));
+vector $DirNorm = FloatToVec ($normalAxis);
+float $Radian = $tsDAR;
+
+
+print ($DirecOfPointAB +"\n");
+print ($DirNorm +"\n");
+print ($Radian +"\n");
+
+float $rotatsA[] = `rot $DirecOfPointAB $DirNorm $Radian`;
+float $MultLengthDir[] = multiplyFloat($ObjsCircles[0], $rotatsA);
+
+float $AddMultDirPos[] = AddFloats($PosABs[0], $MultLengthDir);
+
+
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+spaceLocator -p 0 0 0;
+MoveObject2($rotatsA);
+
+float $rotatsB[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPC2[] = multiplyFloat($r1, $rotatsB);
+float $AddMultDirPCA2[] = AddFloats($PosABs[0], $MultDirPC2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA2);
+float $rotatsC[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPCB1[] = multiplyFloat($r2, $rotatsC);
+float $AddMultDirPCB1[] = AddFloats($PosABs[1], $MultDirPCB1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCB1);
+float $rotatsD[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPCB2[] = multiplyFloat($r2, $rotatsD);
+float $AddMultDirPCB2[] = AddFloats($PosABs[1], $MultDirPCB2);
+spaceLocator -p 0 0 0;
+
+MoveObject2($AddMultDirPCB2);
+curve2points($AddMultDirPCA1, $AddMultDirPCB1);
+curve2points($AddMultDirPCA2, $AddMultDirPCB2);
+
+vector $directionABs[] = $PosABs;
+clear $directionABs;
+vector $directionABsZ = FloatToVec ($normalAxis);
+
+vector $directionA = FloatToVec ($FloatDirXn);
+
+float $rotatsC[] = `rot $directionA $directionABsZ $tsDAR`;
+float $MultDirPCB1[] = multiplyFloat($r2, $rotatsC);
+float $AddMultDirPCB1[] = AddFloats($PosABs[1], $MultDirPCB1);
+
+float $rotatsD[] = `rot $directionA $directionABsZ $tsDBR`;
+float $MultDirPCB2[] = multiplyFloat($r2, $rotatsD);
+float $AddMultDirPCB2[] = AddFloats($PosABs[1], $MultDirPCB2);
+
+curve2points($AddMultDirPCA1, $AddMultDirPCB1);
+curve2points($AddMultDirPCA2, $AddMultDirPCB2);
+
+curve2points($AddMultDirPCB1, $AddMultDirPCB2);
+
+float $Uall[];
+
+string $myCPOCA = `createNode closestPointOnCurve -name "CircleZzClosestPointOnCurve"`;
+
+connectAttr -force ($circlesShape[0]+".worldSpace") ($myCPOCA+".inCurve");
+clear $Uall;
+setAttr ($myCPOCA+".inPosition") $AddMultDirPCA1[0] $AddMultDirPCA1[1] $AddMultDirPCA1[2];
+float $U = `getAttr ($myCPOCA+".u")`;
+$Uall[`size($Uall)`]= $U;
+setAttr ($myCPOCA+".inPosition") $AddMultDirPCA2[0] $AddMultDirPCA2[1] $AddMultDirPCA2[2];
+ $U = `getAttr ($myCPOCA+".u")`;
+$Uall[`size($Uall)`]= $U;
+disconnectAttr ($circlesShape[0]+".worldSpace") ($myCPOCA+".inCurve");
+
+
+//PART 1//////////////////////////////////////////////////////////////
+
+string $UpointCurveOne[];
+$UpointCurveOne[0] = ($circles[0] + ".u[" + $Uall[0] + "]");
+$UpointCurveOne[1] = ($circles[0] + ".u[" + $Uall[1] + "]");
+
+//PART 2//////////////////////////////////////////////////////////////
+
+connectAttr -force ($circlesShape[1]+".worldSpace[0]") ($myCPOCA+".inCurve");
+clear $Uall;
+setAttr ($myCPOCA+".inPosition") $AddMultDirPCB1[0] $AddMultDirPCB1[1] $AddMultDirPCB1[2];
+float $U = `getAttr ($myCPOCA+".u")`;
+$Uall[`size($Uall)`]= $U;
+setAttr ($myCPOCA+".inPosition") $AddMultDirPCB2[0] $AddMultDirPCB2[1] $AddMultDirPCB2[2];
+ $U = `getAttr ($myCPOCA+".u")`;
+$Uall[`size($Uall)`]= $U;
+disconnectAttr ($circlesShape[1]+".worldSpace[0]") ($myCPOCA+".inCurve");
+
+
+string $UpointCurveOne2[];
+$UpointCurveOne2[0] = ($circles[1] + ".u[" + $Uall[0] + "]");
+$UpointCurveOne2[1] = ($circles[1] + ".u[" + $Uall[1] + "]");
+
+/////////////////////////////////////////////////////////////////////////
+
+string $NewcurvesA[] = `detachCurve -ch 1 -cos on -rpo 1 $UpointCurveOne[0] $UpointCurveOne[1]`;
+ResetTransEachSL;
+
+string $NewcurvesB[] = `detachCurve -ch 1 -cos on -rpo 1 $UpointCurveOne2[0] $UpointCurveOne2[1]`;
+ResetTransEachSL;
+
+
+int $ZeroOrOneC1 = 0;
+string $CenterCurvesA[];
+string $OuterCurvesA[];
+vector $AposD1[];
+int $iXv = 0;
+for ($each in $NewcurvesA){
+	$AposD1[$iXv] = `xform -q -ws -a -rp $each`;
+if($iXv==1){
+$ZeroOrOneC1 = FindclosetTOcurveENDz($AposD1[0], $AposD1[1], $MidPoints);
+}
+$iXv++;
+}
+int $OuterC1 = 0;
+if($ZeroOrOneC1==0){ $OuterC1 = 1;}
+
+$OuterCurvesA[0] = $NewcurvesA[$OuterC1];
+$CenterCurvesA[0] = $NewcurvesA[$ZeroOrOneC1];
+
+int $ZeroOrOneC2 = 0;
+string $CenterCurvesB[];
+string $OuterCurvesB[];
+vector $AposD2[];
+int $iIXv = 0;
+for ($each in $NewcurvesB){
+	$AposD2[$iIXv] = `xform -q -ws -a -rp $each`;
+if($iIXv==1){
+$ZeroOrOneC2 = FindclosetTOcurveENDz($AposD2[0], $AposD2[1], $MidPoints);
+}
+$iIXv++;
+}
+
+
+int $OuterC2 = 0;
+if($ZeroOrOneC2==0){ $OuterC2 = 1;}
+
+$OuterCurvesB[0] = $NewcurvesB[$OuterC2];
+$CenterCurvesB[0] = $NewcurvesB[$ZeroOrOneC2];
+
+
+select -r $OuterCurvesA $OuterCurvesB;
+select -r $CenterCurvesA $CenterCurvesB;
+delete $CenterCurvesA $CenterCurvesB;
+
+
+}
+
+
+
+proc TangentCirclesAtand(string $MathCommand){
+ResetTransEachSL;
+string $CirclesSelected[] =`ls -sl`;
+vector $directionABs[];
+vector $PosABs[];
+float $ObjsCircles[] = CirclesRadiusDirection($directionABs, $PosABs);
+//float $FloatDirXn[] = DirectionF($AverageVecXYZsOnP, $VecXYZs[0]);
+float $R1=$ObjsCircles[0];
+float $R2=0;
+
+float $Rn1 =  (1.0/(`sqrt $R1`)) ;
+float $Rn = 1.0/$Rn1;
+float $R = `pow $Rn 2`;
+float $xc = `sqrt (4*$R1*$R)`;
+float $yc = `sqrt (4*$R2*$R)`;
+float $CurveL = $xc+$yc;
+float $pi = 3.1415926535;
+// P is the distance between 2 circles
+float $P = $ObjsCircles[2];
+float $r1 = $R1;
+float $r2 = $R2;
+//float $ts = acos( (`abs ($r1 - $r2)`) /$P);
+float $ts ;
+//$stringCommand = ("$ts = "+$MathCommand+"( (`abs ($r1 - $r2)`));");
+string  $stringCommand = ( $MathCommand+"(($r1 - $r2)/$P);");
+$ts = evalEcho($stringCommand);
+print $ts ;
+
+//float $ts =atand( (`abs ($r1 - $r2)`) /$P);
+//float $ts = atand( ($r1 - $r2) /$P);
+
+float $tsD = (`rad_to_deg $ts`);
+float $tsDA = (`rad_to_deg $ts`)*1;
+float $tsDB = (`rad_to_deg $ts`)*-1;
+float $tsDAR = ( $ts)*1;
+float $tsDBR = ( $ts)*-1;
+//The first argument represents a point, the second an axis and the third an angle in radians
+//the normal $directionABs[2]
+float $rotatsA[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPC1[] = multiplyFloat($r1, $rotatsA);
+float $AddMultDirPCA1[] = AddFloats($PosABs[0], $MultDirPC1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA1);
+float $rotatsB[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPC2[] = multiplyFloat($r1, $rotatsB);
+float $AddMultDirPCA2[] = AddFloats($PosABs[0], $MultDirPC2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCA2);
+float $rotatsC[] = `rot $directionABs[0] $directionABs[2] $tsDAR`;
+float $MultDirPCB1[] = multiplyFloat($r2, $rotatsC);
+float $AddMultDirPCB1[] = AddFloats($PosABs[1], $MultDirPCB1);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCB1);
+float $rotatsD[] = `rot $directionABs[0] $directionABs[2] $tsDBR`;
+float $MultDirPCB2[] = multiplyFloat($r2, $rotatsD);
+float $AddMultDirPCB2[] = AddFloats($PosABs[1], $MultDirPCB2);
+spaceLocator -p 0 0 0;
+MoveObject2($AddMultDirPCB2);
+curve2points($AddMultDirPCA1, $AddMultDirPCB1);
+curve2points($AddMultDirPCA2, $AddMultDirPCB2);
+float $FloatDirectionTa1Tb2[] = DirectionF($AddMultDirPCA1, $AddMultDirPCB1);
+float $MultDirT[] = multiplyFloat($xc, $FloatDirectionTa1Tb2);
+float $FloatDirT[] = AddFloats($AddMultDirPCA1, $MultDirT);
+float $FloatDirectionTCa[] = DirectionF($AddMultDirPCA1, $PosABs[0]);
+float $MultDirTCa[] = multiplyFloat($R, $FloatDirectionTCa);
+float $FloatDirTc[] = AddFloats($FloatDirT, $MultDirTCa);
+spaceLocator -p 0 0 0;
+MoveObject2($FloatDirTc);
+string $circlesA = Circles_Direction($FloatDirTc,$directionABs[2], $R);
+float $FloatDirectionTa1Tb3[] = DirectionF($AddMultDirPCA2, $AddMultDirPCB2);
+float $MultDirTCb[] = multiplyFloat($xc, $FloatDirectionTa1Tb3);
+float $FloatDirTb[] = AddFloats($AddMultDirPCA2, $MultDirTCb);
+float $FloatDirectionTCb[] = DirectionF($AddMultDirPCA2, $PosABs[0]);
+float $MultDirTCb[] = multiplyFloat($R, $FloatDirectionTCb);
+float $FloatDirTcb[] = AddFloats($FloatDirTb, $MultDirTCb);
+spaceLocator -p 0 0 0;
+MoveObject2($FloatDirTcb);
+string $circlesA = Circles_Direction($FloatDirTcb,$directionABs[2], $R);
+
+select -r $CirclesSelected;
+}
+
+
+proc float [] Normal3Points(float $p1[],float $p2[],float $p3[]){ 
+
+float $center[]; 
+float $normal[];
+	// Get the vector p1-p2, p1-p3
+	//
+	float $p1p2[3];
+	float $p1p3[3];	
+	$p1p2[0] = $p2[0]-$p1[0]; 		$p1p2[1] = $p2[1]-$p1[1]; 		$p1p2[2]= $p2[2]-$p1[2];
+	$p1p3[0] = $p3[0]-$p1[0]; 		$p1p3[1] = $p3[1]-$p1[1]; 		$p1p3[2]= $p3[2]-$p1[2];
+      	// Get the normal to the plane formed by p1, p2, p3, which is the
+	// cross prod of p1-p2 and p1-p3	
+	vector $normalV[];
+	$normalV = crossProduct( $p1p2, $p1p3, 0, 0 );
+float $normal[] = `unit $normalV[0]`;
+return $normal;
+}
+
+proc MatchCurveLengthToCurve(){
+string $Objs[] =`ls -sl`;
+int $sizeCs = (`size($Objs)`)-1;
+string $ObjsEnd[] =`ls -tl $sizeCs $Objs`;
+string $ObjsFirst[] =`ls -hd 1 $Objs`;
+float $compare = `arclen $ObjsFirst`;
+float $ArcLengthAdd;
+for($each in $ObjsEnd){
+$ArcLengths = `arclen $each`;
+$ArcLengthAdd = $compare - $ArcLengths;
+if($ArcLengthAdd>0){
+extendCurve -cos 0 -ch 1 -em 0 -et 0 -d $ArcLengthAdd  -s 0 -jn true -rmk true -rpo on $each ;
+}
+
+}
+}
+
+
+proc CurveLengthToFloat(float $Number){
+string $Objs[] =`ls -sl`;
+for($each in $Objs){
+$ArcLengths = `arclen $each`;
+$ArcLengthAdd = $Number - $ArcLengths;
+if($ArcLengthAdd>0){
+extendCurve -cos 0 -ch 1 -em 0 -et 0 -d $ArcLengthAdd  -s 0 -jn true -rmk true -rpo on $each ;
+}
+}
+}
+
+proc float TotalArcLength(){
+string $Objs[] =`ls -sl`;
+float $ArcLengths = 0.0;
+for($each in $Objs){
+$ArcLengths += `arclen $each`;
+}
+return $ArcLengths;
+}
+
+
+proc string makeCurvePointDirectionLength(float $Length, float $Direction[], float $posA[]){
+float $MultDir[] = multiplyFloat($Length,  $Direction);
+float $FloatDirectionNormalA[] = AddFloats($posA, $MultDir);
+string $CurveBetween;
+$CurveBetween = curve2points($posA,  $FloatDirectionNormalA);
+return $CurveBetween;
+}
+
+proc vector[] PointArray(string $ObjectList[]){
+float $pointAZ1[];
+vector $VecArray[];
+int $XiV = 0;
+for ($each in $ObjectList){
+if (catch($pointAZ1 = `pointPosition -w ($each)`)){
+$pointAZ1 = `xform -q -ws - rp ($each)`;
+} 
+$VecArray[$XiV] = <<$pointAZ1[0], $pointAZ1[1], $pointAZ1[2]>>;
+$XiV++;
+}
+return $VecArray;
+}
+
+
+
+
+
+proc float [] HightsOfIsoscelesTriangle(float $SideA, float $SideB, float $SideC){
+
+float $Pi = 3.1415926535;
+float $Arcangle = acos((((`pow $SideA 2.000`) + (`pow $SideB 2.000`) - (`pow $SideC 2.000`) )/(2.000*$SideA*$SideB)));
+float $AngleNPi =  ($Arcangle*180)/$Pi;
+float $AngleN = $AngleNPi;
+print $AngleN;
+print "//";
+
+float $ArcangleC = asind((((`pow $SideB 2.000`) + (`pow $SideC 2.000`) - (`pow $SideA 2.000`) )/(2.000*$SideB*$SideC)));
+float $ArcangleC2 = $ArcangleC*2.0;
+print $ArcangleC2;
+float $AngleNB = 180.00 -($ArcangleC2 + $AngleNPi) ;
+float $Angle_a = $ArcangleC2; 
+float $Angle_b = $AngleN; 
+float $Angle_c = $AngleNB;
+
+float $AngleN2 = 180.0 -($Angle_b + $Angle_c) ;
+//Two are the same//
+float $Angle_A = $AngleN2; 
+float $Angle_B = $AngleN; 
+float $Angle_C = $AngleN;
+//Angle of Right Tri in Isoceles
+float $AngleOfRightAndA = (180.000 -($AngleN2 +90.000));
+float $AngleOfRightA = ($AngleOfRightAndA/180.000)*$Pi;
+float $AngleN2R = ($AngleN2/180.0000)*$Pi; 
+float $HightfromB = sqrt ( ((`pow $SideA 2.000`) + (`pow $SideC 2.000`)) - ((2.000*$SideA*$SideC)*(`cos($AngleN2R+$AngleN2R )`)) )/2.000 ;
+float $AngleOfRightA = ($AngleOfRightAndA/180.0000)*$Pi;
+float $HightfromC = sqrt ( ((`pow $SideA 2.000`) + (`pow $SideC 2.000`)) - ((2.000*$SideA*$SideC)*(`cos ($AngleOfRightA*2.000 )`)) )/2.000 ;
+float $HightsCandB[] = { $HightfromC, $HightfromB};
+return $HightsCandB;
+
+}
+
+////////////////////////////////////////
+//
+/*
+// AngleOfTriangle
+string $ObjsCurve[] =`ls -sl`;
+float $allcurveLengths[] = ArcLengthArray($ObjsCurve);
+float $SideA = $allcurveLengths[0];
+float $SideB = $allcurveLengths[1];
+float $SideC = $allcurveLengths[2];
+ AnglesofTriangle($SideA, $SideB, $SideC);
+float $A = AnglesofTriangle($SideC, $SideA, $SideB);
+ AnglesofTriangle($SideB, $SideC, $SideA);
+float $A = $allcurveLengths*$allcurveLengths;
+rotate -r -os 0 -75.605364 0 ;
+
+*/
+
+proc float [] ArcLengthArray(string $Objs[]){
+float $ArcLengths[];
+for($each in $Objs){
+$ArcLengths[`size($ArcLengths)`]= `arclen $each`;
+}
+return $ArcLengths;
+}
+
+//CircleFromCurveZYX 1 0 0;
+
+	proc CircleFromCurveT(){
+string $StraitCurve[] = `ls -sl`;
+ResetTransEachSL;
+float $ArcLengthOne = `arclen $StraitCurve[0]`;
+$ArcLengthOne = $ArcLengthOne/2;
+float $CurvPos[] = `xform -q -ws -rp $StraitCurve[0]`;
+float $tangent[] = `pointOnCurve -t -pr 0.5 $StraitCurve[0]`;
+$tangent = `unit <<$tangent[0], $tangent[1], $tangent[2]>>`;
+string $circles = Circles_Direction($CurvPos, $tangent, $ArcLengthOne);
+ResetTransEachSL;
+}
+
+
+
+//CircleFromCurveRadiusZYX 1 0 0;
+
+	proc CircleFromCurveRadiusZYX(int $X, int $Y, int $Z ){
+string $StraitCurve[] = `ls -sl`;
+ResetTransEachSL;
+float $ArcLengthOne = `arclen $StraitCurve[0]`;
+float $CurvPos[] = `xform -q -ws -rp $StraitCurve[0]`;
+float $t[3], $n[3];
+  vector $tan, $norm, $bi;
+   //$t $n are just directions....
+    $t = `pointOnCurve -ch off -pr 0.5 -nt $StraitCurve[0]`;
+    $n = `pointOnCurve -ch off -pr 0.5 -nn $StraitCurve[0]`;
+    // Maya promises normalized tangent and normal,
+    // but they really aren't.    
+    $tan  = `unit << $t[0], $t[1], $t[2] >>`;
+//## Note the int One 1 inthe middle...
+    $norm = `unit << $X, $Y, $Z >>`;    
+    // Calculate the binormal.   
+    $bi = `cross << ($tan.x),  ($tan.y),  ($tan.z)  >>
+                 << ($norm.x), ($norm.y), ($norm.z) >>`;
+    $bi = `unit $bi`;
+string $circles = Circles_Direction($CurvPos,$bi, $ArcLengthOne);
+ResetTransEachSL;
+}
+
+
+	proc CircleFromCurveN(int $X, int $Y, int $Z ){
+string $StraitCurve[] = `ls -sl`;
+ResetTransEachSL;
+float $ArcLengthOne = `arclen $StraitCurve[0]`;
+$ArcLengthOne = $ArcLengthOne/2;
+float $CurvPos[] = `xform -q -ws -rp $StraitCurve[0]`;
+float $t[3], $n[3];
+  vector $tan, $norm, $bi;
+
+   //$t $n are just directions....
+    $t = `pointOnCurve -ch off -pr 0.5 -nt $StraitCurve[0]`;
+    $n = `pointOnCurve -ch off -pr 0.5 -nn $StraitCurve[0]`;
+    // Maya promises normalized tangent and normal,
+    // but they really aren't.    
+    $tan  = `unit << $t[0], $t[1], $t[2] >>`;
+//## Note the int One 1 inthe middle...
+    $norm = `unit << $n[0], $n[0], $n[0] >>`;    
+    // Calculate the binormal.   
+    $bi = `cross << ($tan.x),  ($tan.y),  ($tan.z)  >>
+                 << ($norm.x), ($norm.y), ($norm.z) >>`;
+    $bi = `unit $bi`;
+string $circles = Circles_Direction($CurvPos,$bi, $ArcLengthOne);
+ResetTransEachSL;
+}
+
+
+
+
+
+proc string [] SteinerChain(float $RAa, float $RBb){
+
+//
+//float $RA = 22.0;
+//float $RB = 15.680;
+
+float $pi = 3.1415926535;
+float $Pi = 3.1415926535;
+float $RA;
+float $RB;
+
+string $circleA[];
+string $circleB[];
+string $circles[];
+
+
+if(!( $RAa==$RBb)){
+if( $RAa<$RBb){
+$RA = $RBb;
+$RB = $RAa;}else{ $RA = $RAa; $RB =  $RBb;}
+
+//float $RA = 22.0;
+//float $RB = 15.68;
+
+
+
+$circleA = `circle -c 0 0 0 -nr 0 0 1 -sw 360 -r $RA -d 3 -ut 0 -tol 0.001 -s 32 -ch 1`;
+$circleB = `circle -c 0 0 0 -nr 0 0 1 -sw 360 -r $RB -d 3 -ut 0 -tol 0.001 -s 32 -ch 1`;
+float $R2 = $RA;
+float $R1 = $RB;
+float $DCircle = (($R2 - $R1)/2.0) + $R1 ;
+float $Rii = (($R2 - $R1)/2.0);
+
+float $SideA = $RB + $Rii;
+float $SideB = $Rii*2;
+
+//GOT it for SURE
+//HightsOfIsoscelesTriangle($SideA, $SideB, $SideA)
+float $ArcangleC = asind((((`pow $SideB 2.000`) + (`pow $SideA 2.000`) - (`pow $SideA 2.000`) )/(2.000*$SideB*$SideA)));
+float $ArcangleC2 = $ArcangleC*2.0;
+
+float $Aii =  (`asin ($RB/($RB + $Rii))`);
+//float $Ni = $pi/$Aii;
+//  $Ni = (rad_to_deg($Aii)) ;
+
+
+float $number3 = 360.0/$ArcangleC2; 
+
+float $NofCirclesC = ((`sin 1`)*($pi)) / (( ($R2 - $R1)/($R2 + $R1)/1) );
+float $NofCirclesA = ((`cos 1`)*($pi)) / ( ($R2 - $R1)/($R2 + $R1) );
+float $NofCirclesB = ((`tan 1`)*($pi)) / ( ($R2 - $R1)/($R2 + $R1) );
+
+float $NofCirclesa =  (($pi)/ (`acos (($R2 - $R1)/($R2 + $R1))`));
+float $NofCirclesb =  ($pi)/ (`atan (($R2 - $R1)/($R2 + $R1))`);
+float $NofCirclesc =   ($pi)/(`asin (($R2 - $R1)/($R2 + $R1))`);
+
+//float $subtract = ($NofCirclesa -($NofCirclesb + $NofCirclesc))*4;
+//float $subtract = $NofCirclesB - $NofCirclesA;
+//float $subtract = ($subtract + $NofCirclesC)/2;
+//float $subtractA = (($NofCirclesB - $NofCirclesA)+ $NofCirclesC)/2;
+//float $subtractB = ($NofCirclesA - $NofCirclesC+$NofCirclesB)/2;
+//float $number3 = 360/$NofCirclesC; 
+//
+//float $Ni = (rad_to_deg($subtract)) ;
+//float $Ni = $pi/ $subtract;
+//float $number3 = 360/$Ni; 
+//$number3 = $subtract;
+
+//float $subtract = ($NofCirclesA - $NofCirclesC+$NofCirclesB)/2;
+/*
+float $dec = 1; 
+ float $val= $subtract*0.1;
+  	$sign = `sign $val`;
+  	float $dec = `pow 10 $dec`;
+  	$val = (int) (($val + $sign*5/($dec*10))  * $dec);
+  	$val = ($val / $dec);
+	$val = $val*10;
+$subtract = $val;
+//float $subtract = ($NofCirclesA - $NofCirclesC+$NofCirclesB)/2;
+*/
+int $NumberCs = $number3;
+int $n = $NumberCs;
+float $len = $DCircle;
+float $r = $DCircle;
+	float $x[] = createRegularPolygonX( $n, $r ) ;
+	float $y[] = createRegularPolygonY( $n, $r ) ;
+	// create the n-sided polygon. 
+string $circlesC[];
+	float $z = 0.0 ;
+	int $i ;
+	for( $i = 0 ; $i < $n ; $i++ ) {
+$circlesC = `circle -c $x[$i] $y[$i] $z -nr 0 0 1 -sw 360 -r $Rii -d 3 -ut 0 -tol 0.001 -s 16 -ch 1`;
+
+$circles[`size($circles)`] = $circlesC[0];
+makeIdentity -apply true -t 0 -r 1 -s 0 -n 0 $circles[0];
+xform -cp $circles[0];
+//rotate -r -os 0 0 45 $circles[0];
+//aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 1 0 -upVector 1 0 0 -worldUpType "scene" $circleB[0] $circles[0];
+	
+	}
+
+
+//$circles[`size($circles)`] = $circleA[0];
+//$circles[`size($circles)`] = $circleB[0];
+
+select -r $circleA $circleB $circles ;
+//select -r $circles ;
+return $circles;
+}
+}
+
+
+proc string[] CycleNumberString(string  $singleStringItemC[]){
+int $SizeOfArray;
+$SizeOfArray = size($singleStringItemC) -1;
+string $last[0] = {$singleStringItemC [$SizeOfArray]};
+string $first[0] = {$singleStringItemC[0]};
+  stringArrayRemoveAtIndex(0,  $singleStringItemC);
+  appendStringArray($singleStringItemC, $first,  1);
+return $singleStringItemC; 
+}
+
+
+/*
+
+string $Circ[] = SteinerChain(22.0, 17.00);
+
+int $Sc = (`size($Circ)`);
+int $ScH =($Sc/2)-3;
+int $ix = 0;
+int $ix2 = 1;
+while($ix < $Sc){
+select -r $Circ[0] $Circ[$ScH];
+$Circ = CycleNumberString($Circ);
+TangentCircles;
+if($ix2==($Sc-1)){$ix2=-1;}
+ $ix++;
+$ix2++;
+}
+
+for ($each in $circles){
+select -r $circleB ;
+select -tgl $each;
+TangentCircles;}
+
+
+
+float $As = 22.0;
+float $Bs = 0.05;
+int $c;
+int $S = 240;
+int $sizeN ;
+int $sizeNa ;
+string $circ[];
+string $circL[];
+clear $circL;
+  for($c = 1; $c <= $S; $c++ ){
+
+ $circ =  SteinerChain($As, $Bs) ;
+$circL = $circ;
+$sizeN = `size( $circ)`;
+PAUSE; 
+
+$As += 0.00;
+$Bs += 0.521;
+
+}
+
+print $Bs;
+  proc float round(float $val,float $dec){
+int $Xn = 5;
+//float $dec = 0;
+//float $val = 42.02;
+int $Dn = $dec;
+int $Dn2 = $dec;
+float $divideAs = $val/2;
+float $divideA = $val/5;
+float $divideB = $val/10;
+float $divideC = $val/100;
+float $divideD = $val/1000;
+if ($divideAs < 1) { $Xn = 1; $Dn = 2; $Dn2 = 1; }
+if (($divideAs > 1) && ($divideA < 1)) { $Xn = 1; $Dn = 2; $Dn2 = 1;}
+if (($divideA > 1) && ($divideB < 1)) { $Xn = 5; }
+if (($divideB > 1) && ($divideC < 1)) { $Xn = 10; }
+if (($divideC > 1) && ($divideD < 1)) { $Xn = 50; }
+//print ($Xn + "\n");
+$dec = $Dn;
+$sign = `sign $val`;
+  	float $dec = `pow 10 $dec`;
+  	$val = (int) (($val + $sign*5/($dec*10)) * $dec);
+  	$val = ($val / $dec);
+
+float $divide = $val/$Xn;
+ float $val2 = $divide;
+float $dec2 = $Dn2;
+$sign2 = `sign $val2`;
+  	float $dec2 = `pow 10 $dec2`;
+  	$val2 = (int) (($val2 + $sign*5/($dec2*10)) * $dec2);
+  	$val2 = ($val2 / $dec2);
+float $times = $val2 * $Xn;
+
+  	return $times;
+  }
+  
+
+float $val =16.756;
+float $dec = 1.0;
+
+
+// round(16.756 ,1)
+
+proc float [] roundFloatsInt(float $floatNumbZ[]){
+float $floatNumbZi[]= MakeCleanFloatsZ($floatNumbZ);
+float $floatNumbZii[];
+for ($eachF in $floatNumbZi){
+float $One = roundInt($eachF,1.0);
+
+$floatNumbZii[`size($floatNumbZii)`]= $One;
+}
+return $floatNumbZii;
+}
+
+
+  proc float roundInt(float $val,float $dec){
+
+if($dec==1){
+$val = $val/10;}
+$sign = `sign $val`;
+  	float $decB = `pow 10 $dec`;
+  	$val = (int) (($val + $sign*5/($decB*10)) * $decB);
+float $valB = ($val / $dec);
+if($dec==1){
+$valB = $valB *1;}
+  	return $valB ;
+  }
+  
+
+
+
+string $Selection[];
+$Selection = `ls -sl`;
+
+for ($each in $Selection){
+
+select -r $each;
+
+  
+  float $step = 700;  
+  $curve = "curve -d 1";
+  string $crShape[] = `listRelatives -s`;
+  float $oldvalues[] = `pointOnCurve -top 1 -pr 0 $crShape[0]`;
+  $oldvalues = {round($oldvalues[0],0),round($oldvalues[1],0),round($oldvalues[2],0)};
+  for($a = 1; $a <= $step;$a++){
+  	$t =  $a/$step;
+  	float $values[] = `pointOnCurve -top 1 -pr $t $crShape[0]`;
+  	$values = {round($values[0],0),round($values[1],0),round($values[2],0)};
+  	if($values[0] != $oldvalues[0] && $values[2] != $oldvalues[2]){
+  		$curve += " -p "+$oldvalues[0]+" "+$values[1]+" "+$values[2];
+  	}	
+  	$curve += " -p "+$values[0]+" "+$values[1]+" "+$values[2];
+  	$oldvalues = $values;
+  }
+  eval($curve);
+select -r $curve;
+
+select -cl  ;
+}
+
+
+*/
+
+proc float[] createRegularPolygonY( int $n, float $r )
+{
+	int $i ;
+	float $x[] ;
+	float $angle = 360.0 / $n ;
+
+	for( $i = 0 ; $i < $n ; $i++ ) {
+		float $a = $i * $angle ;	
+		$x[$i] =  $r * cos(deg_to_rad($a)) ;
+	}
+	return $x ;	
+}
+
+proc float[] createRegularPolygonX( int $n,float $r )
+{
+	int $i ;
+	float $x[] ;
+	float $angle = 360.0 / $n ;
+	for( $i = 0 ; $i < $n ; $i++ ) {
+		float $a = $i * $angle ;	
+		$x[$i] =  $r * sin(deg_to_rad($a)) ;
+	}
+	return $x ;	
+}
+
+
+
+/*
+
+proc CurvatureUtility(float $curveM, $NumberofSteps ){
+
+//
+TangentCirclesAtand("sin");
+TangentCirclesAtand("cos");
+TangentCirclesAtand("tan");
+TangentCirclesAtand("tand");
+TangentCirclesAtand("atan");
+TangentCirclesAtand("asin");
+TangentCirclesAtand("acos");
+TangentCirclesAtand("atand");
+TangentCirclesAtand("asind");
+TangentCirclesAtand("acosd");
+
+string $failedMathCommand = "";
+int $trigger = 0;
+
+print ($MathFunc[0] +" "+ $MathFunc[1] +"\n");
+
+string $MathFunc[] =  {"sin", "cos", "tan", "tand", "atan", "asin", "acos", "atand", "asind", "acosd"};
+
+int $trigger = 0;
+int $ColorLayer = 1;
+string $failedMathCommand = "";
+for ($eachA in $MathFunc){
+for ($eachB in $MathFunc){
+print ($eachA +" "+ $eachB +"\n");
+string $MathCommandA = $eachA;
+string $MathCommandB = $eachB;
+
+//}
+//}
+
+
+//string $MathCommandA = $MathFunc[0];
+//string $MathCommandB = $MathFunc[1];
+
+float $r=2;
+float $n = 10;
+
+	float $step = 60;  
+	$curve = "curve -d 3";
+
+	float $x[] ;
+       float $y[] ;
+	float $angle = 360.0 / $n ;
+
+$trigger = 0;
+int $Par = 0;
+float $a1;
+float $iiZ =0.0;
+int $i = 0;
+float $directStep = 0.25;
+float $G;
+
+float $XYa;
+float $XYb;
+
+  for($a1 = 1; $a1 <= $step; $a1++ ){
+  	$t =  $a1/$step;
+ 	$Par = ($a1/$step);
+  	
+
+	float $a2 = $i * $angle ;	
+
+
+	$a2 = deg_to_rad($a2);
+float $XYa;
+float $XYb;
+string  $stringCommandA = ( $MathCommandA +" "+ $a2 );
+string  $stringCommandB = ( $MathCommandB +" "+ $a2 );
+  if ( catch ( eval($stringCommandA) )  ) {
+  $failedMathCommand += $MathCommandA;
+   $trigger = 1; 
+break;
+  }   
+
+if ( catch ( eval($stringCommandB) )  ) {
+  $failedMathCommand += $MathCommandB;
+   $trigger = 1; 
+break;
+  }
+
+float $XYa = eval($stringCommandA);	
+float $XYb = eval($stringCommandB);
+
+$x[$i] = $r * $XYa ;
+$y[$i] = $r * $XYb ;
+		
+
+	// $x[$i] =  $r * cos(deg_to_rad($a2)) ;
+	// $y[$i] =  $r * sin(deg_to_rad($a2)) ;
+if($iiZ>0){
+ $G = `gamma $iiZ`;
+}else{$G = $iiZ;}
+float $values[] = { $x[$i], $y[$i], $G};
+$i++;
+ $iiZ += $directStep;
+$curve += " -p "+$values[0]+" "+$values[1]+"  "+$values[2];
+
+
+}
+
+///////
+if($trigger==0){
+string $Newcurvez = `eval($curve)`;
+string $LayyerName = ($MathCommandA+"_"+$MathCommandB);
+string $layer = `createDisplayLayer -name $LayyerName -empty`;
+ setAttr ($layer+".color") $ColorLayer;
+editDisplayLayerMembers -noRecurse $layer $Newcurvez;
+$ColorLayer++;
+}
+
+
+}
+}
+
+print $failedMathCommand;
+
+
+
+//float $valuesZYPlane[] = {0.0, $values[1], $values[2]};
+//float $valuesZXPlane[] = {$values[0], 0.0, $values[2]};
+//float $valuesZ[] = {0.0, 0.0, $values[2]};
+//float $valuesX[] = {$values[0], 0.0, 0.0};
+
+
+
+rebuildCurve -ch 0 -rpo 1 -rt 0 -end 0 -kr 0 -kcp  1 -kep 1 -kt 0 -s 28 -d 3 -tol 0.001 $Newcurvez;
+float $numLength = (`arclen $Newcurvez`) +1; 
+int $StepZNum = $numLength;
+delete $paramlocatorpointOnCurvex $spaceLocatorB; 
+//delete $curves;
+///////////////////////////////////////////////// //////
+rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp  0 -kep 1 -kt 0 -s $StepZNum -d 3 -tol 0.001  $Newcurvez;
+
+
+//string $Newcurve[] = {$Newcurvez};
+//rename $Newcurve $curves;  
+//$Newcurve = {$curves[0]};
+//return $Newcurve; 
+}
+
+
+
+proc MirrorANDrename(string $objectA[]){
+
+ResetTranslation($objectA);
+	float $posA[];	
+	$posA = `xform -q -os -translation   $objectA[0]`;
+xform -ws -pivots 0 $posA[1] $posA[2];
+duplicate -rr -renameChildren $objectA; scale -r  -1 1 1; 
+string $objectDup[] = `ls -sl`;
+int $ifCurvetype = `ISobjectSelectedTypeCurve`;
+
+string $firstcurveRelativesA1[] = `listRelatives  -shapes $objectDup`;
+
+int $numa  = `match "[0-9]+" $objectA[0]`;
+string $nameAZ;
+$nameAZ = `match "[a-zA-Z]+" $objectA[0]`;
+
+string $renamez = ("A" + $nameAZ + $numa + "A");
+string $renameShape = ("A" + $nameAZ + "Shape" +  $numa + "A");
+string $renameitzA[];
+select -r $objectDup[0];
+$renameitzA[0] = `rename $objectDup[0] $renamez`;
+ makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+ResetTranslation($renameitzA);
+
+if ($ifCurvetype == 1){
+string $ArcLOCZ[];
+string $selectedCurve[];
+clear $selectedCurve;
+$selectedCurve = $objectA;
+string $firstcurveRelatives1[];
+$firstcurveRelatives1 = `listRelatives -shapes   $selectedCurve`;
+string $firstcurveConnectionsz2[];
+$firstcurveConnectionsz2 = ` listHistory -future   false -pruneDagObjects true   $firstcurveRelatives1`;
+int $sizeOfConnections = `size ($firstcurveConnectionsz2)`;
+if ($sizeOfConnections > 0){
+string $ArcCURVEnode =   "makeThreePointCircularArc*";
+int $IFArcCurveIStrue = stringArrayGmatch  ($ArcCURVEnode, $firstcurveConnectionsz2);
+
+if ($IFArcCurveIStrue == 0){
+
+string $renameitzA[];
+string $renameitzB[];
+//$renameitzA[0] = `rename $objectDup[0]  $renamez`;
+$renameitzB[0] = `rename $firstcurveRelativesA1 [0] $renameShape`;
+
+ makeIdentity -apply true -t 1 -r 1 -s 1 -n 0  $renameitzA;
+ResetTranslation($renameitzA);
+
+}else if ($IFArcCurveIStrue == 1){ 
+	string $ArcCURVEnodeZ[];
+	string $firstcurveRelatives3[];
+	$ArcCURVEnodeZ = stringArrayGmatchToArray($ArcCURVEnode, $firstcurveConnectionsz2);
+	$firstcurveRelatives3 = `listHistory -  future 0 -pruneDagObjects 0 $ArcCURVEnodeZ`;
+	string $ArcCURVEnodeLOC = "ArcLocator*";
+
+int $IFArcLOCIStrue = stringArrayGmatch  ($ArcCURVEnodeLOC, $firstcurveRelatives3);
+
+if ($IFArcLOCIStrue == 1){ 
+	$ArcLOCZ = stringArrayGmatchToArray  ($ArcCURVEnodeLOC, $firstcurveRelatives3);
+float $getXLoc = `getAttr ($ArcLOCZ[0]   +".translateX")`;
+float $MirrorXLoc = $getXLoc * -1; 
+
+string $objectDupLocs[] = `duplicate -rr   $ArcLOCZ[0]`; 
+select -r $objectDupLocs;
+group -w; 
+xform -os -piv 0 0 0;
+
+scale -r -1 1 1;
+//string $objectLOCDup[] = `listRelatives   $objectDup`; 
+select -r $objectDupLocs;
+ //capture trans, rot, and scale of object to   match
+        $outmmesh = ($ArcLOCZ[0] + ".translate"); 
+        $inmmesh = ($objectDupLocs[0] +   ".translate");
+{
+$connect = `connectAttr -f $outmmesh $inmmesh`;
+}
+select -r $ArcLOCZ;
+string $objectDupLocs2[] = `duplicate -rr   $ArcLOCZ[0]`; 
+setAttr ($objectDupLocs2[0] +".translateX")   $MirrorXLoc;
+parentConstraint -mo -weight 1 $objectDupLocs[0]   $objectDupLocs2[0];
+select -r $objectDupLocs2;
+Make_Middle_of_Curve_ParamlocatorZMirror  ($renameitzA, $objectDupLocs2);
+select -r $objectA ;
+}
+}
+}
+}
+
+}
+
+
+
+
+
+
+
+
+//returns the first single Item array if string matches that item  
+//EX. string "red"  match array { "bluered", "blueblue", "greenblue" } returns "bluered" as a string array[].
+
+//string $testGmatch = "red";  string $matcharrayTest[] = { "red", "blueblue", "greenblue" };
+//string $matchedinArray[] = stringArrayGmatchToArray($testGmatch, $matcharrayTest);
+// Result: red // 
+
+global proc string[] stringArrayGmatchToArray(string $item, string $list[]){
+	int $result = false;	
+	string $listItem;
+string $MatchedItem[];	
+	for ($listItem in $list) {
+		if ( `gmatch $listItem $item` == 1){
+		$result = true;
+if ($result == true ){ $MatchedItem = {$listItem};}
+			break;	}
+	}	
+	return $MatchedItem;
+}
+
+/////////////
+
+*/
