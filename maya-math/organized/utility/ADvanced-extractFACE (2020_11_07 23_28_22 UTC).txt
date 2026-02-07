@@ -1,0 +1,39 @@
+polyChipOff -worldSpace off -constructionHistory off -kft on -dup off ;
+changeSelectMode -component;
+changeSelectMode -object;
+ polySeparate -ch 1
+select -r -ne `ls -sl -tl 1`;
+
+gt3ptSetRotation;
+
+
+string $object[] = `ls -hilite`;
+$selectvertexx = ( $object[0] + ".vtx[0]" );
+select -r $selectvertexx ;
+
+string $object[] = `ls -hilite`;
+$selectvertexx = ( $object[0] + ".vtx[1]" );
+select -r $selectvertexx ;
+
+string $object[] = `ls -hilite`;
+$selectvertexx = ( $object[0] + ".vtx[2]" );
+select -r $selectvertexx ;
+
+
+
+AUTO-reset-PIVOT
+//////////////////////
+
+
+
+gt3ptSetRotation;
+
+
+string $objectz[] = `ls -hilite`;
+$selectvertexxA = ( $objectz[0] + ".vtx[2]" );
+$selectvertexxB = ( $objectz[0] + ".vtx[1]" );
+$selectvertexxC = ( $objectz[0] + ".vtx[0]" );
+
+
+{  string $Selection1[]; $Selection1[0] = $selectvertexxA; $Selection1[1] = $selectvertexxB; $Selection1[2] = $selectvertexxC; 
+gtExecute3ptSetRotation3 $Selection1 {$selectvertexxC,$selectvertexxB} {$objectz[0]};  };
