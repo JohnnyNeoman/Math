@@ -26,13 +26,33 @@ MAYA/
 ├── FIXES_SUMMARY.md            # Error fixes documentation
 ├── Maya_Sketch_script.md       # Main sketch script (435 KB)
 │
-├── organized/                  # Consolidated procedures by category
+├── organized/                  # Source files by category
 │   ├── circle-procedures/      # Circle creation, 3-point circles
 │   ├── tangent-procedures/     # Point-to-circle tangents
 │   ├── sketch-modeling/        # CAM projection, retopology
 │   ├── linear-algebra/         # Matrix, vector operations
 │   ├── array-utils/            # Array manipulation
 │   └── polygon-ops/            # Polygon operations
+│
+├── cleaned/                    # Formatted, annotated MEL procedures
+│   ├── circle_procedures.mel   # 176 cleaned procedures
+│   ├── tangent_procedures.mel  # 61 cleaned procedures
+│   ├── linear_algebra.mel      # 229 cleaned procedures
+│   ├── polygon_ops.mel         # 132 cleaned procedures
+│   ├── sketch_modeling.mel     # 214 cleaned procedures
+│   ├── array_utils.mel         # 3 cleaned procedures
+│   └── utility.mel             # 240 cleaned procedures
+│
+├── docs/                       # Framework documentation
+│   ├── ABSTRACT.md             # SST framework vision
+│   ├── MATHEMATICAL_COMPILER.md # Tri-Space Engine
+│   ├── NEURAL_SKETCH_FIELD.md  # Anticipation loop
+│   └── core/                   # Core module docs
+│
+├── implementations/            # Python reference implementations
+│   └── python/
+│       ├── math_core.py        # Universal math library
+│       └── sst_nodes.py        # SST node system
 │
 ├── legacy/                     # Original unmodified files
 │   └── Maya_MEL_Proc_Scripts/  # Raw procedure scripts
@@ -157,9 +177,26 @@ print $vars;
 
 ## Related Documentation
 
-- [ABSTRACT.md](../ABSTRACT.md) - Project vision and SST framework
-- [MATHEMATICAL_COMPILER.md](../MATHEMATICAL_COMPILER.md) - Tri-space engine architecture
-- [math_core.py](../implementations/universal/math_core.py) - Python equivalent library
+### Core Framework
+- [ABSTRACT.md](./docs/ABSTRACT.md) - Project vision and SST framework
+- [MATHEMATICAL_COMPILER.md](./docs/MATHEMATICAL_COMPILER.md) - Tri-space engine architecture
+- [SKELETAL_SINGLETON_TREE.md](./docs/SKELETAL_SINGLETON_TREE.md) - Core SST architecture
+
+### Neural/Spectral Framework
+- [NEURAL_SKETCH_FIELD.md](./docs/NEURAL_SKETCH_FIELD.md) - Anticipation loop, FNO field solving
+- [SUPERNODE_ABSTRACT.md](./docs/SUPERNODE_ABSTRACT.md) - Tri-Modal: Affine × Conformal × Spectral
+- [SPECTRAL_SKETCH_FIELD.md](./docs/SPECTRAL_SKETCH_FIELD.md) - Harmonic analysis for sketch fields
+
+### Python Reference Implementations
+- [math_core.py](./implementations/python/math_core.py) - Vec3, Mat4, align_to_surface
+- [sst_nodes.py](./implementations/python/sst_nodes.py) - SST Node System
+
+### Core Module Documentation
+- [math_foundations.md](./docs/core/math_foundations.md) - Gram-Schmidt, platform symmetry
+- [state_schema.md](./docs/core/state_schema.md) - State machine schema
+- [mutation_schema.md](./docs/core/mutation_schema.md) - Mutation operations
+- [node_algebra.md](./docs/core/node_algebra.md) - Node-based algebra
+- [ml_integration.md](./docs/core/ml_integration.md) - ML integration architecture
 
 ---
 
