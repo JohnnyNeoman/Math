@@ -1,0 +1,52 @@
+/* This file downloaded from Highend3d.com
+''  
+''  Highend3d.com File Information:
+''  
+''    Script Name: FW_orientTransformations
+''    Author:  
+''    Last Updated: Jun 03, 2009
+''    Update/Change this file at:
+''    http://Highend3d.com/maya/downloads/mel_scripts/modeling/misc/5780.html
+''  
+''  Please do not alter any information above this line
+''  it is generated dynamically by Highend3d.com and will
+''  be changed automatically on any updates.
+*/
+/*
+
+FW_orientTransformations - version 0.1.1 - (c) Fulvio Wirz - 2009
+
+***************************************************************************************************************
+This script orients the object axis on the Move manipulator tool custom axis. 
+As a consequence in object mode Rotate and Scale manipulators will also be aligned allowing extreme precision in modeling.
+
+Usage:
+
+- Open the script within the script editor and drag and drop it into the shelf.
+
+- Orient the Move manipulator tool on a custom axis, run the script.
+
+- Make sure the transformation settings are switched to Local and tweak your geometry.
+  
+Once you are done just freeze the trasformations of your object. 
+***************************************************************************************************************
+
+*/
+
+string $CompToOrient[]= `ls -sl`;
+string $ObjNameTokens[];
+tokenize $CompToOrient[0] "." $ObjNameTokens;
+string $ObjToOrient= $ObjNameTokens[0];
+float $movAx[]= `manipMoveContext -query -oa Move`;
+float $AxX= `rad_to_deg $movAx[0]`;
+float $AxY= `rad_to_deg $movAx[1]`;
+float $AxZ= `rad_to_deg $movAx[2]`;
+CreateLocator;
+rename FwAxGizmo;
+rotate -a $AxX $AxY $AxZ FwAxGizmo;
+parent $ObjToOrient;
+select $ObjToOrient;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+parent -w;
+delete FwAxGizmo;
+select $CompToOrient[0];
