@@ -1,0 +1,12 @@
+{
+  "total_procedures": 1055,
+  "categories": {
+    "array-utils": 3,
+    "circle-procedures": 184,
+    "linear-algebra": 240,
+    "polygon-ops": 135,
+    "sketch-modeling": 218,
+    "tangent-procedures": 71,
+    "utility": 253
+  }
+}
