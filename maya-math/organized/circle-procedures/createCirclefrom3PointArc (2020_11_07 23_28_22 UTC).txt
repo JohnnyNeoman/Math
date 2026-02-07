@@ -1,0 +1,525 @@
+
+$objA = `ls -sl`;
+
+CreateLocator;
+rename ArcLocator;
+
+select -r $objA;
+
+select -r `listRelatives -allDescendents -type nurbsCurve`;
+select -r `listConnections`;
+
+
+$obj = `ls -sl`;
+
+
+	float $pos[];
+	
+	$pos = `getAttr ($obj[0] + ".pt2")`;
+
+	select -r ArcLocator;
+
+	move  -ws $pos[0] $pos[1] $pos[2];
+
+tangentConstraint -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "vector" -worldUpVector 1 0 0;
+
+
+select -r $objA;
+
+select -r ArcLocator;
+tangentConstraint -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "vector" -worldUpVector 1 0 0;
+CBdeleteConnection "ArcLocator.tx";
+CBdeleteConnection "ArcLocator.ty";
+CBdeleteConnection "ArcLocator.tz";
+CBdeleteConnection "ArcLocator.rx";
+CBdeleteConnection "ArcLocator.ry";
+CBdeleteConnection "ArcLocator.rz";
+
+
+select -r $objA;
+	float $posA[];
+	
+	$posA = `xform -q -ws -translation`;
+
+DuplicateWithTransform;
+
+
+move $posA[0] $posA[1] $posA[2] ArcLocator4;
+
+DuplicateWithTransform;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////
+
+second script below doesntwork above does
+
+
+
+
+
+
+polyCube -w 1 -h 1 -d 1 -sx 1 -sy 1 -sz 1 -ax 0 1 0 -cuv 4 -ch 1;
+rename MovecurveLocatorA;
+move -r -os -wd -3 0 0 ;
+polyCube -w 1 -h 1 -d 1 -sx 1 -sy 1 -sz 1 -ax 0 1 0 -cuv 4 -ch 1;
+rename MovecurveLocatorB;
+move -r -os -wd 0 1 0 ;
+polyCube -w 1 -h 1 -d 1 -sx 1 -sy 1 -sz 1 -ax 0 1 0 -cuv 4 -ch 1;
+rename MovecurveLocatorC;
+move -r -os -wd 3 0 0 ;
+polyCube -w 1 -h 1 -d 1 -sx 1 -sy 1 -sz 1 -ax 0 1 0 -cuv 4 -ch 1;
+rename MovecurveLocatorZERO;
+
+
+string $createARC = `createNode makeThreePointCircularArc`;
+select -r $createARC ; 
+
+$printit = ( $createARC + ".pt1" );
+
+$setPOINT1 = `setAttr $printit -3 0 0 `;
+$setPOINT2 = `setAttr ( $createARC + ".pt2" ) 0 1 0 `;
+$setPOINT3 = `setAttr ( $createARC + ".pt3" ) 3 0 0 `;
+$setD = `setAttr ( $createARC + ".d" ) 3 `;
+$setS = `setAttr ( $createARC + ".s" ) 8 `;
+
+string $CreateNurbsCurvez = `createNode nurbsCurve `;
+
+$connectza = (  $createARC + ".oc" );
+$connectza = ( $CreateNurbsCurvez + ".cr" );
+
+$connectITzAttr = `connectAttr -f (  $createARC + ".oc" ) $connectza`;
+
+
+$ConnectLocToPoint1 = `connectAttr -f MovecurveLocatorA.translate ( $createARC + ".point1")`;
+$ConnectLocToPoint2 = `connectAttr -f MovecurveLocatorB.translate ( $createARC + ".point2")`;
+$ConnectLocToPoint3 = `connectAttr -f MovecurveLocatorC.translate ( $createARC + ".point3")`;
+
+
+
+select -r MovecurveLocatorZERO;
+select -add MovecurveLocatorB; 
+parentConstraint -mo -skipRotate x -skipRotate y -skipRotate z -weight 1;
+
+
+//group;
+//rename AverageGroup;
+//setAttr "AverageGroup.displayHandle" 1;
+//setAttr "AverageGroup.displayLocalAxis" 1;
+
+select -r MovecurveLocatorA; 
+select -add MovecurveLocatorZERO; 
+select -add MovecurveLocatorC; 
+
+
+
+//TransAverage
+
+string $object[] = `ls -sl`;
+shadingNode -asUtility plusMinusAverage;
+rename plusMinusAverageA;
+setAttr plusMinusAverageA.operation 3;
+                                              
+connectAttr -force plusMinusAverageA.output3D ( "|" + $object[1] + ".translate");
+
+connectAttr -f ( $object[0] + ".translate") plusMinusAverageA.input3D[1];
+
+connectAttr -f ( $object[2] + ".translate") plusMinusAverageA.input3D[0];
+
+rename plusMinusAverageA plusMinusAverage;
+
+//
+
+select -r MovecurveLocatorA ;
+select -tgl MovecurveLocatorC ;
+///////TRANSLATE
+
+parentConstraint -mo -skipRotate x -skipRotate y -skipRotate z -weight 1;
+
+
+//////
+
+
+
+
+move -r -os -wd 0 0 3 ;
+select -r curve4 ;
+duplicatePreset(1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1);
+select -r MovecurveLocatorA ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//
+
+$objA = `ls -sl`;
+
+CreateLocator;
+rename ArcLocator;
+
+select -r $objA;
+
+select -r `listRelatives -allDescendents -type nurbsCurve`;
+select -r `listConnections`;
+
+
+$obj = `ls -sl`;
+
+
+	float $pos[];
+	
+	$pos = `getAttr ($obj[0] + ".pt2")`;
+
+	select -r ArcLocator;
+
+	move  -ws $pos[0] $pos[1] $pos[2];
+
+tangentConstraint -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "vector" -worldUpVector 1 0 0;
+
+
+select -r $objA;
+
+select -r ArcLocator;
+tangentConstraint -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "vector" -worldUpVector 1 0 0;
+CBdeleteConnection "ArcLocator.tx";
+CBdeleteConnection "ArcLocator.ty";
+CBdeleteConnection "ArcLocator.tz";
+CBdeleteConnection "ArcLocator.rx";
+CBdeleteConnection "ArcLocator.ry";
+CBdeleteConnection "ArcLocator.rz";
+
+
+select -r $objA;
+	float $posA[];
+	
+	$posA = `xform -q -ws -rp`;
+
+move $posA[0] $posA[1] $posA[2] ArcLocator;
+
+select -r $objA;
+resetPivot;
+
+select -r ArcLocator;
+	float $posB[];
+	
+	$posB = `xform -q -ws -rp`;
+
+move $posB[0] $posB[1] $posB[2] $objA.scalePivot $objA.rotatePivot;
+
+
+select -r $objA;
+
+select -r `listRelatives -allDescendents -type nurbsCurve`;
+select -r `listConnections`;
+select -r `listConnections -d off -s on`;
+
+select -r $obj[0];
+
+
+	float $pos[];
+	
+	$pos = `getAttr ($obj[0] + ".pt2")`;
+
+	select -r ArcLocator;
+
+	move  -ws $pos[0] $pos[1] $pos[2];
+
+select -r $objA;
+
+	float $posB[];
+	
+	$posB = `xform -q -ws -translation`;
+
+
+
+$movepivot = `move $posB[0] $posB[1] $posB[2] ArcLocator.scalePivot ArcLocator.rotatePivot `;
+
+select -r ArcLocator_tangentConstraint1 ;
+doDelete;
+
+
+select -r ArcLocator;
+rotate -r -os 0 -180 0 ;
+
+select -r $objA;
+
+duplicate -rr;
+
+select -r ArcLocator;
+
+	float $posD[];
+	
+	$posD = `xform -q -translation`;
+
+setAttr makeThreePointCircularArc12.point2 -type double3 $posD[0] $posD[1] $posD[2];
+
+$set = `setAttr ($obj[0] + ".point2") -type double3 $posA[0] $posA[1] $posA[2]`;
+
+select -r ArcLocator;
+
+doDelete;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//work sort of only in 2d
+
+
+$objA = `ls -sl`;
+
+CreateLocator;
+rename ArcLocator;
+
+select -r $objA;
+
+select -r `listRelatives -allDescendents -type nurbsCurve`;
+select -r `listConnections`;
+
+
+$obj = `ls -sl`;
+
+
+	float $pos[];
+	
+	$pos = `getAttr ($obj[0] + ".pt2")`;
+
+	select -r ArcLocator;
+
+	move  -ws $pos[0] $pos[1] $pos[2];
+
+tangentConstraint -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "vector" -worldUpVector 1 0 0;
+
+
+select -r $objA;
+
+select -r ArcLocator;
+tangentConstraint -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "vector" -worldUpVector 1 0 0;
+CBdeleteConnection "ArcLocator.tx";
+CBdeleteConnection "ArcLocator.ty";
+CBdeleteConnection "ArcLocator.tz";
+CBdeleteConnection "ArcLocator.rx";
+CBdeleteConnection "ArcLocator.ry";
+CBdeleteConnection "ArcLocator.rz";
+
+
+select -r $objA;
+	float $posA[];
+	
+	$posA = `xform -q -ws -rp`;
+
+move $posA[0] $posA[1] $posA[2] ArcLocator;
+
+select -r $objA;
+resetPivot;
+
+select -r ArcLocator;
+	float $posB[];
+	
+	$posB = `xform -q -ws -rp`;
+
+move $posB[0] $posB[1] $posB[2] $objA.scalePivot $objA.rotatePivot;
+
+
+select -r $objA;
+
+select -r `listRelatives -allDescendents -type nurbsCurve`;
+select -r `listConnections`;
+select -r `listConnections -d off -s on`;
+
+select -r $obj[0];
+
+
+	float $pos[];
+	
+	$pos = `getAttr ($obj[0] + ".pt2")`;
+
+	select -r ArcLocator;
+
+	move  -ws $pos[0] $pos[1] $pos[2];
+
+select -r $objA;
+
+	float $posB[];
+	
+	$posB = `xform -q -ws -translation`;
+
+
+
+$movepivot = `move $posB[0] $posB[1] $posB[2] ArcLocator.scalePivot ArcLocator.rotatePivot `;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$objA = `ls -sl`;
+
+CreateLocator;
+rename ArcLocator;
+
+select -r $objA;
+
+select -r `listRelatives -allDescendents -type nurbsCurve`;
+select -r `listConnections`;
+
+
+$obj = `ls -sl`;
+
+
+	float $pos[];
+	
+	$pos = `getAttr $obj.pt2`;
+
+	select -r ArcLocator;
+
+	move  -ws $pos[0] $pos[1] $pos[2];
+
+select -r $obj;
+
+select -r `listConnections`;
+
+
+select -add ArcLocator;
+parentConstraint -mo -weight 1;
+
+select -d ArcLocator;
+rotate -r -os 0 -180 0 ;
+select -r ArcLocator;
+CBdeleteConnection "ArcLocator.tx";
+CBdeleteConnection "ArcLocator.ty";
+CBdeleteConnection "ArcLocator.tz";
+CBdeleteConnection "ArcLocator.rx";
+CBdeleteConnection "ArcLocator.ry";
+CBdeleteConnection "ArcLocator.rz";
+select -r $obj;
+select -r `listConnections`;
+
+rotate -r -os 0 -180 0 ;
+
+select -r `listRelatives -allDescendents -type nurbsCurve`;
+
+duplicate -rr;
+
+select -r ArcLocator;
+
+	float $posA[];
+	
+	$posA = `xform -q -translation`;
+
+$set = `setAttr ($obj[0] + ".point2") -type double3 $posA[0] $posA[1] $posA[2]`;
+
+select -r ArcLocator;
+
+doDelete;
+
+//
