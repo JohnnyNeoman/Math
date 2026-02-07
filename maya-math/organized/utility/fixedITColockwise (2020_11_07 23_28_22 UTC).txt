@@ -1,0 +1,2281 @@
+
+
+string $CurveSI[] = `ls -sl`;
+vector $AllENdVectorZ[] = GetVectorArrayCRVEnds($CurveSI);
+int $CURVeINDEX[] = CreateIntIndex(`size($CurveSI)`);
+
+
+proc int [] IndexPairFunc(int $XNum){
+int $Zss = $XNum*2;
+int $Yss = $Zss+1;
+int $pair[];
+$pair={$Zss,$Yss};
+return $pair;
+}
+
+proc int IndexPairFuncN(int $XNum, int $XNumV){
+int $Zss = $XNum*2;
+int $Yss = $Zss+1;
+int $AB;
+if($XNumV==0){
+$AB=$Zss;
+}else{$AB=$Yss;}
+return $AB;
+}
+
+
+proc vector [] ReturnVectorPair(vector $AllVec[], int $NumX){
+int $PairI[] = IndexPairFunc($NumX);
+vector $vecPa[];
+$vecPa[0] = $AllVec[$PairI[0]];
+$vecPa[1] = $AllVec[$PairI[1]];
+return $vecPa;
+}
+
+proc vector ReturnOneVectorPair(vector $AllVec[], int $NumX){
+vector $vecPa;
+$vecPa= $AllVec[$NumX];
+return $vecPa;
+}
+
+proc int[] PointInCircle(vector $pos[], vector $posA, float $radius){
+int $AllInside[];
+int $indexR;
+for($eachVecc in $pos){
+float $Di = distance2Pts($eachVecc, $posA);
+if($Di < $radius){
+$AllInside[`size($AllInside)`]= $indexR;
+}
+$indexR++;
+}
+return $AllInside;
+}
+
+/*
+string $quickFix[] = `ls -sl `;
+vector $FixVec[] = PointArrayT($quickFix);
+
+string $quickFixb[] = `ls -sl `;
+vector $FixVecb[] = PointArrayT($quickFixb);
+vector $FixVecX = $FixVecb[0];
+*/
+
+proc int [] MostRightLeft(vector $oneVec, vector $allV[]){
+
+int $Xi[], $zeroORone, $Li;
+
+int $best =0;
+int $Left =0;
+int $Si = `size($allV)`-1;
+for( $i = 0 ; $i < $Si ; $i++ ) {
+
+		$Xi[0] =$best;
+		$Xi[1] = $i+1;
+	$zeroORone = MostRightClockWiseINT($oneVec, $allV[$best], $allV[$Xi[1]]);
+	$best = $Xi[$zeroORone];
+		$Xi[0] =$Left;
+	$zeroORone = MostRightClockWiseINT($oneVec , $allV[$Left], $allV[$Xi[1]]);
+	$Li = fmod($zeroORone+1,2);
+	$Left = $Xi[$Li];
+}
+
+int $RightLeft[];
+$RightLeft[0] =$best;
+$RightLeft[1] =$Left;
+return $RightLeft;
+}
+
+proc int MostRightClockWiseINT (vector $VecA,vector $VecB,vector $Vec){
+
+// Get the vector p1-p2, p3-p4
+	// Get the vector  p3-p4
+//THREE ptS get angel that is pt 2 & 3 to pt 1 (the V shape joining at first pt)
+///////////////////////////////////////////////////////////
+float $pt1[] =  FloatToVec($VecA);
+float $pt2[] =  FloatToVec($VecB);
+float $pt3[] =  FloatToVec($Vec);
+vector $U1 = TwoVecsOrFloats($pt2, $pt1);
+vector $V1 = TwoVecsOrFloats($pt3, $pt1);
+vector $U2 = TwoVecsOrFloats($pt3, $pt1);
+vector $V2 = TwoVecsOrFloats($pt2, $pt1);
+vector $normalV[];
+clear $normalV;
+$normalV[0] = FloatToVec( crossProduct( $U1, $V1, 0, 1 ) );
+$normalV[1] = FloatToVec( crossProduct( $U2, $V2, 0, 1 ) );
+$normalV[0]= `unit ($normalV[0])`;
+$normalV[1]= `unit ($normalV[1])`;
+float $NA[] = `unit ($normalV[0])`;
+float $NB[] = `unit ($normalV[1])`;
+float $NAD = $NA[0] + $NA[1];
+float $NAD2 = $NB[0] + $NB[1];
+int $TwoNew ;
+string $ReturnObj[];
+if( $NAD< $NAD2){
+$TwoNew =1;
+
+}else{ 
+$TwoNew =0;
+
+}
+
+return $TwoNew;
+}
+
+
+
+
+
+
+string $CurveSI[] = `ls -sl`;
+vector $AllENdVectorZ[] = GetVectorArrayCRVEnds($CurveSI);
+int $CURVeINDEX[] = CreateIntIndex(`size($CurveSI)`);
+string $FoundDuplicates[] = $CurveSI;
+int $SizeSelectedCRVs =`size($FoundDuplicates)`;
+
+//print $FoundDuplicates;
+//select -r $C;
+//if($SizeSelectedCRVs==1){
+// do not find if curves form a chain 
+//}
+//if($SizeSelectedCRVs>=4){
+//find if curves form a chain 
+
+
+
+string $CurveEND_Count_LIST[];
+int $CnIndex =0;
+  		for ($eachS in $FoundDuplicates)
+{
+$CurveEND_Count_LIST[$CnIndex++] = "0,0";
+}
+print $CurveEND_Count_LIST;
+
+
+int $NumbersINDEX[] = CreateIntIndex($SizeSelectedCRVs);
+int $CRV_CONNECT[];
+clear $CRV_CONNECT;
+
+string $CurveConnectionsIndex[];
+string $CurveConnectionsIndexA[];
+string $CurveConnectionsIndexB[];
+clear $CurveConnectionsIndex;
+clear $CurveConnectionsIndexA;
+clear $CurveConnectionsIndexB;
+for($eachItemX in $NumbersINDEX){
+$CurveConnectionsIndex[$eachItemX] ="";
+$CurveConnectionsIndexA[$eachItemX] ="A";
+$CurveConnectionsIndexB[$eachItemX] ="B";
+}
+int $TrackIt[];
+int $CRVNumber[];
+clear  $CRVNumber;
+int $CurveEndPairs[];
+string $CurveNumber[];
+string $CurveEND_LIST[];
+clear $CurveNumber;
+string $CurveNumberIndex[];
+string $CurveNumberIndexA[];
+int $Cn=0;
+int $CnXX=0;
+int $Xn=0;
+int $XTFb=0;
+string $matchN_a, $matchN_b;
+string $item[]= $FoundDuplicates;
+string $item[]= IntArrayToStringArray($NumbersINDEX);
+ 	string $itemBackUp[] = $item;
+string $Remove[];
+string $diff[];
+  		for ($each in $itemBackUp)
+{
+   $Remove = {$item[0]};
+   $diff = stringArrayRemoveExact($Remove, $item);
+ 		for($eachOther in $diff){
+////////////////////////////////////////
+
+$IntIfTrueA = IfCurvesTouch($FoundDuplicates[int($eachOther)], $FoundDuplicates[int($Remove[0])]);
+
+
+if($IntIfTrueA==1){
+////
+
+
+$CurveEndPairs = IfCurvesTouchIndex($FoundDuplicates[int($eachOther)], $FoundDuplicates[int($Remove[0])],$XTFb);
+
+
+ select -r $FoundDuplicates[int($Remove[0])];  PAUSEn(2);
+ select -add $FoundDuplicates[int($eachOther)]; PAUSEn(2);
+// $CurveEndPairsZ this is the zero or one indication Start or End _ A or B _  0 Or 1 _  of curve ends connecting  for two lines  
+
+string $OnePAIR = stringArrayToString(IntArrayToStringArray($CurveEndPairs), ",");
+//$CurveEND_LIST[$Cn] = stringArrayToString(IntArrayToStringArray($CurveEndPairs), ",");	
+$IfTrueArray[$Cn]=1;
+$CRVNumber[$Xn++] = $matchN_a = `match "([0-9]+)([0-9])*" $FoundDuplicates[int($Remove[0])]`;
+$CRVNumber[$Xn++] = $matchN_b = `match "([0 -9]+)([0-9])*" $FoundDuplicates[int($eachOther)]`;
+$CurveNumber[$Cn] = ($matchN_a +" "+$matchN_b);
+
+string $ADDit[] =  stringToStringArray( $OnePAIR , ",");
+string $ARRAY_A[] = stringToStringArray($CurveEND_Count_LIST[int($eachOther)], ",");
+string $ARRAY_B[] = stringToStringArray($CurveEND_Count_LIST[int($Remove[0])], ",");
+int $AAi = int ($ARRAY_A[0]) + int ($ADDit[0]); int $ABi = int ($ARRAY_A[1]) + int ($ADDit[1]);
+int $BAi = int ($ARRAY_B[0]) + int ($ADDit[2]); int $BBi = int ($ARRAY_B[1]) + int ($ADDit[3]);
+$CurveEND_Count_LIST[int($eachOther)] = ($AAi+","+$ABi);
+$CurveEND_Count_LIST[int($Remove[0])] = ($BAi+","+$BBi);
+
+//string $ARray[] = stringToStringArray($OnePAIR, ",")
+//$CRV_CONNECT[int($Remove[0])]+= int ($ADDit[0]);
+//$CRV_CONNECT[int($eachOther)]+= int ($ADDit[1]);
+
+$CRV_CONNECT[int($Remove[0])]+= 1;
+$CRV_CONNECT[int($eachOther)]+= 1;
+
+/////////////////////////////////////////////////////////
+
+$CurveEndPairsZ = IfCurvesTouchIndexZ($FoundDuplicates[int($eachOther)], $FoundDuplicates[int($Remove[0])],$XTFb);
+
+$CurveEndPairsZ = IfCurvesTouchIndexZ($FoundDuplicates[int($Remove[0])],$FoundDuplicates[int($eachOther)],$XTFb);
+//curve inted Zero 0 -  1_1, 6_1, 7_1,
+// the first number is the curve it connects to
+// the following number is the vector index of the end pt that touches that curve
+
+  $TrackIt[0] = IndexPairFuncN(int($Remove[0]), $CurveEndPairsZ[0]);
+  $TrackIt[1] = IndexPairFuncN(int($eachOther), $CurveEndPairsZ[1]);
+
+string $A = $Remove[0]; string $B = $eachOther;
+
+ int $AX = int ($A);
+ int $BX = int ($B);
+$CurveNumberIndex[$Cn] = ($A+","+$B);
+
+
+
+if($CurveEndPairsZ[0]==1){
+$CurveConnectionsIndexB[$AX] = $CurveConnectionsIndexB[$AX]+$B+"_"+ $CurveEndPairsZ[1]+","; 
+
+}
+
+if($CurveEndPairsZ[1]==1){
+$CurveConnectionsIndexB[$BX] = $CurveConnectionsIndexB[$BX]+$A+"_"+ $CurveEndPairsZ[0]+",";
+}
+
+if($CurveEndPairsZ[0]==0){
+$CurveConnectionsIndexA[$AX] = $CurveConnectionsIndexA[$AX]+$B+"_"+ $CurveEndPairsZ[1]+","; 
+
+}
+
+if($CurveEndPairsZ[1]==0){
+$CurveConnectionsIndexA[$BX] = $CurveConnectionsIndexA[$BX]+$A+"_"+ $CurveEndPairsZ[0]+",";
+}
+
+//curve inted Zero 0 -  1_1, 6_1, 7_1,
+// the first number is the curve it connects to $B
+// the following number is the vector index of the end pt that touches that curve $TrackIt[0]
+
+$CurveConnectionsIndex[$AX] = $CurveConnectionsIndex[$AX]+$B +"_"+ $TrackIt[0]+","; 
+$CurveConnectionsIndex[$BX]= $CurveConnectionsIndex[$BX]+$A +"_"+ $TrackIt[1]+","; 
+
+$CurveNumberIndexA[$CnXX++] =  $A;
+$CurveNumberIndexA[$CnXX++] =  $B;
+string $AB =  (" _ "+$A+","+$B); 
+ $OnePAIR += $AB;
+$CurveEND_LIST[$Cn] = $OnePAIR;
+
+$Cn++;
+////
+}
+ 	$item = $diff;
+//////////////////////////////////////////
+}
+   }
+
+
+//////////////////////////////////////////END
+//////////////////////////////////////////
+
+print $CurveConnectionsIndex;
+print $CurveConnectionsIndexA;
+print $CurveConnectionsIndexB;
+print $CRV_CONNECT;
+
+
+vector $normal =<<0,1,0>>;
+
+vector $currentV,$TanBi,$Connected,$Dir_A, $Dir_B;
+string $CurrentS;
+// for curve index 0 0  and 0 1
+float $offset = 0.25;
+int $eachIND;
+int $N =0;
+int $iI =0;
+int $Ci =0;
+int $SSi[], $XXi[];
+int $Nd = 0;
+int $Tsize;
+int $IIn,$XNumx,$Zx,$Yx,$Zss,$Yss,$ab;
+vector $Dir_Ax[];
+vector $Dir_Bx[];
+vector $COppx[];
+vector $COx[];
+vector $Cuppx[];
+vector $Cux[];
+vector $VecPolys[5];
+for( $iv = 0 ; $iv < 6 ; $iv++ ) {
+$VecPolys[$iv]=<<0.0,0.0,0.0>>;
+}
+
+clear $COx;
+clear $Cux;
+clear $COppx;
+clear $Cuppx;
+
+//select -r $CurveSI[0];
+
+$eachIND = $CURVeINDEX[$iI];
+$N =0;
+//for ( each end ){
+for( $i = 0 ; $i < 2 ; $i++ ) {
+
+select -r $CurveSI[$eachIND];
+PAUSE;
+
+
+	if( $N==0){
+		$CurrentS =$CurveConnectionsIndexA[$eachIND];
+	}else{ 
+		$CurrentS =$CurveConnectionsIndexB[$eachIND];}
+
+
+	int $SSi[], $XXi[];
+	clear $SSi;
+	clear $XXi;
+	string $formatAx = `match "[a-zA-Z]*" $CurrentS`;
+	$formatA = substituteAllString($CurrentS, $formatAx,  "");
+	$Nd = 0;
+
+	if( size($formatA) == 0){
+		print "Yes";}
+
+
+	if( size($formatA) > 0){
+
+		string $RemoveC[] = stringToStringArray($formatA,  ",");
+		for ($eachSR in $RemoveC){
+			string $formatAb = substituteAllString($eachSR, "_",  ",");
+			string $SAb[] = stringToStringArray($formatAb,  ",");
+			int $Split[] = StringToInt($SAb);
+			$SSi[`size($SSi)`]=$Split[0] ;
+			$XXi[`size($XXi)`]=$Split[1] ;
+		}
+		$Tsize=`size($RemoveC)`;
+
+//print $SSi;
+//
+//select -r $CurveSI[$eachIND];
+
+	for ($eachN in $SSi){
+select -r $CurveSI[$eachN];
+PAUSE;
+}
+	for ($eachN in $SSi){
+select -add $CurveSI[$eachN];
+PAUSE;
+}
+
+		clear $Dir_Ax;
+		clear $Dir_Bx;
+		$Ci =0;
+if($Tsize>1){ 
+
+string $LocZ[];
+vector $DirectionB[];
+		for( $ii = 0 ; $ii < size($SSi) ; $ii++ ) {
+			int $Sc = $SSi[$Ci];
+			int $Xc = $XXi[$Ci];
+			$Ci++;
+			int $C = $Xc;
+			int $D = 0;
+			$Nd = 0;
+			if($Xc ==0){
+				$D = 1;
+			}
+			if($N ==0){
+				$Nd = 1;
+			}
+			$COppx[$ii] = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($Sc, $D));
+			$COx[$ii] = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($Sc, $C));
+			$Cuppx[$ii] = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($eachIND, $Nd));
+			$Cux[$ii] = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($eachIND, $N));
+			 $Dir_A = DirectionFN($Cuppx[$ii],$Cux[$ii]);
+			 $Dir_B =  DirectionFN($COppx[$ii],$COx[$ii]);
+			$Dir_A =`unit $Dir_A`;
+			$Dir_B =`unit $Dir_B`;
+
+			if($ii==0){
+				$Dir_Ax[0] = ($Dir_A*2.5)+$Cux[$ii]; }
+			$Dir_Bx[$ii] = ($Dir_B*2.5)+$Cux[$ii];
+			$DirectionB[$ii] = $Dir_B;
+
+			$LocZ[$ii] = Loc($Dir_Bx[$ii]);
+		}
+
+//////////////////
+	 $Dir_A = DirectionFN($Cuppx[0],$Cux[0]);
+	int $indexMarked[];
+	$indexMarked = MostRightLeft( $Dir_A,$DirectionB);
+		int $indexMarked[];
+		$indexMarked = MostRightLeft($Cux[0],$Dir_Bx);
+		//print $indexMarked;
+
+select -r $CurveSI[$eachIND];
+PAUSE;
+	for ($eachN in $indexMarked){
+select -add $LocZ[$eachN];
+PAUSE;
+}
+select -r $CurveSI[$eachIND];
+PAUSE;
+	for ($eachN in $indexMarked){
+select -add $CurveSI[$SSi[$eachN]];
+PAUSE;
+}
+
+		$Ci =0;int $CCi=0;
+		
+				for( $ii = 0 ; $ii < size($indexMarked) ; $ii++ ) {	
+				$ConnectedOpp = $COppx[$indexMarked[$ii]] ;
+				$Connected = $COx[$indexMarked[$ii]];
+				$currentVOpp = $Cuppx[$ii];
+				$currentV = $Cux[$ii];
+				 $Dir_A = DirectionFN($currentVOpp,$currentV);
+				 $Dir_B =  DirectionFN($ConnectedOpp,$Connected);
+				$Dir_A =`unit $Dir_A`;
+				$Dir_B =`unit $Dir_B`;
+				 $TanBi = ($Dir_A+$Dir_B)/2.0;
+				$TanBi =`unit $TanBi`;			
+				float $AngleN2 = Angel2Direction($Dir_A, $TanBi); 
+				float $Pi = 3.1415926535;
+				float $AngleN = (180.000 -($AngleN2 +90.000));
+				float $AngleRA = ($AngleN/180.000)*$Pi;
+				float $HightfromB = $offset / `cos $AngleRA` ;
+		// if ii is zero this is the most right curve... if it is one it is the most left curve		
+		//  if ii is most right 
+		float $NegorPostive =1;
+		vector $leftRightPN[];
+		$leftRightPN[0] = ($TanBi*2.0)+ $currentV;
+		$leftRightPN[1] = ($Dir_B*2.0)+ $currentV;
+		int $LR[];
+		$LR = MostRightLeft($currentV,$leftRightPN);
+ int $LRi[];
+ if($i==1){
+ $LRi[0]=$LR[1];
+  $LRi[1]=$LR[0];
+ $LR=$LRi;
+  }
+	if($LR[$ii]== 1){
+	$NegorPostive =-1.0;
+		}
+
+// if($i==1){
+//$NegorPostive *= -1.0;
+// }
+
+
+ $ab = ($ii+$N)+($ii*1);
+ $Zx = $ab*2;
+ $Yx = $Zx+1;
+print ($Zx+" "+$Yx+" "+"MANY"+"\n");
+$VecPolys[$Zx] = $currentV;
+$VecPolys[$Yx] =  (($TanBi*$NegorPostive)*($HightfromB))+$currentV;
+
+
+		makeCurvePointDirectionLength(($HightfromB), ($TanBi*$NegorPostive), $currentV);
+			PAUSE; PAUSE;
+			}
+
+}
+
+if($Tsize==1){ 
+				
+			int $Sc = $SSi[0];
+			int $Xc = $XXi[0];			
+			int $C = $Xc;
+			int $D = 0;
+			$Nd = 0;
+			if($Xc ==0){
+				$D = 1;
+			}
+			if($N ==0){
+				$Nd = 1;
+			}
+			$ConnectedOpp = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($Sc, $D));
+			$Connected = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($Sc, $C));
+			$currentVOpp = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($eachIND, $Nd));
+			$currentV = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($eachIND, $N));
+					
+			vector $Dir_A = DirectionFN($currentVOpp,$currentV);
+			vector $Dir_B =  DirectionFN($ConnectedOpp,$Connected);
+			$Dir_A =`unit $Dir_A`;
+			$Dir_B =`unit $Dir_B`;
+			vector	$TanBi = ($Dir_A+$Dir_B)/2.0;
+			$TanBi =`unit $TanBi`;			
+			float $AngleN2 = Angel2Direction($Dir_A, $TanBi); 
+			float $Pi = 3.1415926535;
+			float $AngleN = (180.000 -($AngleN2 +90.000));
+			float $AngleRA = ($AngleN/180.000)*$Pi;
+			float $HightfromB = ($offset / `cos $AngleRA`);
+vector $leftRightPN[];
+$leftRightPN[0] = ($TanBi*2.0)+ $currentV;
+$leftRightPN[1] = ($Dir_B*2.0)+ $currentV;
+vector $VecRL[];
+$VecRL[0] = ($TanBi*1.0);
+$VecRL[1] = ($TanBi*-1.0);
+int $LR[];
+$LR = MostRightLeft($currentV,$leftRightPN);
+ int $LRi[];
+ if($i==1){
+ $LRi[0]=$LR[1];
+ $LRi[1]=$LR[0];
+ $LR=$LRi;
+ }
+if($LR[0] ==0){
+makeCurvePointDirectionLength(($HightfromB), $TanBi*1.0, $currentV);
+PAUSE; PAUSE;
+makeCurvePointDirectionLength(($HightfromB), $TanBi*-1.0, $currentV);
+PAUSE; PAUSE;
+}
+if($LR[0] ==1){
+makeCurvePointDirectionLength(($HightfromB), $TanBi*-1.0, $currentV);
+PAUSE; PAUSE;
+makeCurvePointDirectionLength(($HightfromB), $TanBi*1.0, $currentV);
+PAUSE; PAUSE;
+}
+
+int $Xnx=1;
+
+
+ $ab = (0+$N)+(0*1);
+ $Zx = $ab*2;
+ $Yx = $Zx+1;
+print ($Zx+" "+$Yx+" "+"ONE"+"\n");
+$VecPolys[$Zx] = $currentV;
+$VecPolys[$Yx] =  (($VecRL[$LR[0]])*($HightfromB))+$currentV;
+
+ $ab = (1+$N)+(1*1);
+ $Zx = $ab*2;
+ $Yx = $Zx+1;
+print ($Zx+" "+$Yx+" "+"ONE"+"\n");
+$VecPolys[$Zx] = $currentV;
+$VecPolys[$Yx] =  (($VecRL[$LR[1]])*($HightfromB))+$currentV;
+
+
+
+$Tsize=0;				
+				}
+
+
+		}else{
+// if curve end has zero connetions HERE
+
+			$Nd =0;
+			if($N ==0){
+				$Nd = 1;
+			}
+			$currentVOpp = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($eachIND, $Nd));
+			$currentV = ReturnOneVectorPair($AllENdVectorZ,IndexPairFuncN($eachIND, $N));
+			vector $Dir_A = DirectionFN($currentVOpp,$currentV);
+			vector $CrossA = crossProduct( $Dir_A ,$normal, 0, 0 );
+
+			makeCurvePointDirectionLength(($offset), $CrossA, $currentV);
+PAUSE; PAUSE;
+			makeCurvePointDirectionLength(($offset), $CrossA*-1.0, $currentV);
+PAUSE; PAUSE;
+			 $Tsize=0;
+
+ $ab = (0+$N)+(0*1);
+ $Zx = $ab*2;
+ $Yx = $Zx+1;
+print ($Zx+" "+$Yx+" "+"ZERO"+"\n");
+$VecPolys[$Zx] = $currentV;
+$VecPolys[$Yx] =  (($CrossA)*($offset))+$currentV;
+ $ab = (1+$N)+(1*1);
+ $Zx = $ab*2;
+ $Yx = $Zx+1;
+print ($Zx+" "+$Yx+" "+"ZERO"+"\n");
+$VecPolys[$Zx] = $currentV;
+$VecPolys[$Yx] =  (($CrossA*-1)*($offset))+$currentV;
+
+		}
+
+		$N++;
+
+
+	}
+
+vector $Four[];
+$Four[0]= $VecPolys[0];
+$Four[1]= $VecPolys[1];
+$Four[2]= $VecPolys[3];
+$Four[3]= $VecPolys[2];
+makePolygonQUAD($Four);
+$Four[0]= $VecPolys[4];
+$Four[1]= $VecPolys[5];
+$Four[2]= $VecPolys[7];
+$Four[3]= $VecPolys[6];
+makePolygonQUAD($Four);
+
+	$iI++;
+
+
+Loc $VecPolys[0];
+Loc $VecPolys[1];
+Loc $VecPolys[2];
+Loc $VecPolys[3];
+
+Loc $VecPolys[7];
+Loc $VecPolys[6];
+
+
+print $VecPolys
+
+
+
+proc string makePolygonQUAD( vector $VecPts[])
+
+{
+
+	int $n = `size($VecPts)`;
+	// create the n-sided polygon. 
+	//
+	string $facet[] ;
+	string $cmd = "polyCreateFacet -ch 0  ";
+	string $vertStr ;
+	float $z = 0.0 ;
+	int $i ;
+	for( $i = 0 ; $i < $n ; $i++ ) {
+		$vertStr += " -p " ;
+		$vertStr += $VecPts[$i] ;
+	
+	}
+	$cmd += $vertStr ; 
+	$cmd += " "; 
+    string $facet[] = eval($cmd) ;
+	return $facet[0] ;
+}
+
+
+1_0,3_0,
+0_3,2_2,3_3,
+1_4,5_5,
+0_6,1_6,4_7,7_7,
+3_9,5_8,6_8,7_9,10_8,
+2_11,4_10,6_10,10_10,
+4_13,5_13,8_12,9_12,10_13,
+3_14,4_14,8_15,
+6_17,7_16,9_17,
+6_18,8_18,11_19,
+4_20,5_20,6_20,11_21,
+9_23,10_22,
+
+select-r $FoundDuplicates[3];
+
+
+// Result: 4 // 
+select -r curve15 ;
+arclen;
+// Result: 8.944272 // 
+
+string $CurveSIx[] = `ls -sl`;
+vector $AllENdVectorZx[] = GetVectorArrayCRVEnds($CurveSIx);
+
+// for each curve end
+// for each curve that touches end 
+
+
+
+vector $DirA = DirectionFN($AllENdVectorZx[0] ,$AllENdVectorZx[1]);
+vector $DirB =  DirectionFN($AllENdVectorZx[2] ,$AllENdVectorZx[3]);
+$DirA =`unit $DirA`;
+$DirB =`unit $DirB`;
+
+float $offset = 4.0;
+	float $AngleN2 = Angel2Direction($DirA, $DirB); 
+	float $Pi = 3.1415926535;
+	float $AngleN = (180.000 -($AngleN2 +90.000));
+	float $AngleRA = ($AngleN/180.000)*$Pi;
+	float $HightfromB = $offset / `cos $AngleRA` ;
+
+
+
+proc float Angel2DirectionR(vector $Da,vector $Db){
+float $A = acos(dot($Da, $Db));
+return $A;
+}
+proc float Angel2Direction(vector $Da,vector $Db){
+float $A = `rad_to_deg(acos(dot($Da, $Db)))`;
+return $A;
+}
+
+
+
+int $Vi =0;
+
+string $Connected[] =  stringToStringArray($CurveConnectionsIndex[$Vi] , ",");
+select -cl  ;
+for($eachString in $Connected){
+int $IndexV = $eachString;
+select -add $CurveSI[$IndexV];
+}
+$Vi++;
+
+
+//print $CurveEND_Count_LIST;
+
+print $CurveEND_LIST;
+
+
+
+print $CurveConnectionsIndex;
+1,2,
+0,2,4,5,
+0,1,3,
+2,4,6,
+1,3,5,6,
+1,4,
+3,4,
+
+
+
+
+int $CnIndeV =0;
+int $CollectZeros[];
+clear $CollectZeros;
+for($eachString in $CurveEND_Count_LIST){
+
+string $ADDit[] =  stringToStringArray($eachString , ",");
+int $AAiX = int ($ADDit[0]) * int ($ADDit[1]);
+if($AAiX == 0){
+$CollectZeros[`size($CollectZeros)`] = $CnIndeV;
+}
+$CnIndeV++;
+}
+
+if(`size($CollectZeros)`>0){
+
+print $CollectZeros;
+for($eachInt in $CollectZeros){
+select -add $FoundDuplicates[$eachInt];
+}
+}
+
+
+
+
+
+
+print  $CRV_CONNECT;
+print $CurveNumberIndexA;
+print $CurveNumberIndex;
+print $CurveNumber;
+print $CurveEND_LIST;
+print $CRVNumber;
+print $CurveEndPairs;
+
+
+string $FoundIT[];
+int $COUNTIT = 0;
+int $COUNTITA = 0;
+string $eachS;
+
+for ($eachS in  $FoundDuplicates){
+int $XX = $CurveNumberIndexA[$COUNTIT];
+if($XX==2){
+
+for ($eachSi in $CRV_CONNECT){
+
+int $XXi = $eachS;
+if( $XXi == 2){
+$FoundIT[`size($FoundIT)`] = $eachS;
+} 
+}
+$COUNTITA++;
+}
+$COUNTIT++;
+}
+}
+
+print $FoundIT;
+
+
+int $SIZE = `size($CRVNumber)`-1;
+int $TrackDup[11];
+
+int $CountNumberAll_Crvs[] = IntArrayReturnClosedLoop($CRVNumber,$TrackDup);
+
+
+
+proc int [] IntArrayReturnClosedLoop(int $listX[],int $listTD[])
+{
+	string $list[];
+int $Ct;
+	int $ModNn;
+	 $list = IntArrayToStringArray($listX);
+	string $item, $result[], $CollectR[];
+		int $index = 0;
+		int $X = 0;
+		int $CountD = 0;
+int $CountDX = 0;
+		int  $NumberE[];
+		int  $NumberER[];
+		$result = $list;
+int $IndexDup[];	
+	//for ($item in $result) {
+
+	while(`size($result)`> 0 ) {
+$item = $result[0];
+	$CountD = stringArrayCount($item, $result);
+
+$IndexDup = StringArrayCountIndexDup($item, $list, $CountDX);
+if($CountDX >1){
+for($eachINT in $IndexDup){
+$listTD[$eachINT] = $CountDX;
+}
+clear $IndexDup;
+}	
+		if ($CountD>1) {
+	$NumberE[$index]=$CountD;
+	 print ($item+" "+$CountD+"\n");	
+	$NumberER[$index] =$NumberE[$index];
+	 		 $CollectR[$index] = $item;
+$index++;	
+$result = stringArrayRemove({$item},$result);
+		}
+	$X++;
+			if($X ==200){break;}
+	}
+
+	 return $NumberER;
+}
+
+
+
+proc int[] StringArrayCountIndexDup(string $item, string $list[], int $Count)
+{
+	int $result = 0;
+	int $index =0;
+int $indexArray[];
+	string $listItem;
+	
+	for ($listItem in $list) {
+
+		if ($item == $listItem){ 
+$indexArray[$result] = $index;
+$result++;}
+
+	$index++;
+	}
+	$Count = $result;
+	return $indexArray;
+}
+
+
+proc int [] FindifCurveEndsMeetIndex(vector $CurveA1[], vector $CurveA2[], int $TF){
+int $CurveMeetsTrue = 0;
+int $indexN = 0;
+int $indexN2 = 0;
+float $firstC[], $SecondC[], $SecondCA[];
+int $IndexEnds[];
+
+while ($indexN < 2){
+
+$firstC = $CurveA1[$indexN];
+$SecondC = $CurveA2[0];
+$SecondCA = $CurveA2[1];
+
+int $NumberE = PointsEquivalentTol( $firstC, $SecondC);
+int $NumberE2 = PointsEquivalentTol( $firstC, $SecondCA);
+
+if ($NumberE == 3){
+if($indexN==0){
+$IndexEnds[0]=1; $IndexEnds[1]=0; $IndexEnds[2]=1; $IndexEnds[3]=0;
+
+}else{
+$IndexEnds[0]=0; $IndexEnds[1]=1; $IndexEnds[2]=1; $IndexEnds[3]=0;
+
+}
+$CurveMeetsTrue = 1; 
+break; }
+
+if ($NumberE2 == 3){
+
+if($indexN==0){
+$IndexEnds[0]=1; $IndexEnds[1]=0; $IndexEnds[2]=0; $IndexEnds[3]=1;
+
+}else{
+
+$IndexEnds[0]=0; $IndexEnds[1]=1; $IndexEnds[2]=0; $IndexEnds[3]=1;}
+$CurveMeetsTrue = 1; 
+break; }
+
+if ($indexN==1){$indexN1 = 1;}
+$indexN++;
+}
+
+$TF = $CurveMeetsTrue;
+return $IndexEnds;
+}
+
+
+proc int [] IfCurvesTouchIndex(string $curveA, string $curveB,int $TFa){
+vector $CurveOne[] = GetVectorArrayBetweenCurveEnds({$curveA});
+vector $CurveTwo[] = GetVectorArrayBetweenCurveEnds({$curveB});
+int $TF=0;
+int $intIfTrue[] =  FindifCurveEndsMeetIndex($CurveOne, $CurveTwo, $TF);
+$TFa = $TF;
+return $intIfTrue;
+}
+
+
+proc int [] IfCurvesTouchIndexZ(string $curveA, string $curveB,int $TFa){
+vector $CurveOne[] = GetVectorArrayBetweenCurveEnds({$curveA});
+vector $CurveTwo[] = GetVectorArrayBetweenCurveEnds({$curveB});
+int $TF=0;
+int $intIfTrue[] =  FindifCurveEndsMeetIndexZ($CurveOne, $CurveTwo, $TF);
+$TFa = $TF;
+return $intIfTrue;
+}
+
+
+
+proc int [] FindifCurveEndsMeetIndexZ(vector $CurveA1[], vector $CurveA2[], int $TF){
+int $CurveMeetsTrue = 0;
+int $indexN = 0;
+int $indexN2 = 0;
+float $firstC[], $SecondC[], $SecondCA[];
+int $IndexEnds[];
+
+while ($indexN < 2){
+
+$firstC = $CurveA1[$indexN];
+$SecondC = $CurveA2[0];
+$SecondCA = $CurveA2[1];
+
+int $NumberE = PointsEquivalentTol( $firstC, $SecondC);
+int $NumberE2 = PointsEquivalentTol( $firstC, $SecondCA);
+
+if ($NumberE == 3){
+if($indexN==0){
+$IndexEnds[0]=0; $IndexEnds[1]=0; 
+
+}else{
+$IndexEnds[0]=1; $IndexEnds[1]=0; 
+}
+$CurveMeetsTrue = 1; 
+break; }
+
+if ($NumberE2 == 3){
+
+if($indexN==0){
+$IndexEnds[0]=0; $IndexEnds[1]=1; 
+}else{
+
+$IndexEnds[0]=1; $IndexEnds[1]=1; }
+$CurveMeetsTrue = 1; 
+break; }
+
+if ($indexN==1){$indexN1 = 1;}
+$indexN++;
+}
+
+$TF = $CurveMeetsTrue;
+return $IndexEnds;
+}
+
+
+
+
+
+proc vector[] GetVectorArrayCRVEnds(string $CurveItemZ[]){
+
+vector $CurveAB[];
+vector $eachCVposV;
+string $CurveSelection[];
+int $numCVs;
+int $num;
+for ($CurveItem in $CurveItemZ) {
+ $numCVs = `getAttr -size ($CurveItem +  ".controlPoints")`;
+ $num = ( $numCVs -1 );
+$CurveSelection[0] = ($CurveItem + ".cv[0]") ;	 		
+$CurveSelection[1] = ($CurveItem + ".cv[" +  $num + "]") ;
+for ($eachZA in $CurveSelection) {
+       $eachCVposV = `pointPosition -w ($eachZA)`;
+$CurveAB[`size($CurveAB)`] = $eachCVposV;
+}
+}
+return $CurveAB; 
+}
+
+
+string $selItemz[] = `ls-sl`;
+
+matrix $NewAMatrix[4][4];  
+$NewAMatrix = GetMatrix($selItemz[0]);  
+
+matrix $NewBMatrix[4][4];  
+$NewBMatrix = GetMatrix($selItemz[1]);  
+
+
+
+
+string $selLocz[];
+clear $selLocz; 
+for($eachVec in  $VecArrayPos_MC){
+$selLocz[`size($selLocz)`] = `Loc $eachVec`;
+}
+
+select -r $selLocz[0];
+
+TransformRelByMatrixXformMX($NewBMatrix, $selLocz)
+
+
+
+
+TransformRelByMatrixXform($NewBMatrix, $selItemz[0]);
+TransformItemByMatrixXform($NewBMatrix, $selItemz[0]);
+
+
+
+
+
+proc TransformRelByMatrixXformMX(matrix $m[][], string $itemA[]){
+	string $itemD[];
+	vector $VecLi[]; 
+	$VecLi = PointArrayT($itemA);
+	vector $NewVeci;
+	int $count = 0;
+	for($item in $itemA){
+		$itemD  = `duplicate -rr $item`;
+		xform -ws -m ($m[0][0]) ($m[0][1]) ($m[0][2]) ($m[0][3]) 
+		($m[1][0]) ($m[1][1]) ($m[1][2]) ($m[1][3]) 
+		($m[2][0]) ($m[2][1]) ($m[2][2]) ($m[2][3]) 
+		($m[3][0]) ($m[3][1]) ($m[3][2]) ($m[3][3]) $itemD[0];
+select -r $itemD ; PAUSE;
+		//$NewVeci = VecMultMatrix($NewVeci, $m);
+		//xform -ws -t ($NewVeci.x) ($NewVeci.y) ($NewVeci.z) $itemD[0];
+		$count++;
+	}
+}
+
+proc TransformItemByMatrixXform(matrix $m[][], string $item){
+	string $itemD[] = `duplicate -rr $item`;
+	xform -ws -m ($m[0][0]) ($m[0][1]) ($m[0][2]) ($m[0][3]) 
+	($m[1][0]) ($m[1][1]) ($m[1][2]) ($m[1][3]) 
+	($m[2][0]) ($m[2][1]) ($m[2][2]) ($m[2][3]) 
+	($m[3][0]) ($m[3][1]) ($m[3][2]) ($m[3][3]) $itemD[0];
+}
+
+	vector $VecCamPos_A;
+	$VecCamPos_A = `xform -q -ws -t ZCURVEModelingCAM`;
+	vector $VecArrayPos_MC[];
+	 $VecArrayPos_MC = PointArrayT(`ls-sl -fl`);
+
+
+
+	vector $ThreeEllipVecP[];
+$ThreeEllipVecP = PointArrayT(`ls-sl`);
+//////////////////
+
+vector $PtsVec[] = PointArrayT(`ls -sl`);
+float $FDirNorA[] = Normal3Points($PtsVec[0], $PtsVec[1],$PtsVec[2]);
+//////////
+
+
+//	$ThreeEllipVecP[0] = $CurveCollectVec[$NewIndexAi[0]] ;
+//	$ThreeEllipVecP[1] = $NewPvec;
+//	$ThreeEllipVecP[2] = $CurveCollectVec[$ChangeOver];
+	vector $NewEllipesCurve[];
+	$NewEllipesCurve = calculateEllipseCurve($ThreeEllipVecP, 300);
+
+
+//LineIntersectCirTF(  $ObjsCirclesRad , $VecArrayPos_MC[1], $VecCamPos_A ,$VecArrayPos_MC[0])
+
+// circle pos, circle radius, line direction, line pos
+//proc int LineIntersectCirTFZ(float $ObjsCirclesRad, vector $CircPos[], vector $PosA,vector $PosB){
+	
+
+vector $AVecArrayPos_MC[];
+	 $AVecArrayPos_MC = PointArrayT(`ls-sl`);
+
+
+LineIntersectCirTFZ(float $ObjsCirclesRad, vector $CircPos, vector $PosB){
+
+
+	vector $AVecArrayPos_MC[];
+	 $AVecArrayPos_MC = PointArrayT(`ls-sl`);
+
+	vector $VecCamPos_A;
+	$VecCamPos_A = `xform -q -ws -t ZCURVEModelingCAM`;
+
+vector $CircPos = $VecArrayPos_MC[1];
+vector $PosA = $VecCamPos_A;
+vector $PosB = $AVecArrayPos_MC[0];
+float $ObjsCirclesE = `arclen`*2.0;
+
+
+float $ObjsCirclesEi = `arclen`;
+float $ObjsCirclesEii = `arclen`;
+// Result: 0.41585 // 
+// Result: 14.251443 // 
+
+// Result: 23.164589 // 
+// Result: 0.191253 // 
+
+float $Di = distance2Pts( $CircPos , $PointN);
+
+vector $VecLineDir = PositiveDirectionLine($PosA, $PosB);
+//float $ObjsCirclesRad = `arclen`*2.0;
+// $ObjsCirclesRad = $ObjsCirclesRad/2.0;
+
+float $PointN[] = ClosestPoint2Line($VecLineDir, $PosA, $CircPos);
+Loc $PointN;
+curve2points($PosB, $PointN);
+print  $ObjsCirclesRad;
+
+float $Di = distance2Pts( $CircPos , $PointN);
+float $DiffL = ($ObjsCirclesRad-$Di)*2.0;
+
+//$Di = $ObjsCirclesRad;
+
+vector $Vec[];
+$Vec[0] = $PosA;
+$Vec[1] = $PosB;
+$Vec[2] = $CircPos;
+
+
+float $FloatDirXn[] = DirectionF( $Vec[2], $Vec[0]);
+ float $PointNii[] = MultLenToDirAddToPoint($Di, DirectionF( $Vec[2], $PointN), $PointN);
+Loc $PointNii;
+float $DistAddiR2 = $Di*2.0;
+float $HightD = sqrt (abs ((`pow $Di 2.0`) - (`pow $ObjsCirclesRad 2.0`)));
+ float $PointNiii[] = MultLenToDirAddToPoint($HightD, DirectionF( $Vec[1], $Vec[0]), $PointN);
+Loc $PointNiii;
+
+ float $PointNiiiB[] = MultLenToDirAddToPoint($HightD, DirectionF( $Vec[0], $Vec[1]), $PointN);
+Loc $PointNiiiB;
+curve2points($PointNiii,$PointNiiiB);
+
+
+
+if($Di<$eachObjsCirclesRad){
+$returnValue =1; break;}
+if($Di==$eachObjsCirclesRad){
+$returnValue =0;}
+if($Di>$eachObjsCirclesRad){
+$returnValue =-1;}
+$IndexI++;
+}
+
+return $returnValue;
+}
+
+
+	vector $AVecArrayPos_MC[];
+	 $AVecArrayPos_MC = PointArrayT(`ls-sl`);
+
+//distance2Pts(  $AVecArrayPos_MC[0] ,  $AVecArrayPos_MC[2]);
+//distance2Pts(  $AVecArrayPos_MC[1] ,  $AVecArrayPos_MC[2]);
+
+	vector $A_CrvCentroidA =  FloatToVec(AverageVectorPoint( $AVecArrayPos_MC));
+Loc $A_CrvCentroidA;
+
+
+string $CurveItemZ[] = `ls -sl`;
+
+
+PointCurvesToPlaneCurve($CurveItemZ);
+
+
+float $ObjsCirclesEi = `arclen`;
+float $ObjsCirclesEii = `arclen`;
+float $ObjsCirclesEiii = `arclen`;
+
+float $Dii = distance2Pts(  $AVecArrayPos_MC[0] ,  $AVecArrayPos_MC[1]);
+float $DiX = distance2Pts(  $AVecArrayPos_MC[0] ,  $VecCamPos_A);
+
+	float $DiffMathAz = $ObjsCirclesEii/$DiX;
+	float $DiffMathBz = $DiffMathAz*$Dii;
+float $TESTx = $ObjsCirclesEii +$DiffMathBz ;
+
+
+// Result: -2.134459 // 
+print $ObjsCirclesEiii;
+2.268188
+
+
+	float $DiffMathA = $DiX / (($Dii+$DiX)/100.0);
+
+// Result: 2.94791 // 
+ $Testr = ($ObjsCirclesEii / $ObjsCirclesEiii);
+// Result: 0.0294791 // 
+
+
+	float $DiffMathAi = (($DiffMathA/100.0) * $ObjsCirclesEiii);
+
+
+	float $DiffMathA = $DiX / (($Dii+$DiX)/100.0);
+	float $DiffMathB = $Dii / (($Dii+$DiX)/100.0);
+
+	float $DiffMathBi = $DiffMathB / 100.0;
+
+float $Testri = ($Dii/$DiX)+1.000;
+	float $DiffMathAiX = ($Testri * $ObjsCirclesEii);
+float $TESTx = $ObjsCirclesEiii -$DiffMathAiX ;
+
+float $Testr = ($ObjsCirclesEiii / $ObjsCirclesEii);
+float $TESTx = $Testr -$Testri;
+
+float $TESTx = $Testr -$Testri;
+
+
+	float $DiffMathAx = $ObjsCirclesEii/ (($ObjsCirclesEiii)/100.0);
+
+	float $DiffMathAi = (($DiffMathAx/100.0) * $ObjsCirclesEii);
+
+float $Testr = ($ObjsCirclesEii / $ObjsCirclesEiii);
+
+// 1.167526
+
+// Result: 0.0668641 // 
+// Result: 2.268188 // 
+
+print $Dii;
+print $ObjsCirclesEi;
+print $ObjsCirclesEii;
+print $ObjsCirclesEiii;
+
+float $Testrii = ($ObjsCirclesEiii - $ObjsCirclesEii)/$Dii;
+
+float $Testr = ($ObjsCirclesEiii / $ObjsCirclesEii);
+float $Testri = ($Dii/$Testr);
+
+	float $PerDiffX = percent_of( $ObjsCirclesEii ,$ObjsCirclesEiii);
+
+//start with a simple string
+string $initial_string;
+$initial_string = "a";
+
+//define some rules of replacement and put them in an array
+string $rules[];
+$rules[0] = "aab->abbaaa";
+
+//iteratively replace and return the final result into the variable $tmp
+string $tmp; 
+$tmp = aa_lsystem_replace("a",$rules,3);
+
+//print the result
+print($tmp);
+
+
+$drawrules[0] = "a->move 10";
+$drawrules[1] = "b->turn 90 0";
+
+//draw a line using the rules and an lsystem string (using the $tmp string
+// from the aa_lsystem_replace example)
+aa_lsystem_draw($tmp,$drawrules,<<0,0,0>>,0,0);
+
+/*
+float $NofCirclesC = ((`sin 1`)*($pi)) / (( ($R2 - $R1)/($R2 + $R1)/1) );
+float $NofCirclesA = ((`cos 1`)*($pi)) / ( ($R2 - $R1)/($R2 + $R1) );
+float $NofCirclesB = ((`tan 1`)*($pi)) / ( ($R2 - $R1)/($R2 + $R1) );
+float $NofCirclesa =  (($pi)/ (`acos (($R2 - $R1)/($R2 + $R1))`));
+float $NofCirclesb =  ($pi)/ (`atan (($R2 - $R1)/($R2 + $R1))`);
+float $NofCirclesc =   ($pi)/(`asin (($R2 - $R1)/($R2 + $R1))`);
+
+*/
+
+
+vector $Xs[];
+clear $Xs;
+float $centerX, $centerY, $radius, $sides,$away,$Yp;
+$centerX = $centerY = 0.0;
+$sides = 22.000;
+float $PI = 3.1415926535;
+ $away =15.00;
+ $Yp=0.0;
+
+$r =  $away;
+float $Cir =  ($PI *$r )*2.00 ;
+float $Seg =$Cir/8.0;
+float $LengAngle = 360.000/$Seg;
+
+ float $DiffMathA = $Seg / ($Cir/100.0);
+ float $DiffMathAB = 360.0/(100.0/$DiffMathA);
+
+
+	float $angle = $LengAngle / $sides;
+
+for( $i=0; $i <= $sides; $i++ ){ 
+	// How far around the center.
+		float $a = $i * $angle ; 
+ $x = (($centerX + cos( deg_to_rad($a) ) * $away));
+ $y =  (($centerY + sin( deg_to_rad($a) ) * $away)); 
+		 $Xs[$i] =<<$x, $Yp, $y>>;
+}
+string $ThefirstCurve = VecArrayToCurve($Xs);
+
+
+
+
+proc LogCurveDetail(vector $Direction, vector $startV, float $L){
+vector $Xs[];
+//vector $Direction =<< 1.0,0.0,0.0>>;
+vector $Normal  =<< 0.0,1.0,0.0>>;
+float $angle =0.00;
+int $i=0;
+$Xs[$i] = $startV;
+
+float $AstepF = 0.035;
+float $TstepF =1.025;
+float $Step =120;
+float $LSS =0.050;
+
+	float $a =1.0;
+	for( $i=1; $i <= $Step; $i++ ){
+
+ $angle +=$AstepF;
+ $angle*=1.025;
+		// $a = `logN ($angle)` ; 
+		 $a =  ($angle); 
+$Xs[$i] = RotMultLenPts($Xs[$i-1], $Direction, $Normal, $L, deg_to_rad($a) );
+$Direction= `unit (FloatToVec(DirectionFN($Xs[$i],$Xs[$i-1])))`;
+}
+string $ThefirstCurve = VecArrayToCurve($Xs);
+}
+
+////////////////////////////////////////////
+
+
+
+vector $HighCurvePoints[];
+vector $NormalCurvePoints[];
+float $FoundRadii[];
+clear $HighCurvePoints;
+clear $NormalCurvePoints;
+clear $FoundRadii;
+
+	$HighCurvePoints = CurvatureUtilityDetailCurvature($CurveItemA[0], 260,$NormalCurvePoints,$FoundRadii);
+
+print $FoundRadii;
+float $CurveSizeFloat = logN(logN(logN(`log (5.605099)`)));
+
+string $CurvesV[];
+ clear $CurvesV;
+float $LS =0.050;
+	int $Cindex =0;
+	if(`size($HighCurvePoints)`>0){
+		for ($eachVec in $HighCurvePoints){
+LogCurveDetail(`unit $NormalCurvePoints[$Cindex]`*-1, $eachVec, 0.005 );
+		
+ $Cindex++;
+
+		}
+	}
+
+
+string $CurvesV[];
+ clear $CurvesV;
+float $LS =0.050;
+	int $Cindex =0;
+	if(`size($HighCurvePoints)`>0){
+		for ($eachVec in $HighCurvePoints){
+LogCurveDetail(`unit $NormalCurvePoints[$Cindex]`*-1, $eachVec, abs (((logN(`log ($FoundRadii[$Cindex]/9.0)`)))));
+		
+ $Cindex++;
+
+		}
+	}
+
+
+	int $Cindex =0;
+		for ($eachVec in $HighCurvePoints){
+
+float $XLOOG = abs  (((logN(`log ($FoundRadii[$Cindex]/8.0)`))));
+print ($XLOOG +"\n");
+ $Cindex++;
+}
+
+//$a = $angle; 
+//$Xs[$i] = $Xs[$i-1]+($L*( (FloatToVec(RotDirToPoint($Xs[$i-1],$Direction,$L,$Normal, deg_to_rad($a)) ))));
+// $Xs[$i] = $Xs[$i-1]+($L*(`unit(FloatToVec(RotDirToPoint($Xs[$i-1],$Direction,$L,$Normal, deg_to_rad($a)) ))`));
+//$Xs[$i] = $Xs[$i-1]+($L*(`unit(FloatToVec(RotDirToPoint($Xs[$i-1],$Direction,$L,$Normal, atan($a) )))`));
+
+
+
+proc vector RotMultLenPts(vector $Vecpt, vector $Direc, vector $DirNorm, float $Length, float $Radian){
+vector $DirecAB   = ((unit(`rot $Direc $DirNorm $Radian`))*$Length)+$Vecpt;
+return $DirecAB;
+}
+
+
+proc float logN(float $x){
+float $a;
+$a = (`log (abs($x))`)*(`sign($x)`) ; 
+return $a;
+}
+
+
+SteinerChain(22,5);
+ SteinerChain(22, 3.2);
+
+proc string [] SteinerChain(float $RAa, float $RBb){
+//
+// float $RAa = 22.0;
+// float $RBb = 3.2;
+
+float $pi = 3.1415926535;
+float $Pi = 3.1415926535;
+float $RA;
+float $RB;
+string $circleA[];
+string $circleB[];
+string $circles[];
+if(!( $RAa==$RBb)){
+if( $RAa<$RBb){
+$RA = $RBb;
+$RB = $RAa;}else{ $RA = $RAa; $RB =  $RBb;}
+
+//float $RA = 22.0;
+//float $RB = 15.68;
+$circleA = `circle -c 0 0 0 -nr 0 0 1 -sw 360 -r $RA -d 3 -ut 0 -tol 0.001 -s 32 -ch 1`;
+$circleB = `circle -c 0 0 0 -nr 0 0 1 -sw 360 -r $RB -d 3 -ut 0 -tol 0.001 -s 32 -ch 1`;
+float $R2 = $RA;
+float $R1 = $RB;
+float $DCircle = (($R2 - $R1)/2.0) + $R1 ;
+float $Rii = (($R2 - $R1)/2.0);
+float $SideA = $RB + $Rii;
+float $SideB = $Rii*2;
+//GOT it for SURE
+//HightsOfIsoscelesTriangle($SideA, $SideB, $SideA)
+float $ArcangleC = asind((((`pow $SideB 2.000`) + (`pow $SideA 2.000`) - (`pow $SideA 2.000`) )/(2.000*$SideB*$SideA)));
+float $ArcangleC2 = $ArcangleC*2.0;
+float $Aii =  (`asin ($RB/($RB + $Rii))`);
+float $number3 = 360.0/$ArcangleC2; 
+
+////////////////####
+///////////////###
+int $NumberCs = $number3;
+
+int $n = $number3;
+float $len = $DCircle;
+float $r = $DCircle;
+ float $angle = 360.0 / $n ;
+ print $angle;
+
+	float $x[] = createRegularPolygonX( $n, $r ) ;
+	float $y[] = createRegularPolygonY( $n, $r ) ;
+
+	// create the n-sided polygon. 
+string $circlesC[];
+	float $z = 0.0 ;
+	int $i ;
+
+
+
+
+string  $LItem[] =`ls -sl`;
+	vector $VCirPosX;
+	$VCirPosX = `xform -q -ws -t $LItem[0]`;	
+
+
+matrix $matrixA[4][4] = << 0.0, 0.0, 0.0, 0.0;
+0.0, 0.0, 0.0, 0.0;
+0.0, 0.0, 0.0, 0.0;
+0.0, 0.0, 0.0, 1.0 >>;
+
+vector $Normal = <<0.0, 1.0, 0.0>>;
+
+
+vector $VecPairA[];
+$VecPairA[0]= <<0.0, 1.0, 0.0>>;
+$VecPairA[1]= $VecPairA[0]*2;
+
+vector $EmptyVecA[];
+$matrixA = TwoPointMatrixPlusAxisWorld($VecPairA, $EmptyVecA, 1);
+$matrixA  = TwoPointMatrixB($VecPairA);
+vector $DirectionStart = <<$matrixA[0][0], $matrixA[0][1], $matrixA[0][2] >>;
+$angle = 360.0 / ($n*2) ;
+float $rotatsB[] = RotDirToPoint($VCirPosX,$DirectionStart, $RA, $Normal, (deg_to_rad($angle)) );
+vector $DirectionStartB = <<$rotatsB[0], $rotatsB[1], $rotatsB[2] >>;
+$DirectionStartB = `unit($DirectionStartB)`;
+Loc $DirectionStartB;
+
+//RotMultLenToDirAddToPoint(float $PosA[], float $PosB[], float $Length, float $DirNormAx[], float $Radian)
+// float $rotatsA[] = RotDirToPoint($DirectionStart, $VCirPosX,$RA, $Normal, $a );
+ $angle = 360.0 / $n ;
+
+
+
+
+	for( $i = 0 ; $i < ($n) ; $i++ ) {
+		float $a = $i * $angle ;
+float $rotatsA[] = RotDirToPoint($VCirPosX,$DirectionStart, $RA, $Normal, (deg_to_rad($a)) );
+Loc $rotatsA;	
+ 
+	}
+
+
+	for( $i = 0 ; $i < ($n) ; $i++ ) {
+		float $a = $i * $angle ;
+float $rotatsA[] = RotDirToPoint($VCirPosX,$DirectionStart, $RB, $Normal, (deg_to_rad($a)) );
+Loc $rotatsA;	
+	 
+	}
+
+vector $VrotatsA[];
+
+ $angle = 360.0 / $n ;
+	for( $i = 0 ; $i < ($n) ; $i++ ) {
+		float $a = $i * $angle ;
+float $rotatsA[] = RotDirToPoint($VCirPosX,$DirectionStartB, $r, $Normal, (deg_to_rad($a)) );
+$VrotatsA[$i] =   FloatToVec(RotDirToPoint($VCirPosX,$DirectionStartB, $r, $Normal, (deg_to_rad($a)) ));
+
+Loc $rotatsA;	
+	 
+	}
+//////////////////////////////////
+vector $VrotatsCiH[];
+vector $VrotatsBiH[];
+
+vector $VrotatsCi[];
+vector $VrotatsBi[];
+vector $VrotatsAi[];
+
+	for( $i = 0 ; $i < $n ; $i++ ) {
+
+		float $a = $i * $angle ;
+float $rotatsA[] = RotDirToPoint($VCirPosX,$DirectionStart, $r, $Normal, (deg_to_rad($a)) );
+
+$VrotatsCiH[$i] = FloatToVec(RotDirToPoint($VCirPosX,$DirectionStartB, $RA, $Normal, (deg_to_rad(($a))) ));
+$VrotatsBiH[$i] = FloatToVec(RotDirToPoint($VCirPosX,$DirectionStartB, $RB, $Normal, (deg_to_rad(($a))) ));
+Loc $VrotatsCiH[$i];
+
+$VrotatsCi[$i] = FloatToVec(RotDirToPoint($VCirPosX,$DirectionStart, $RA, $Normal, (deg_to_rad($a)) ));
+$VrotatsBi[$i] = FloatToVec(RotDirToPoint($VCirPosX,$DirectionStartB, $r, $Normal, (deg_to_rad($a)) ));
+
+$VrotatsAi[$i] = FloatToVec(RotDirToPoint($VCirPosX,$DirectionStart, $RB, $Normal, (deg_to_rad($a)) ));
+
+
+vector $CirclePts = <<$rotatsA[0], $rotatsA[1], $rotatsA[2] >>;
+
+vector $DirLine = DirectionFN($CirclePts, $VCirPosX);	
+	vector $Vperp = crossProduct( $DirLine, $Normal, 0, 0 );
+ $Vperp = `unit($Vperp + $DirLine)`;
+	vector $VperpN = crossProduct( $DirLine, ($Normal*-1.0), 0, 0 );
+ $VperpN = `unit( ($VperpN) + ($DirLine))`;
+ 
+vector $VperpA = ($Rii/2.0)* $VperpN*-1.0;
+$VperpA = $CirclePts+$VperpA;
+Loc $VperpA;
+
+
+curve2points($VrotatsBi[$i],$VrotatsCiH[$i]);
+
+float $Templast[];
+if($i>0){
+
+curve2points($VrotatsBi[$i-1],$VperpA);
+
+
+}
+if($i==0){
+$Templast= $VperpA;}
+
+vector $VperpC = ($Rii/2.0)*$DirLine;
+$VperpC = $CirclePts+$VperpC;
+Loc $VperpC;
+curve2points($VrotatsCi[$i],$VperpC);
+/////////////
+
+vector $VperpB = ( $Rii/2.0)*$Vperp*-1.0;
+$VperpB = $CirclePts+$VperpB;
+Loc $VperpB;
+curve2points($VrotatsBi[$i],$VperpB);
+
+/////////////////////
+
+vector $VperpD = (-1*$Rii/2.0)*$DirLine;
+$VperpD = $CirclePts+$VperpD;
+Loc $VperpD;
+
+curve2points($VrotatsAi[$i],$VperpD);
+curve2points($VrotatsBi[$i],$VrotatsBiH[$i]);
+
+if($i==($n-1)){
+curve2points($VrotatsBi[$i],$Templast);
+}
+
+$circlesC = `circle -c $rotatsA[0] $rotatsA[1] $rotatsA[2] -nr 0 0 1 -sw 360 -r ($Rii/2.0) -d 3 -ut 0 -tol 0.001 -s 16 -ch 1`;
+$circles[$i] = $circlesC[0];
+makeIdentity -apply true -t 0 -r 1 -s 0 -n 0 $circles[0];
+xform -cp $circles[$i];
+}
+
+
+
+//$circles[`size($circles)`] = $circleA[0];
+//$circles[`size($circles)`] = $circleB[0];
+select -r $circleA $circleB $circles ;
+//select -r $circles ;
+return $circles;
+}
+}
+
+
+proc  Circle3PtZB(){ 
+ResetTransEachSL;
+
+float $p1[], $p2[],  $p3[];
+float $center[]; 
+float $normal[];
+
+
+	 string $selectionList[];
+	 $selectionList = `ls -sl`;
+
+    vector $veCPos1[];
+$veCPos1[0] = `xform -q -ws -t $selectionList[0]`;
+$veCPos1[1] = `xform -q -ws -t $selectionList[1]`;
+$veCPos1[2] = `xform -q -ws -t $selectionList[2]`;
+
+    float $p1[] = `xform -q -ws -t $selectionList[0]`;
+    float $p2[] = `xform -q -ws -t $selectionList[1]`;
+    float $p3[] = `xform -q -ws -t $selectionList[2]`;
+
+	// Get the vector p1-p2, p1-p3
+	//
+	float $p1p2[3];
+	float $p1p3[3];
+	float $p1p4[3];
+	$p1p2[0] = $p2[0]-$p1[0]; 		$p1p2[1] = $p2[1]-$p1[1]; 		$p1p2[2]= $p2[2]-$p1[2];
+	$p1p3[0] = $p3[0]-$p1[0]; 		$p1p3[1] = $p3[1]-$p1[1]; 		$p1p3[2]= $p3[2]-$p1[2];
+       $p1p4[0] = $p2[0]-$p3[0]; 		$p1p4[1] = $p2[1]-$p3[1]; 		$p1p4[2]= $p2[2]-$p3[2];
+
+	// Get the normal to the plane formed by p1, p2, p3, which is the
+	// cross prod of p1-p2 and p1-p3
+	
+	float $normal[3];
+	$normal = crossProduct( $p1p2, $p1p3, 0, 0 );
+
+
+     //float $OrthoCenterC = midPoint2Pts( $FloatPos1, $p3 );
+float $FloatPosZero[] = {0, 0, 0};
+float $FloatDirection[] = DirectionF($FloatPosZero, $normal);
+float $MultDirP[] = multiplyFloat(2, $FloatDirection);
+//float $FloatDirectionPoint[] = AddFloats($MultDirP, $FloatPos1);
+
+
+	// Get the mid pts on each vector (the average of two pts)
+		float $mid1[3], $mid2[3], $mid3[3];
+	$mid1 = midPoint2Pts( $p1, $p2 );
+	$mid2 = midPoint2Pts( $p1, $p3 );
+       $mid3 = midPoint2Pts( $p2, $p3 );
+
+//$mid1 a-b $mid2 a-c $mid3 b-c
+
+
+	// Get the perp. vectors to p1-p2 and p1-p3, which is the
+	// cross prod of the normal vector with p1-p2 and p1-p3. Get these
+	// as normalized vectors before sending them to lineIntersection
+	 
+	float $perp_p1p2[3];
+	float $perp_p1p3[3];
+	float $perp_p1p4[3];
+	$perp_p1p2 = crossProduct( $normal, $p1p2, 0, 1 );
+	$perp_p1p3 = crossProduct( $normal, $p1p3, 0, 1 );
+	$perp_p1p4 = crossProduct( $normal, $p1p4, 0, 1 );
+
+
+
+	// Intersect the persp. vectors going through the mid pts.
+	// The intersection is the center of the arc.
+	//
+	float $center[] = lineIntersection( $mid1, $perp_p1p2, $mid2, $perp_p1p3 );
+//spaceLocator -p 0 0 0;
+//MoveObject2($center);
+
+//FloatDirPerpCenter is FloatDirPerpCenterA
+float $FloatDirPerpCenter[] = DirectionF($center, $mid3);
+float $FloatDirPerpCenterB[] = DirectionF($center,$mid1);
+float $FloatDirPerpCenterC[] = DirectionF($center,$mid2);
+
+float $FloatDirPointAB[] = DirectionF($p1, $p2);
+float $FloatDirPointBC[] = DirectionF($p2, $p3);
+float $FloatDirPointAC[] = DirectionF($p1, $p3);
+
+	
+//MidPoint of Iso Tri
+ float $center6[] = lineIntersection( $p1, $FloatDirPerpCenter, $p2, $FloatDirPointBC );
+
+
+	float $center7[] = lineIntersection( $p3,  $FloatDirPerpCenterB, $p1, $FloatDirPointAB );
+
+
+	float $center8[] = lineIntersection( $p2,  $FloatDirPerpCenterC, $p1, $FloatDirPointAC );
+
+	float $center9[] = lineIntersection( $p2,  $FloatDirPerpCenterC, $p1, $FloatDirPerpCenter );
+
+float $OrthoCenterCir[] = midPoint2Pts( $center9, $center );
+
+
+float $Radius2HalfTimes2 = (distance2Pts( $center9, $center ))*2;
+float $Radius2BHalf = (distance2Pts( $center9, $center ));
+
+// Find the radius for the circle and return the radius.
+	//
+
+	float $radiusZ = distance2Pts( $p1, $center );
+float $Radius3Half = $radiusZ/2;
+
+//string $circlesItemB[];
+//$circlesItemB[0] = Circles_Direction($OrthoCenterCir, $FloatDirection, $Radius2HalfTimes2);
+
+//string $circlesItemC[];
+//$circlesItemC[0] = Circles_Direction($OrthoCenterCir, $FloatDirection,  $Radius2BHalf);
+
+string $circlesItem[];
+$circlesItem[0] = Circles_Direction($center, $FloatDirection, $radiusZ);
+
+
+}
+
+Circle3PtZB;
+
+
+
+float $radius;
+
+vector $Xs[];
+clear $Xs;
+float $centerX, $centerY, $radius, $sides,$away,$Yp;
+$centerX = $centerY = 0.0;
+$sides = 22.000;
+float $PI = 3.1415926535;
+ $away =22.0;
+ $Yp=0.0;
+
+$r =  $away;
+float $Cir =  ($PI *$r )*2.00 ;
+float $Seg =$Cir/8.0;
+
+float $LengAngle = 360.000/$n;
+	float $angle = $LengAngle / $sides;
+float $a;
+
+float $Start_angle = (90.0);
+float $End_angle;
+
+for( $k=0; $k < $n; $k++ ){ 
+
+
+for( $i=0; $i <= $sides; $i++ ){ 
+	// How far around the center.
+		  $a = ($i * $angle)+$Start_angle ; 
+$End_angle=$a;
+ $x = (($centerX + cos( deg_to_rad($a) ) * $away));
+ $y =  (($centerY + sin( deg_to_rad($a) ) * $away)); 
+		 $Xs[$i] =<<$x, $Yp, $y>>;
+}
+string $ThefirstCurve = VecArrayToCurve($Xs);
+$Start_angle = $End_angle;
+
+
+	vector $VecCurEndsa[] = VecCurveEnds({$ThefirstCurve});
+string $Locs[];
+for($eachV in $VecCurEndsa){
+$Locs[0] = `Loc ($eachV)`;
+SetItemColorString ($Locs[0], 6);
+}
+}
+
+
+
+vector $Xs[];
+float $centerX, $centerY, $radius, $sides,$away,$Yp;
+$centerX = $centerY = 0.0;
+$sides = 22.000;
+float $PI = 3.1415926535;
+ $away =15.00;
+ $Yp=0.0;
+
+$r =  $away;
+float $Cir =  ($PI *$r )*2.00 ;
+float $Seg =$Cir/8.0;
+float $LengAngle = 360.000/$Seg;
+
+	float $angle = $LengAngle / $sides;
+
+for( $i=0; $i <= $sides; $i++ ){ 
+	// How far around the center.
+		float $a = $i * $angle ; 
+ $x = (($centerX + cos( deg_to_rad($a) ) * $away));
+ $y =  (($centerY + sin( deg_to_rad($a) ) * $away)); 
+		 $Xs[$i] =<<$x, $Yp, $y>>;
+}
+string $ThefirstCurve = VecArrayToCurve($Xs);
+
+
+
+
+
+
+
+vector $Xs[];
+clear $Xs;
+float $centerX, $centerY, $radius, $sides,$away,$Yp;
+$centerX = $centerY = 0.0;
+$sides = 22.000;
+float $PI = 3.1415926535;
+ $away =15.00;
+ $Yp=0.0;
+
+$r =  $away;
+float $Cir =  ($PI *$r )*2.00 ;
+float $Seg =$Cir/8.0;
+float $LengAngle = 360.000/$Seg;
+
+ float $DiffMathA = $Seg / ($Cir/100.0);
+ float $DiffMathAB = 360.0/(100.0/$DiffMathA);
+
+
+	float $angle = $LengAngle / $sides;
+
+for( $i=0; $i <= $sides; $i++ ){ 
+	// How far around the center.
+		float $a = $i * $angle ; 
+ $x = (($centerX + cos( deg_to_rad($a) ) * $away));
+ $y =  (($centerY + sin( deg_to_rad($a) ) * $away)); 
+		 $Xs[$i] =<<$x, $Yp, $y>>;
+}
+string $ThefirstCurve = VecArrayToCurve($Xs);
+
+
+
+
+proc float[] createRegularPolygonY( int $n, float $r )
+{
+	int $i ;
+	float $x[] ;
+	float $angle = 360.0 / $n ;
+	for( $i = 0 ; $i < $n ; $i++ ) {
+		float $a = $i * $angle ;	
+		$x[$i] =  $r * cos(deg_to_rad($a)) ;
+	}
+	return $x ;	
+}
+proc float[] createRegularPolygonX( int $n,float $r )
+{
+	int $i ;
+	float $x[] ;
+	float $angle = 360.0 / $n ;
+	for( $i = 0 ; $i < $n ; $i++ ) {
+		float $a = $i * $angle ;	
+		$x[$i] =  $r * sin(deg_to_rad($a)) ;
+	}
+	return $x ;	
+}
+
+
+//arclen
+
+// 159.434902 = C of circle    .. 12.000  = bounding Box of object
+
+	float $DiffMathA = 12.000 / (159.434902/100.0);
+	float $LengAngle = 360.000/$DiffMathA;
+	float $angle = 180.000/$sides;
+
+vector $Xs[];
+clear $Xs;
+float $centerX, $centerY, $radius, $sides,$away,$Yp;
+$centerX = $centerY = 0;
+$sides = 22.000;
+float $PI = 3.1415926535;
+ $away =25.378;
+ $Yp=0.0;
+	float $DiffMathA = 12.0 / (159.434902/100.0);
+
+	//float $DiffMathAB = 360.0/(100.0/$DiffMathA);
+
+	float $LengAngle = 360.0/(100.0/$DiffMathA);
+
+
+	float $angle = $LengAngle / $sides;
+
+for( $i=0; $i <= $sides; $i++ ){ 
+	// How far around the center.
+		float $a = $i * $angle ; 
+ $x = (($centerX + cos( deg_to_rad($a) ) * $away));
+ $y =  (($centerY + sin( deg_to_rad($a) ) * $away)); 
+		 $Xs[$i] =<<$x, $Yp, $y>>;
+}
+string $ThefirstCurve = VecArrayToCurveB($Xs);
+
+
+
+
+SteinerChain(22,5);
+
+proc string [] SteinerChain(float $RAa, float $RBb){
+//
+//float $RA = 22.0;
+//float $RB = 15.680;
+float $pi = 3.1415926535;
+float $Pi = 3.1415926535;
+float $RA;
+float $RB;
+string $circleA[];
+string $circleB[];
+string $circles[];
+if(!( $RAa==$RBb)){
+if( $RAa<$RBb){
+$RA = $RBb;
+$RB = $RAa;}else{ $RA = $RAa; $RB =  $RBb;}
+//float $RA = 22.0;
+//float $RB = 15.68;
+$circleA = `circle -c 0 0 0 -nr 0 0 1 -sw 360 -r $RA -d 3 -ut 0 -tol 0.001 -s 32 -ch 1`;
+$circleB = `circle -c 0 0 0 -nr 0 0 1 -sw 360 -r $RB -d 3 -ut 0 -tol 0.001 -s 32 -ch 1`;
+float $R2 = $RA;
+float $R1 = $RB;
+float $DCircle = (($R2 - $R1)/2.0) + $R1 ;
+float $Rii = (($R2 - $R1)/2.0);
+float $SideA = $RB + $Rii;
+float $SideB = $Rii*2;
+//GOT it for SURE
+
+float $ArcangleC = asind((((`pow $SideB 2.000`) + (`pow $SideA 2.000`) - (`pow $SideA 2.000`) )/(2.000*$SideB*$SideA)));
+float $ArcangleC2 = $ArcangleC*2.0;
+//float $Aii =  (`asin ($RB/($RB + $Rii))`);
+float $number3 = 360.0/$ArcangleC2; 
+float $NofCirclesC = ((`sin 1`)*($pi)) / (( ($R2 - $R1)/($R2 + $R1)/1) );
+float $NofCirclesA = ((`cos 1`)*($pi)) / ( ($R2 - $R1)/($R2 + $R1) );
+float $NofCirclesB = ((`tan 1`)*($pi)) / ( ($R2 - $R1)/($R2 + $R1) );
+float $NofCirclesa =  (($pi)/ (`acos (($R2 - $R1)/($R2 + $R1))`));
+float $NofCirclesb =  ($pi)/ (`atan (($R2 - $R1)/($R2 + $R1))`);
+float $NofCirclesc =   ($pi)/(`asin (($R2 - $R1)/($R2 + $R1))`);
+
+int $NumberCs = $number3;
+int $n = $NumberCs;
+float $len = $DCircle;
+float $r = $DCircle;
+	float $x[] = createRegularPolygonX( $n, $r ) ;
+	float $y[] = createRegularPolygonY( $n, $r ) ;
+	// create the n-sided polygon. 
+string $circlesC[];
+	float $z = 0.0 ;
+	int $i ;
+	for( $i = 0 ; $i < $n ; $i++ ) {
+$circlesC = `circle -c $x[$i] $y[$i] $z -nr 0 0 1 -sw 360 -r $Rii -d 3 -ut 0 -tol 0.001 -s 16 -ch 1`;
+$circles[`size($circles)`] = $circlesC[0];
+makeIdentity -apply true -t 0 -r 1 -s 0 -n 0 $circles[0];
+xform -cp $circles[0];
+//rotate -r -os 0 0 45 $circles[0];
+//aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 1 0 -upVector 1 0 0 -worldUpType "scene" $circleB[0] $circles[0];
+	
+}
+//$circles[`size($circles)`] = $circleA[0];
+//$circles[`size($circles)`] = $circleB[0];
+select -r $circleA $circleB $circles ;
+//select -r $circles ;
+return $circles;
+}
+}
+
+
+
+
+
+
+
+
+
+string  $CurveItemAXX[] =`ls -sl`;
+
+
+string  $CurveItemAX[] =`ls -sl`;
+CurvesToPlane( $CurveItemAX);
+
+string  $CurveItemAX[] =`ls -sl`;
+VanishingCurvesS({$CurveItemAX[0]})
+
+
+
+float $LengthsT[]  = ArcLengthArray(`ls -sl`);
+ AnglesofTriangle($LengthsT[0], $LengthsT[1], $LengthsT[2]);
+
+
+float $add
+float $LengthsM[]  = ArcLengthArray(`ls -sl`);
+// Result: 41.305301 // 
+
+float $Lengths[]  = ArcLengthArray(`ls -sl`);
+// Result: 48.907858 46.767741 35.03743 37.820183 // 
+               1          2          3     4        
+
+float $LengthsSub[];
+for($eachF in $Lengths){
+$LengthsSub[`size($LengthsSub)`] = $eachF - $LengthsM[0];
+
+}
+print $LengthsSub;
+  7.602557
+  5.46244
+  -6.267871
+  -3.485118
+
+0.115505
+0.15301
+0.163837
+0.183377
+
+	float $PerDiff = percent_of($LengthsM[0], $Lengths[3]);
+// Result: 1.184058 //
+// Result: 1.132245 //
+// Result: 1.178891 // 
+// Result: 1.09215 // 
+
+float $LengthsC[]  = ArcLengthArray(`ls -sl`);
+// Result: 0.115 0.153 0.163 0.183 // 
+             4       3      2       1
+print $LengthsC;
+
+
+
+	vector $Positions[];	
+	$Positions = VecCurveEps($CurveItemAX[0]);
+
+
+
+//GetworldMatrix(string $object)
+
+matrix $CamMatrix[4][4];  
+$CamMatrix = GetMatrix("ZCURVEModelingCAM");  
+
+matrix $SbMatrix[4][4];  
+$SbMatrix= GetMatrix("LiveSurfaceB");
+
+PrintMatrix($CamMatrix , 4);
+|   0.7071067812              0  -0.7071067812              0|
+|  -0.2988362387    0.906307787  -0.2988362387              0|
+|   0.6408563821   0.4226182617   0.6408563821              0|
+|             48             41             48              1|  
+
+PrintMatrix($SbMatrix , 4);
+|   0.7071067812              0  -0.7071067812              0|
+|   0.6408563821   0.4226182617   0.6408563821              0|
+|   0.2988362387   -0.906307787   0.2988362387              0|
+|    47.51487706    40.68008189    47.51487706              1|
+
+
+matrix $CamMatrixR[4][4];  
+$CamMatrixR = GetMatrix("ZCURVEModelingCAM");  
+matrix $SbMatrixR[4][4];  
+$SbMatrixR= GetMatrix("LiveSurfaceB");
+
+PrintMatrix($CamMatrixR , 4);
+|   0.3971478906              0  -0.9177546257              0|
+|  -0.2713874308   0.9552783621  -0.1174398283              0|
+|   0.8767111357     0.29570805   0.3793867865              0|
+|    65.68910652    31.48173412    28.38978033              1|
+
+PrintMatrix($SbMatrixR , 4);
+|   0.3971478906              0  -0.9177546257              0|
+|   0.8767111357     0.29570805   0.3793867865              0|
+|   0.2713874308  -0.9552783621   0.1174398283              0|
+|    65.02544355    31.25788598    28.10258772              1|
+
+
+vector $Cam_Trans = `xform -q -ws -t ZCURVEModelingCAM`;
+vector $Cam_Rot = `xform -q -ws -ro ZCURVEModelingCAM`;
+// Result: <<48, 41, 48>>  // 
+// Result: <<-25, 45, 0>>  // 
+
+
+Loc $Cam_Trans;
+
+vector $Plane_Trans = `xform -q -ws -t LiveSurfaceB`;
+vector $Plane = `xform -q -ws -ro LiveSurfaceB`;
+
+
+setAttr "ZCURVEModelingCAM.rotateX" -25; 
+setAttr "ZCURVEModelingCAM.rotateY" 45;
+setAttr "ZCURVEModelingCAM.rotateZ" 0;	
+
+setAttr "ZCURVEModelingCAM.translate" 48 41 48; 
+
+vector $PtsVec[] = PointArrayT(`ls -sl`);
+float $FDirNorA[] = Normal3Points($PtsVec[0], $PtsVec[1],$PtsVec[2]);
+	vector $VCrvPos_AA;
+$VCrvPos_AA =  FloatToVec(AverageVectorPoint($PtsVec));
+
+makeCurvePointDirectionLength(22, $FDirNorA, $VCrvPos_AA);
+
+
+////////////
+
+vector $PtsVec[] = PointArrayT(`ls -sl`);
+AnglesofTriangleThreeVec($PtsVec[0], $PtsVec[1],$PtsVec[2]);
+/////////////////
+
+
+
+	vector $VCrvPos_A;
+$VCrvPos_A =  FloatToVec(AverageVectorPoint($PtsVec));
+Loc $VCrvPos_A;
+
+string  $LItem[] =`ls -sl`;
+	vector $VLocPosX;
+	$VLocPosX = `xform -q -ws -t $LItem[0]`;	
+
+
+InsidePolygon($Positions,$VLocPosX);
+
+proc int InsidePolygon(vector $c[],vector $VLocPos_A)
+{
+
+	vector $VCrvPos_A;
+$VCrvPos_A =  FloatToVec(AverageVectorPoint($c));
+
+float $x = VecCom($VLocPos_A, 0);
+float $y = VecCom($VLocPos_A, 1);
+
+   // Convex is just a collection of points for the polygon
+   // just replace that code in the for-loop to loop through the points in your polygon
+
+float $PI = 3.1415926535;
+   int $i;
+   float $angle=0; 
+   float $Distance=0; 
+   float $DistanceMM=0;
+float $Arc = 0;     
+   float $p1x = 0, $p1y = 0, $p2x = 0, $p2y = 0;
+int $SizeV = size($c);
+	int $TotalS, $indexState, $indexLeft, $indexRight, $countS, $NearIndex;
+	float $DistA, $DistB; 
+	$TotalS = $SizeV;
+ float $triarea=0;
+ float $tri_areaM=0;
+     float $aP;
+     float $bP;
+     float $cP;
+$countS =1;
+
+   for ($i=0;$i< $SizeV; $i++) {
+
+	$indexState = $i;	
+			$indexLeft = fmod(($TotalS+($indexState - $countS)),$TotalS);
+			$indexRight = fmod(($indexState + $countS),$TotalS);
+	$DistA = distance2Pts($c[$i], $c[$indexLeft]);
+	$DistB = distance2Pts($c[$i], $c[$indexRight]);
+	if($DistA<$DistB){
+	$nearestIndex = $indexLeft;
+	}else{$NearIndex = $indexRight;}
+/*
+	$p1x = ( (VecCom($c[$i], 0)) - $x ); // point A X - X
+	$p1y = ( (VecCom($c[$i], 1)) - $y ); // point A Y - Y
+	$p2x = ( (VecCom($c[$NearIndex], 0)) - $x ); // point A's nearest neighbor X - X
+	$p2y = ( (VecCom($c[$NearIndex], 1)) - $y ); // point A's nearest neighbor Y - Y
+*/
+ $aP = distance2Pts($c[$i], $c[$indexRight]);
+ $bP = distance2Pts($VLocPos_A, $c[$indexRight]);
+ $cP = distance2Pts($c[$i], $VLocPos_A);
+ $triarea += 0.25* (sqrt ( ($aP+$bP+$cP)  * ($bP+$cP-$aP) * ($cP+$aP-$bP) * ($aP+$bP-$cP)  ));
+ $aPm = distance2Pts($c[$i], $c[$indexRight]);
+ $bPm = distance2Pts($VCrvPos_A, $c[$indexRight]);
+ $cPm = distance2Pts($c[$i], $VCrvPos_A);
+ $tri_areaM += 0.25* (sqrt ( ($aPm+$bPm+$cPm)  * ($bPm+$cPm-$aPm) * ($cPm+$aPm-$bPm) * ($aPm+$bPm-$cPm)  ));
+$DistanceMM += distance2Pts($c[$i], $VCrvPos_A);
+$Distance += distance2Pts($c[$i], $VLocPos_A);
+	//$angle += Angle2D($p1x,$p1y,$p2x,$p2y);
+$Arc += distance2Pts($c[$i], $c[$indexRight]);
+   }
+
+//print ("Tri_area: "+$triarea + "\n");
+//print ("Tri_areaM: "+$tri_areaM+ "\n");
+/*
+   if (abs($angle) < $PI){
+print (" INSIDE " + "\n");
+}else{ print (" OUTSIDE! " + "\n");}
+*/
+
+  // if (equivalentTol($triarea, $tri_areaM,  0.00001) ==1){
+//print ("Tri_area INSIDE " + "\n");
+//}else{ print ("Tri_area OUTSIDE! " + "\n");}
+
+//   if (abs($angle) < $PI){//
+   if (equivalentTol($triarea, $tri_areaM,  0.00001) ==1){
+	return 1;
+   }else{
+	return 0;}
+   
+}
+
+
+proc float VecCom(vector $Vai, int $XYZ){
+	float $x, $y, $z;
+	$x = $Vai.x;
+	$y = $Vai.y;
+	$z = $Vai.z;
+float $N;
+if($XYZ==0){$N=$x;} if($XYZ==1){$N=$y;} if($XYZ==2){$N=$z;}
+return $N;
+}
+
+
+proc float Angle2D(float $x1, float $y1, float $x2, float $y2)
+{
+float $PI = 3.1415926535;
+float $TWO_PI = 3.1415926535;
+
+   float $dtheta,$theta1,$theta2;
+
+   $theta1 = atan2($y1,$x1);
+   $theta2 = atan2($y2,$x2);
+   $dtheta = $theta2 - $theta1;
+
+   while ($dtheta > $PI)
+ 	$dtheta -= $TWO_PI;
+  while ($dtheta < -$PI)
+ 	$dtheta += $TWO_PI;
+
+
+   return $dtheta;
+}
+
+/*
+
+
+float $Arc = `arclen $CurveItemAX[0]`;
+float $AverageVecCurve[] =  AverageVectorPoint($Positions);
+
+//////////
+
+float $DDistPt_toC = distance2Pts($VCrvPos_A, $VLocPos_A);
+float $DDist = $Distance/float($TotalS);
+print ("Dist_each/SIZE: "+$DDist + "\n");
+//Dist_each/SIZE: 18.31929743
+print (" dist_to_M: "+ $DDistPt_toC+"  dist_each: "+$DDist + "\n");
+float $DDistX = $Distance+(float($TotalS)*$DDistPt_toC)/float($TotalS);
+float $DDistMM = $DistanceMM+(float($TotalS)*$DDistPt_toC)/float($TotalS);
+float $DDistMM = $DistanceMM/float($TotalS);
+float $MathA = $DDistMM/$DDist;
+float $MathB = $DDistPt_toC/$MathA;
+print $Arc;
+outside 
+ dist_to_M: 8.210088295  dist_each: 10.678618
+ dist_to_M: 10.98501803  dist_each: 19.20895454
+inside
+ dist_to_M: 4.491177258  dist_each: 10.90761121
+ dist_to_M: 2.733438324  dist_each: 15.81548968
+print (" distance to crv middle "+ $DDistPt_toC+" dist to each crv div "+$DDist + "\n");
+//float $Xpi = $PI/$angle;
+//float $XTpi = $Xpi*$angle;
+print ($angle + "\n");
+*/
+
