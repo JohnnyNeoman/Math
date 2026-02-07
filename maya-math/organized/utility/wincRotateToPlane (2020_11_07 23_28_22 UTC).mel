@@ -1,0 +1,74 @@
+
+
+global proc wincStraighten(int $reverse, int $rotateX, int $rotateY, int $rotateZ, int $rotateParent){
+	print $rotateX;
+	int $reverse;
+	int $rotateParent;
+	int $rotateX;
+	int $rotateY;
+	int $rotateZ;
+	$curves = `ls-sl`;
+	$i=0;
+	float $point0[];
+	float $point1[];
+	float $pointFinal[];
+	if ($reverse == 0){
+		$point0 = `pointPosition ($curves[$i] + ".u[0]")`;
+		$point1 = `pointPosition ($curves[$i] + ".u[1]")`;
+		}
+	else if ($reverse == 1){
+		$point1 = `pointPosition ($curves[$i] + ".u[0]")`;
+		$point0 = `pointPosition ($curves[$i] + ".u[1]")`;
+		}
+	$pointFinal[0] = $point0[0] - $point1[0];
+	$pointFinal[1] = $point0[1] - $point1[1];
+	$pointFinal[2] = $point0[2] - $point1[2];
+
+	$rotateAngle = `angleBetween -euler -v1 $pointFinal[0] $pointFinal[1] $pointFinal[2] -v2 0 1 0`;
+
+	if ($rotateParent == 1){
+		string $parent[] = `listRelatives -p $curves[$i]`;
+		select -r $parent[0];
+		}else{
+		select $curves[$i];
+		}
+	rotate -r ($rotateAngle[0]*$rotateX) ($rotateAngle[1]*$rotateY) ($rotateAngle[2]*$rotateZ);
+	}
+
+global proc wincStraightenInterface(){
+	global int $reverse = 0;
+	global int $rotateParent = 0;
+	global int $rotateX = 0;
+	global int $rotateY = 0;
+	global int $rotateZ = 0;
+	
+	window -title "rotate to plane" -rtf 1 -wh 10 10 wincStraightenPallette;
+        columnLayout;
+
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "rotate x-axis:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$rotateX = `checkBox -q -v xAxisValue`" xAxisValue;
+            setParent ..;
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "rotate y-axis:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$rotateY = `checkBox -q -v yAxisValue`" yAxisValue;
+            setParent ..;
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "rotate z-axis:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$rotateZ = `checkBox -q -v zAxisValue`" zAxisValue;
+            setParent ..;
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "rotate parent:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$rotateParent = `checkBox -q -v parentValue`" parentValue;
+            setParent ..;
+	rowLayout -numberOfColumns 4 -columnWidth4 110 25 30 50;
+	    text - label "reverse:" -al "right" ;
+	    checkBox -v 0 -label "" -cc "$reverse = `checkBox -q -v reverseValue`" reverseValue;
+            setParent ..;
+        
+	$buttonCmd = "wincStraighten($reverse, $rotateX, $rotateY, $rotateZ, $rotateParent)";
+        button -c $buttonCmd -label "Apply";
+    showWindow wincStraightenPallette;
+
+}
+wincStraightenInterface;
