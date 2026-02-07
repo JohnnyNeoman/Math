@@ -1,0 +1,25 @@
+//cycle though anything selected
+
+
+string $locatorShapes[] = `ls -sl`;
+$i = 0;
+	int $i;
+	int $numLocators = size($locatorShapes);
+
+$firstselectNumber = 0;
+//loop while $i is less than number of selected
+while($i++ < $numLocators){
+
+int $selectOne = $firstselectNumber++ ;
+playButtonStepForward;
+playButtonStepForward;
+select -r $locatorShapes[$selectOne];
+playButtonStepForward;
+playButtonStepForward;
+}
+
+
+
+////////////////////
+
+//USE THIS code
