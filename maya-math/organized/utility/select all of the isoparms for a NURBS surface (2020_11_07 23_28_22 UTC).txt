@@ -1,0 +1,48 @@
+select all of the isoparms for a NURBS surface
+
+global proc selectIsoparms()
+{
+  // Get all selected NURBS objects
+  string $nurbs[] = `filterExpand -sm 10`;
+
+  // Create a surfaceInfo node -- used to determine the UVs for the NURBS spans
+  // a.k.a. the isoparms.
+  string $surfaceInfo = `createNode surfaceInfo`;
+
+  // The array of components to be selected when finished.
+  string $isoSelect[];
+
+  for ( $nurb in $nurbs )
+  {
+    // Connect the surfaceInfo node to the current NURBS surface.
+    connectAttr -f ( $nurb + ".worldSpace" ) ( $surfaceInfo + ".inputSurface" );
+
+    // Get all the U isoparms
+    float $isoU[] = getAttr ( $surfaceInfo + ".knotsU" );
+
+    // Add each U isoparms to selection list
+    for ( $iso in $isoU )
+    {
+      string $parm = ( $nurb + ".u[" + $iso + "]" );
+      $isoSelect[`size $isoSelect`] = $parm;
+    }
+
+    // Get all the V isoparms
+    float $isoV[] = getAttr ( $surfaceInfo + ".knotsV" );
+
+    // Add each V isoparms to selection list
+    for ( $iso in $isoV )
+    {
+      string $parm = ( $nurb + ".v[" + $iso + "]" );
+      $isoSelect[`size $isoSelect`] = $parm;
+    }
+
+  }
+
+  // For some reason Maya barfs if I try to select directly.
+  // So I trick it by using an `ls` on the array.
+  select `ls $isoSelect`;
+
+  // Delete the temporary surfaceInfo node.
+  delete $surfaceInfo;
+}
