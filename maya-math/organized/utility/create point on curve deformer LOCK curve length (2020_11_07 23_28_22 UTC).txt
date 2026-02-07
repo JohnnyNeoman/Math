@@ -1,0 +1,11 @@
+
+//create point on curve deformer LOCK curve length and youcan now animate curve as a ribbon
+
+$tmpResults = `pointCurveConstraint -ch 1 -rpo 1 $name`
+
+disconnectAttr leastSquaresModifier1.outputNurbsObject lsqModCurveShape1.create;
+
+
+connectAttr -f leastSquaresModifier1.pointConstraint[0].pointPositionXYZ lsqModCurveShape1.controlPoints[0];
+connectAttr -f leastSquaresModifier1.pointConstraint[0].pointPositionXYZ lsqModCurveShape1.controlPoints[1];
+connectAttr -f leastSquaresModifier1.pointConstraint[0].pointPositionXYZ lsqModCurveShape1.controlPoints[2];
