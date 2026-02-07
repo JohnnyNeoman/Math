@@ -1,0 +1,544 @@
+//START
+
+proc string[] StartofCurveScriptIntersectZX(){
+
+Removefromsurface;
+performRebuildCurveSet 1 1 0 0.001 10 3 1 0 0 1 0 1 0.05;
+//
+string $digitalSkeleton[];
+$numInts = size($digitalSkeleton);
+if ( $numInts > 0 ){
+clear $digitalSkeleton;
+}
+string $objectcurv[];
+$objectcurv = `ls -sl`;
+///////////////GATHER ALL BUILDING STRUCTURE/////////##
+appendStringArray($digitalSkeleton, $objectcurv, 1);
+/////////////////////////////////////////////////////##
+string $CurveSelection[]; 
+int $numCVs = `getAttr -size ($objectcurv[0] + ".controlPoints")`;
+int $numCVrealNum = ( $numCVs -1 );
+$CurveSelection[0] = ($objectcurv[0] + ".cv[0]") ;			
+$CurveSelection[1] = ($objectcurv[0] + ".cv[" + $numCVrealNum + "]") ;
+
+float $EACHCVposA[];
+float $EACHCVposB[];	
+string $AllIntersectCurveZ[];
+$numInts = size($AllIntersectCurveZ);
+if ( $numInts > 0 ){
+clear $AllIntersectCurveZ;
+}
+
+string $IntersectCurves[];
+string $MakeExtrudeSurface[];
+string $MakeBirailSurface[];
+string $MakeXBetween[];
+string $MakeIntersectCurvez[];
+string $MakespaceLocator[];
+	string $each;
+for ($each in $CurveSelection) {
+        float $eachCVpos[];		
+	$eachCVpos = `pointPosition -w ( $each  )`;
+$MakespaceLocator = `spaceLocator -p 0 0 0 -n IntersectZLocaterZ3D`;
+$MakeIntersectCurvez[0] = `curve -d 1 -p 0 0 0 -p 12 0 0 -k 0 -k 1 -n IntersectCurve` ;
+appendStringArray($AllIntersectCurveZ, $MakeIntersectCurvez, 1);
+appendStringArray($digitalSkeleton, $MakespaceLocator, 1);
+$numInts = size($AllIntersectCurveZ);
+extendCurvePresetArgList( "2", {"0", "1","0","0","100","0","0","0","0","1","1","1"} );
+extendCurvePresetArgList( "2", {"0", "1","0","0","100","0","0","0","0","1","1","1"} );
+extendCurvePresetArgList( "2", {"0", "1","0","0","100","0","0","0","0","1","1","1"} );
+move  -ws $eachCVpos[0] $eachCVpos[1] $eachCVpos[2] $MakespaceLocator[0];
+move  -ws $eachCVpos[0] $eachCVpos[1] $eachCVpos[2] $MakeIntersectCurvez[0];
+aimConstraint -offset 0 0 0 -weight 0.5 -aimVector -1 0 0 -upVector 0 0 -1 -worldUpType "vector" -worldUpVector 1 0 0 ZCURVEModelingCAM $MakeIntersectCurvez[0];
+if ( $numInts == 1 ){
+$EACHCVposA = $eachCVpos;
+}
+if ( $numInts == 2 ){
+$EACHCVposB = $eachCVpos;
+$MakeXBetween[0] = `curve -d 1 -p $EACHCVposA[0] $EACHCVposA[1] $EACHCVposA[2] -p $EACHCVposB[0] $EACHCVposB[1] $EACHCVposB[2] -k 0 -k 2 -n XCurveBetween`;
+appendStringArray($digitalSkeleton, $MakeXBetween, 1);
+}
+}
+$MakeExtrudeSurface = `extrude -ch true -rn false -po 0 -et 0 -upn 0 -d 0 0 0 -length 3 -rotation 0 -scale 1 -dl 3 -n CURVEZextrude $objectcurv` ;
+$MakeBirailSurface = `singleProfileBirailSurface -ch 1 -po 0 -tm 1 -tp1 1 -n SurfaceinterectCurves CURVEZextrude.v[0] $AllIntersectCurveZ[0] $AllIntersectCurveZ[1]`;
+// GATHER ALL BUILDING STRUCTURE//
+appendStringArray($digitalSkeleton, $MakeExtrudeSurface, 1);
+appendStringArray($digitalSkeleton, $MakeBirailSurface, 1);
+appendStringArray($digitalSkeleton, $AllIntersectCurveZ, 2);
+////
+
+
+return $digitalSkeleton; 
+
+
+}
+
+
+proc float[] positionOne(string $eachZA){       	
+ float $eachCVpos[] = `pointPosition -w $eachZA`;
+return $eachCVpos;
+}
+
+
+
+
+proc AdvancedCurveMODprojectTAN(string $INarrayA[]){
+
+float $eachCVposSTART[];
+float $eachCVposEND[];
+string $MakespaceLocatorSTART[];
+string $MakespaceLocatorEND[];
+
+string $digitalSkeletonA[];
+$numInts = size($digitalSkeletonA);
+if ( $numInts > 0 ){
+clear $digitalSkeletonA;
+}
+
+
+$digitalSkeletonA = `StartofCurveScriptIntersectZX`;
+
+string $AllCurveZ[];
+$numInts = size($AllCurveZ);
+if ( $numInts > 0 ){
+clear $AllCurveZ;
+} 
+
+string $AllSpaceLocatorZ[];
+$numInts = size($AllSpaceLocatorZ);
+if ( $numInts > 0 ){
+clear $AllSpaceLocatorZ;
+} 
+
+
+string $renamed[];
+string $rebuildit[];
+string $ZIntersectionCurveZA[];
+string $intersectionCurve[]; 
+string $MakeSpaceLocator[];
+string $objectLocaterz[];
+string $AllparamlocatorZ[];
+string $intersectZ[];
+string $surf[];
+string $objectCurve[];
+float $EACHCVposA[];
+float $EACHCVposB[];
+float $p1Z; 	
+int $moveCurve = 0;
+int $SE = 0;
+int $c = 0;
+$surf[0] = ("SurfaceinterectCurves");
+string $objectSelection[] = `editDisplayLayerMembers -q layerCurvesINRange1`;
+int $EdgecurvesizeNUM = size($objectSelection);
+
+	string $each;
+for ($each in $objectSelection) {
+$c = $c + 1;
+	string $iSurf[] = `extrude -ch 1 -et 0 -l 0.05 -n AxisSelection ( $each )`;
+if (catch($intersectZ = `intersect -ch 0 -cos 0 -fs 1 -tol 0.001 -name IntersectSURFACZ $iSurf[0] $surf[0]`)){
+		delete `ls -sl`;
+	} else {
+
+///////////////GATHER ALL BUILDING STRUCTURE/////////##
+appendStringArray($digitalSkeletonA, $iSurf, 1);
+appendStringArray($digitalSkeletonA, $intersectZ, 1); /////////
+$objectCurve[0] = $each;
+string $objectCurveZ[] = `ls -sl -tl 1`;
+appendStringArray($AllCurveZ, $objectCurve, 1);
+string $curveIntersectZ[];
+$curveIntersectZ[0] = `curveIntersect -ch 0 $intersectZ $objectCurve[0]`;
+string $buffer[];
+$numTokens = `tokenize $curveIntersectZ[0] " " $buffer`;
+//float $p1Z; 
+//string $evalit = ("float" + " " + "$p1Z" + " " + "=" + " " + $buffer[1]);
+//eval ($evalit);
+//print $p1Z;
+//float $p1Za = $p1Z;  
+string $paramlocatorZ[];
+$paramlocatorZ[0] = eval("paramLocator " +  $objectCurve[0] + ".u[" + $buffer[1] + "]");
+appendStringArray($AllparamlocatorZ, $paramlocatorZ, 1);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+appendStringArray($digitalSkeletonA, $paramlocatorZ, 1);
+        float $intersectposA[];	
+	$intersectposA = `pointPosition -w $paramlocatorZ[0]`;
+string $objectLocaterzA[];
+$objectLocaterzA = `spaceLocator -p 0 0 0 -n IntersectZLocaterZ3D`;
+move  -ws $intersectposA[0] $intersectposA[1] $intersectposA[2] $objectLocaterzA[0];
+appendStringArray($AllSpaceLocatorZ, $objectLocaterzA, 1);
+}
+}
+
+
+//$paramlocatorZ[0] = `rename ParamLocatorShape`;
+  string $shorterList[] = stringArrayRemoveDuplicates($AllparamlocatorZ);
+$AllparamlocatorZ = $shorterList;
+
+
+int $numparam = size($AllparamlocatorZ);
+$numInts = size($AllSpaceLocatorZ);
+
+if ( $numparam == 1 ){
+float $EACHCVposA[];
+$EACHCVposA = `positionOne($AllparamlocatorZ[0])`;
+float $EACHCVposA[] = `positionOne($AllparamlocatorZ[0])`;
+}
+
+
+
+string $paramANDCurve[] = `paramToCurvePts( $AllparamlocatorZ )`;
+string $paramCurveNAMES[] = `tokenizeparam( $paramANDCurve )`;
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+string $MakespaceLocatorZSE[] = EvalMoveCurvesTOend($paramANDCurve, $paramCurveNAMES);
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+
+if ( $numparam == 1 ){
+appendStringArray($digitalSkeletonA, $MakespaceLocatorZSE, size($MakespaceLocatorZSE));
+//ONE LOCATOR print $AllSpaceLocatorZ;
+appendStringArray($digitalSkeletonA, $AllSpaceLocatorZ, 1);
+
+string $objectSelection[0] = $AllSpaceLocatorZ;
+string $cameraANDlocator[];
+$cameraANDlocator[0] = "LiveSurfaceB"; 
+float $point1[];
+float $point2[];
+	$point1 = `xform -query -worldSpace -translation ( $objectSelection[0])`;
+	$point2 = `xform -query -worldSpace -translation ( $cameraANDlocator[0])`;
+$dx = $point1[0] - $point2[0];
+$dy = $point1[1] - $point2[1];
+$dz = $point1[2] - $point2[2];
+float $distance;
+ $distance = `sqrt( ($dx * $dx) + ($dy * $dy) + ($dz * $dz) )`;
+$scalePlane = $distance;
+nurbsPlane -ch on -o on -po 0 -ax 0 1 0 -w 1 -lr 1 -n "cutingplaneAlign";
+scale -r $scalePlane $scalePlane $scalePlane;
+performRebuildSurfaceSet 1 1 0 0.001 4 4 3 3 1 2 1 0 2 1 0.05 0 0;
+setAttr "cutingplaneAlign.rotateX" (`getAttr ("ZCURVEModelingCAM" + ".rotateX")`+90);
+setAttr "cutingplaneAlign.rotateY" `getAttr ("ZCURVEModelingCAM" + ".rotateY")`;
+setAttr "cutingplaneAlign.rotateZ" `getAttr ("ZCURVEModelingCAM" + ".rotateZ")`;
+
+        float $Locaterpos[];	
+	$Locaterpos = `pointPosition -w ( $objectSelection )`;
+	move  -ws $Locaterpos[0] $Locaterpos[1] $Locaterpos[2] cutingplaneAlign ;
+string $intersectionCurveMake1[];
+$intersectionCurveMake1 = `intersect  -ch false -fs 0 -cos 0 -tol 0.001 "SurfaceinterectCurves" "cutingplaneAlign" `;
+
+string $theintersect[];
+$theintersect = $intersectionCurveMake1;
+string $theintersectCURVEs[];
+$theintersectCURVEs = `listRelatives -children $theintersect`;
+parent -w $theintersectCURVEs;
+delete $theintersect;
+select -r $theintersectCURVEs $AllCurveZ;
+
+	
+	string $ZIntersectionCurveZ[];
+	string $afterCut[];
+	
+	int $n, $i;
+
+cutCurvePreset(1,1,0.001,6,-0.7767,0.1104,-0.6201,1,2);
+	$afterCut = `ls -sl`;
+		$n = size($afterCut);
+		for( $i=0; $i<$n; $i+=1 ) {
+			// Now, two of these are bad, two are OK:
+			if( `getAttr ($afterCut[$i] + ".spans")` < 1)delete $afterCut[$i];
+
+		}
+
+$ZIntersectionCurveZ = `ls -sl`;
+string $ZIntersectionCurveZA[];
+ $ZIntersectionCurveZA = `listRelatives -shapes $ZIntersectionCurveZ`;
+string $renamed[]; 
+$renamed[0] = `rename $ZIntersectionCurveZ Curve`;
+ResetTranlation($renamed);
+
+//FindclosetTOcurveENDz($EACHCVposAZ, $EACHCVposBZ, float $b1[])
+
+
+string $CurveSelection[]; 
+int $numCVs = `getAttr -size ($renamed[0] + ".controlPoints")`;
+int $numCVrealNum = ( $numCVs -1 );
+$CurveSelection[0] = ($renamed[0] + ".cv[0]") ;			
+$CurveSelection[1] = ($renamed[0] + ".cv[" + $numCVrealNum + "]") ;
+float $EACHCVposAZ[];
+float $EACHCVposBZ[];	
+int $numIntZB = 0;
+string $MakeXBetweenB[];
+for ($eachZA in $CurveSelection) {
+        float $eachCVpos[];		
+	$eachCVpos = `pointPosition -w ( $eachZA  )`;
+$numIntZB = $numIntZB + 1;
+if ( $numIntZB == 1 ){
+$EACHCVposAZ = $eachCVpos;
+}
+if ( $numIntZB == 2 ){
+$EACHCVposBZ = $eachCVpos;
+}
+
+}
+
+
+int $ZEROorONE;
+
+
+ int $foundA = stringArrayContains("SEspaceLocatorSTART3DZ", $MakespaceLocatorZSE);
+ int $foundB = stringArrayContains("SEspaceLocatorEND3DZ", $MakespaceLocatorZSE);
+
+if ( $foundA == 1 ){
+float $eachCVposSTART[] = `pointPosition -w ($MakespaceLocatorZSE[0])`;
+float $movePIVOT[];
+$ZEROorONE = FindclosetTOcurveENDz($EACHCVposAZ, $EACHCVposBZ, $eachCVposSTART);
+if ( $ZEROorONE == 0){ $movePIVOT = $EACHCVposAZ; }
+if ( $ZEROorONE == 1){ $movePIVOT = $EACHCVposBZ; }
+move $movePIVOT[0] $movePIVOT[1] $movePIVOT[2] ($renamed[0] + ".scalePivot") ($renamed[0] + ".rotatePivot") ;
+move -rpr $eachCVposSTART[0] $eachCVposSTART[1] $eachCVposSTART[2] $renamed[0];
+xform -cp $renamed[0];
+}
+
+
+if ( $foundB == 1 ){
+float $eachCVposEND[] = `pointPosition -w ($MakespaceLocatorZSE[0])`;
+float $movePIVOT[];
+$ZEROorONE = FindclosetTOcurveENDz($EACHCVposAZ, $EACHCVposBZ, $eachCVposSTART);
+if ( $ZEROorONE == 0){ $movePIVOT = $EACHCVposAZ; }
+if ( $ZEROorONE == 1){ $movePIVOT = $EACHCVposBZ; }
+move $movePIVOT[0] $movePIVOT[1] $movePIVOT[2] ($renamed[0] + ".scalePivot") ($renamed[0] + ".rotatePivot") ;
+move -rpr $eachCVposEND[0] $eachCVposEND[1] $eachCVposEND[2] $renamed[0];
+xform -cp $renamed[0];
+}
+
+
+ResetTranlation($renamed);
+ArrayInsertAtEnd( $INarrayA, $renamed[0]);
+delete $digitalSkeletonA cutingplaneAlign;
+clear $AllparamlocatorZ; 
+
+RUNMoveZCURVEM;
+
+
+} else {
+
+float $EACHCVposA[] = `positionOne($AllparamlocatorZ[0])`;
+
+float $EACHCVposB[] = `positionOne($AllparamlocatorZ[1])`;
+
+string $ZBetween[];
+$ZBetween[0] = `curve -d 1 -p $EACHCVposA[0] $EACHCVposA[1] $EACHCVposA[2] -p $EACHCVposB[0] $EACHCVposB[1] $EACHCVposB[2] -k 0 -k 2 -n  ZCurveBetween`;
+//RESET ITS 000 TRANS
+ResetTranlation($ZBetween);
+$ZBetweenDUP = `duplicate -rr $ZBetween[0]`;
+///////////////GATHER ALL BUILDING STRUCTURE/////////##
+appendStringArray($digitalSkeletonA, $ZBetween, 1);
+appendStringArray($digitalSkeletonA, $ZBetweenDUP, 1);
+appendStringArray($digitalSkeletonA, $AllSpaceLocatorZ, 2);
+
+
+
+///////////////GATHER ALL BUILDING STRUCTURE/////////##
+///////////////
+///////////////
+
+ 
+
+string $TANGENT[];
+string $TANGENTloft[];
+$TANGENT = `loft -ch 1 -u 1 -c 0 -ar 1 -d 3 -ss 4 -rn 0 -po 0 -rsn true -n TANGENTSURFACE $AllCurveZ[0] $AllCurveZ[1]`;
+$TANGENT[1] = `curve -d 3 -p 0 0 0 -p 0 0 -1.5 -p 0 0 -3 -p 0 0 -4.5 -k 0 -k 0 -k 0 -k 4.5 -k 4.5 -k 4.5 -n TANGENTCURVE` ;
+normalConstraint -weight 1 -aimVector 0 0 1 -upVector 0 0 1 -worldUpType "vector" -worldUpVector 1 0 0 TANGENTSURFACE TANGENTCURVE ;
+//AVERAGEbetween two Locators
+shadingNode -asUtility plusMinusAverage;
+rename plusMinusAverageA;
+setAttr plusMinusAverageA.operation 3;                                              
+connectAttr -force plusMinusAverageA.output3D ( "|" + "TANGENTCURVE" + ".translate");
+connectAttr -f ( $AllSpaceLocatorZ[0] + ".translate") plusMinusAverageA.input3D[1];
+connectAttr -f ( $AllSpaceLocatorZ[1] + ".translate") plusMinusAverageA.input3D[0];
+string $CurveSelection2[]; 
+int $numCVs = `getAttr -size ("TANGENTCURVE" + ".controlPoints")`;
+int $numCVrealNum = ( $numCVs -1 );			
+$CurveSelection2[1] = ("TANGENTCURVE" + ".cv[" + $numCVrealNum + "]") ;
+        float $TANGENTCURVEposA[];	
+	$TANGENTCURVEposA = `pointPosition -w ( $CurveSelection2[1]  )`;
+move  -ws $TANGENTCURVEposA[0] $TANGENTCURVEposA[1] $TANGENTCURVEposA[2] $ZBetweenDUP[0];
+$TANGENTloft = `loft -ch 1 -u 1 -c 0 -ar 1 -d 3 -ss 4 -rn 0 -po 0 -rsn true -n PROJECTonTANGENTSURFACE $ZBetween[0] $ZBetweenDUP[0]`;
+extendSurface -ch 1 -em 0 -et 0 -d 10 -jn 1 -rpo 1 -es 2 -ed 1  "PROJECTonTANGENTSURFACE";
+delete -ch;
+///////////////GATHER ALL BUILDING STRUCTURE/////////##
+appendStringArray($digitalSkeletonA, $TANGENT, 2);
+appendStringArray($digitalSkeletonA, $TANGENTloft, 1);
+/////////////////////////////////////////////////////##
+string $intersectionCurveMake[];
+$intersectionCurveMake = `intersect  -ch false -fs 0 -cos 0 -tol 0.001 "SurfaceinterectCurves" "PROJECTonTANGENTSURFACE" `;
+$intersectionCurve = `listRelatives $intersectionCurveMake`; 
+parent -w $intersectionCurve;
+$rebuildit = `rebuildCurve -ch 1 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s 10 -d 3 -tol 0.001 $intersectionCurve`;
+ResetTranlation($rebuildit);
+
+ int $ExistsZ = stringArrayContains("SEspaceLocatorSTART3DZ", $MakespaceLocatorZSE);
+if ( $ExistsZ == 1  ) {
+
+string $CurveSelection[]; 
+int $numCVs = `getAttr -size ($rebuildit[0] + ".controlPoints")`;
+int $numCVrealNum = ( $numCVs -1 );
+$CurveSelection[0] = ($rebuildit[0] + ".cv[0]") ;			
+$CurveSelection[1] = ($rebuildit[0] + ".cv[" + $numCVrealNum + "]") ;
+float $EACHCVposAZ[];
+float $EACHCVposBZ[];	
+int $numIntZB = 0;
+string $MakeXBetweenB[];
+for ($eachZA in $CurveSelection) {
+        float $eachCVpos[];		
+	$eachCVpos = `pointPosition -w ( $eachZA  )`;
+$numIntZB = $numIntZB + 1;
+if ( $numIntZB == 1 ){
+$EACHCVposAZ = $eachCVpos;
+}
+if ( $numIntZB == 2 ){
+$EACHCVposBZ = $eachCVpos;
+$MakeXBetweenB[0] = `curve -d 1 -p $EACHCVposAZ[0] $EACHCVposAZ[1] $EACHCVposAZ[2] -p $EACHCVposBZ[0] $EACHCVposBZ[1] $EACHCVposBZ[2] -k 0 -k 2 -n XCurveBetweenB`;
+appendStringArray($digitalSkeletonA, $MakeXBetweenB, 1);
+}
+}
+
+if (size($MakespaceLocatorZSE) == 2){
+wire -gw false -en 1.000000 -ce 0.000000 -li 0.000000 -w $MakeXBetweenB[0] $rebuildit[0];
+}
+
+string $CurveSelection[]; 
+int $numCVs = `getAttr -size ($MakeXBetweenB[0] + ".controlPoints")`;
+int $numCVrealNum = ( $numCVs -1 );
+$CurveSelection[0] = ($MakeXBetweenB[0] + ".cv[0]") ;			
+$CurveSelection[1] = ($MakeXBetweenB[0] + ".cv[" + $numCVrealNum + "]") ;
+float $EACHCVposAZ[];
+float $EACHCVposBZ[];	
+int $numIntZB = 0;
+
+for ($eachZA in $CurveSelection) {
+        float $eachCVpos[];		
+	$eachCVpos = `pointPosition -w ( $eachZA  )`;
+$numIntZB = $numIntZB + 1;
+if ( $numIntZB == 1 ){
+$EACHCVposAZ = $eachCVpos;
+}
+if ( $numIntZB == 2 ){
+$EACHCVposBZ = $eachCVpos;
+}
+
+}
+
+int $ZEROorONEA;
+int $ZEROorONEB;
+string $locZSE0[];
+string $locZSE1[];
+
+$locZSE0[0] = $MakespaceLocatorZSE[0];
+ int $foundAZ0 = stringArrayContains("SEspaceLocatorSTART3DZ", $locZSE0);
+ int $foundBZ0 = stringArrayContains("SEspaceLocatorEND3DZ", $locZSE0);
+
+$locZSE1[0] = $MakespaceLocatorZSE[1];
+ int $foundAX1 = stringArrayContains("SEspaceLocatorSTART3DZ", $locZSE1);
+ int $foundBX1 = stringArrayContains("SEspaceLocatorEND3DZ", $locZSE1);
+
+
+float $eachCVposSTART[] = `pointPosition -w ($MakespaceLocatorZSE[0])`;
+float $movePIVOT1[];
+
+float $eachCVposEND[] = `pointPosition -w ($MakespaceLocatorZSE[1])`;
+float $movePIVOT2[];
+
+if (( $foundAZ0 == 1 ) || ( $foundBZ0 == 1)){
+// $EACHCVposAZ is CV 0 of $MakeXBetweenB
+$ZEROorONEA = FindclosetTOcurveENDz($EACHCVposAZ, $EACHCVposBZ, $eachCVposSTART);
+if ( $ZEROorONEA == 0){ 
+$movePIVOT1 = $eachCVposSTART; 
+print "cv ZERO"; 
+move -ws $movePIVOT1[0] $movePIVOT1[1] $movePIVOT1[2] $CurveSelection[$ZEROorONEA];
+}
+if ( $ZEROorONEA == 1){ 
+$movePIVOT1 = $eachCVposSTART; 
+print "cv LAST";
+move -ws $movePIVOT1[0] $movePIVOT1[1] $movePIVOT1[2] $CurveSelection[$ZEROorONEA]; 
+}
+}
+
+if (( $foundAX1 == 1 ) || ( $foundBX1 == 1)){
+// $EACHCVposAZ is CV 0 of $MakeXBetweenB
+$ZEROorONEB = FindclosetTOcurveENDz($EACHCVposAZ, $EACHCVposBZ, $eachCVposEND);
+if ( $ZEROorONEB == 0){
+$movePIVOT2 = $eachCVposEND;
+print "cv ZERO"; 
+move -ws $movePIVOT2[0] $movePIVOT2[1] $movePIVOT2[2] $CurveSelection[$ZEROorONEB];
+}
+if ( $ZEROorONEB == 1){ $movePIVOT2 = $eachCVposEND;
+print "cv LAST";
+move -ws $movePIVOT2[0] $movePIVOT2[1] $movePIVOT2[2] $CurveSelection[$ZEROorONEB]; }
+}
+
+}
+
+delete -ch $rebuildit[0];
+playButtonStepForward;
+playButtonStepForward;
+$numIntsL = size($digitalSkeletonA);
+if ( $numIntsL > 0 ){ delete $digitalSkeletonA $MakespaceLocatorZSE; 
+} else { delete $digitalSkeletonA; }
+
+ArrayInsertAtEnd( $INarrayA, $rebuildit[0]);
+clear $AllparamlocatorZ; 
+RUNMoveZCURVEM;
+
+
+
+
+}
+
+
+//END
+
+$numIntsL = size($digitalSkeletonA);
+if ( $numIntsL > 0 ){
+ int $ExistsZ = stringArrayContains("SEspaceLocatorSTART3DZ", $MakespaceLocatorZSE);
+if ( $ExistsZ == 0  ) {
+playButtonStepForward;
+playButtonStepForward;
+print $digitalSkeletonA; 
+delete $digitalSkeletonA;
+playButtonStepForward; }
+			}
+
+}
+
+
+
+
+
+
+
+
+proc RUNprojectTAN(){
+$runitA = "AdvancedCurveMODprojectTAN($EdgeCurveZ2);";
+eval($runitA);
+}
+
+proc int ArrayInsertAtEnd( string $INarray[], string $NewItem){ 
+int $SizeOfArray;
+$SizeOfArray = size($INarray);
+$INarray[$SizeOfArray] = ( $NewItem );
+return $SizeOfArray;
+}
+
+
+
+
+$scripttt_jobNumTAN = `scriptJob -event DagObjectCreated RUNprojectTAN -protected`;
+
+
+scriptJob -kill $scripttt_jobNumTAN -force;
+
