@@ -1,0 +1,256 @@
+proc string [] FindNameOfVariables(string $Find, int $sortN){
+
+string $resultVar = "string float vector matrix int proc";
+string $resulti = "sin cos tan tand atan asin acos atand asind acosd";
+string $result = "abs angle bessel ceil clamp constrainValue cos cross crossProduct deg_to_rad delrandstr dot dotProduct equivalent equivalentTol erf exp floatEq floor fmod gamma gauss getLastError getProcArguments hermite hsv_to_rgb hypot linstep log mag max min noise normalize pointMatrixMult pow rad_to_deg rand randstate rgb_to_hsv rot seed sign sin smoothstep sphrand sqrt tan trunc unitprint ";
+string $AllMathfunction = "abs ,angle ,bessel ,ceil ,clamp ,constrainValue ,cos ,cross ,crossProduct ,deg_to_rad ,delrandstr ,dot ,dotProduct ,equivalent ,equivalentTol ,erf ,exp ,floatEq ,floor ,fmod ,gamma ,gauss ,getLastError ,getProcArguments ,hermite ,hsv_to_rgb ,hypot ,linstep ,log ,mag ,max ,min ,noise ,normalize ,pointMatrixMult ,pow ,rad_to_deg ,rand ,randstate ,rgb_to_hsv ,rot ,seed ,sign ,sin ,smoothstep ,sphrand ,sqrt ,tan ,trunc ,unit";
+string $MathFuncClassData =  $result+" "+ $resulti + " " + $resultVar ;
+//string  $KnownMathTermsMELAtomizes[] = ArrayFromAllinString($MathFuncClassData);
+string $KnownMathTermsMEL[] = stringToStringArray($MathFuncClassData, " ");
+string $KnownMathTermsMELSorted[] = `sort $KnownMathTermsMEL`;
+
+//
+
+print (" "+"\n");
+PrintLongArrayNice($KnownMathTermsMELSorted , 5);
+print (" "+"\n");
+
+string $startingChar[] =  StringArrayStartOfStringinArray($KnownMathTermsMELSorted);
+string $shorterListstartingChar[] =  stringArrayRemoveDuplicates ($startingChar);
+string $KnownMatch[] = $KnownMathTermsMELSorted;
+string $ArrayLetter[] = $shorterListstartingChar;
+string $Arraytemp[] = $KnownMathTermsMELSorted;
+string $StartOfEachS;
+string $findEachstart="";
+string $StartOfEachSTable[], $itemBackUp[];
+clear $StartOfEachSTable $itemBackUp;
+$itemBackUp = $ArrayLetter;
+string $gatherItems="";
+string $eachStringL;
+string $eachString;
+
+for ($eachStringL in $ArrayLetter){
+	for ($eachString in $KnownMathTermsMELSorted){
+		$StartOfEachS = startString($Arraytemp[0], 1);
+		if ($StartOfEachS==$eachStringL){
+			$gatherItems += ($Arraytemp[0]+",");
+			$Arraytemp = stringArrayRemoveExact({$Arraytemp[0]}, $Arraytemp);
+		}
+		//else{	$gatherItems="";}	//
+	}
+	if(`size($gatherItems)`>0){
+		$StartOfEachSTable[`size($StartOfEachSTable)`]= $gatherItems; 
+	}
+	$gatherItems="";
+}
+print $StartOfEachSTable;
+//$ArrayLetter
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+int $IndexLetters[] = CreateIntIndex(`size($ArrayLetter)`);
+int $BytNumi;
+$BytNumi = `sizeBytes $Find`;
+string $all[];
+int $StringIndex[];
+clear $all;
+clear $StringIndex;
+string $all[] = ArrayFromAllinString($Find);
+int $StringIndex[] = CreateIntIndex( `size($all)` );
+//map string 
+
+string $tempFind = $Find;
+string $tempFindwrite = $Find;
+int $countIndex=0;
+string $StartS;
+int $indexStart[];
+clear $indexStart;
+string $LetterItem="";
+string $FoundVariableItems[];
+string $FoundOtherItems[];
+clear $FoundVariableItems $FoundOtherItems;
+int $indexFirstCharItems[];
+clear $indexFirstCharItems;
+int $BytNx =0;
+string $StringFromReducedArray ="";
+string $reducedArray[];
+clear $reducedArray;
+string $allTemp[];
+clear $allTemp;
+$allTemp = $all;
+string $dontUse=""; 
+string $matchingDontuse="";
+int $freezeTrigger =0;
+string $matching="";
+//print $allTemp;
+int $eachInt=0;
+int $iixI =0;
+string $match;
+string $match0;
+string $matchMiddleDiff;
+string $matchi;
+string $MatchStage2;
+string $MatchStage3;
+string $addBracktoMatch3;
+string $addBracktoMatchD;
+string $matchTemp;
+string $dontUse;
+print $Find;
+
+$match0 = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $Find`;
+$match = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)(.)" $Find`;
+$matchii = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)" $Find`;
+$matchi = `match "([a-zA-Z]+)([a-zA-Z0-9_])(\.)([a-zA-Z0-9_]+)" $Find`;
+$MatchStage2 = endString($match, 3);
+//print $MatchStage2;
+$MatchStage3 = startString($match, `sizeBytes $match`-2);
+$MatchStage3i = startString($match, `sizeBytes $matchii`-2);
+$addBracktoMatch3 = ("\["+$MatchStage3+"\]");
+//$addBracktoMatchD = ("\(["+"\"+$matchi+"\])+([a-zA-Z]+)([a-zA-Z0-9_])");
+$matchMiddleDiff = `match $addBracktoMatch3  $MatchStage2`;
+if($matchMiddleDiff=="\."){
+	print"yes";
+	string $matchMaybeVec2 = `match "(\\.)([xyz][^a-zA-Z0-9_])" $MatchStage2`;
+	if($matchMaybeVec2!=""){
+		$MatchStage4 = startString($match, `sizeBytes $match`-1);
+		$match = $MatchStage4;
+	}else{ $dontUse = $matchi; $match=$matchi; }
+}else{ if($match0==$MatchStage3i){$match =  $MatchStage3i;}else{$match =$match0;}//   
+}
+print $match;
+print ("\n");
+print $dontUse;
+print ("\n");
+$matchTemp = $match;
+$BytNx =`sizeBytes $match`;
+
+
+//  $allTemp[$eachItemArray]
+//"([a-zA-Z]+)([a-zA-Z0-9_])*"
+
+
+int $IndexLetters[] = CreateIntIndex(`size($ArrayLetter)`);
+string $ArrayFind[];
+int $TFandIndex[];
+int $TFandIndexii[];
+string $StartOfEachSi="";
+string $FOUND="";
+clear $ArrayFind $TFandIndex $TFandIndexii;
+int $FirstLFindIndex;
+int $Tri=0;
+int $Trii=2;
+int $CountFoundletters=0;
+vector $indexStartEnd[];
+clear $indexStartEnd;
+//print $StringIndex;
+
+
+for ($eachItemArray in $StringIndex){
+	$eachInt = $StringIndex[$iixI];
+	//$eachInt =  $iixI;
+	//print $allTemp[$eachInt];
+	if( `gmatch $allTemp[$eachInt] "[a-zA-Z0-9_\.]*"` == 1){
+		if($Trii==2){$Trii=1; $Tri=2;}
+		if(!($CountFoundletters>=1)){
+			$FirstLFindIndex=$iixI+1;
+			//print $iixI;
+		}
+		$CountFoundletters++;
+		if($Tri==2){
+			//print ("TRIGGER_____TRIGGER"+ $iixI);
+			//$FirstLFindIndex=$iixI;
+			$Tri=0;
+		}
+		$LetterItem+= $allTemp[$eachInt];
+		$BytNx = `sizeBytes $LetterItem`;
+		if(`gmatch $matchTemp $LetterItem`==1){
+			$BytNx = `sizeBytes $LetterItem`;
+			print ("found whole string " +"\n");
+			//$LetterItem ="pow";
+			$StartOfEachSi = startString($LetterItem, 1);
+			$TFandIndex = TFArrayContains($StartOfEachSi, $ArrayLetter);
+			if($TFandIndex[0]==1){ 
+				$ArrayFind = ReturnArrayFromNestedStringAtIndex($StartOfEachSTable, $TFandIndex[1]);
+				$TFandIndexii = TFArrayContains($LetterItem, $ArrayFind);
+				//print ("FoundTable"+ $TFandIndexii[0]+$TFandIndexii[1] + "\n");
+				if($TFandIndexii[0]==1){
+					$FOUND = $ArrayFind[$TFandIndexii[1]];
+					if(`gmatch $FOUND $LetterItem`==1){
+						//print ($FOUND + "\n");
+						$FoundOtherItems[`size($FoundOtherItems)`]= $FOUND;
+					}
+				}
+			}
+			if(`gmatch $FOUND $LetterItem`!=1){
+				if($matchTemp!=$dontUse){ 
+					$FoundVariableItems[`size($FoundVariableItems)`]= $LetterItem;
+					int $SizeItem = `size $matchTemp`;
+					$indexStartEnd[`size($indexStartEnd)`] = <<$FirstLFindIndex, $iixI, ($iixI-$SizeItem+3)>> ;
+					$indexStart[`size($indexStart)`]= $FirstLFindIndex;
+				}
+			} else{$CountFoundletters=0;          }
+			clear $TFandIndex $ArrayFind $TFandIndexii;  
+			$FOUND="";
+			$reducedArray = $allTemp;
+			stringArrayRemoveToIndex($eachInt+1, $reducedArray);
+			$StringFromReducedArray = stringArrayToString($reducedArray, "");
+			print (" " +"\n");
+			print $StringFromReducedArray;
+			print (" " +"\n");
+			/////////////////////////////////////////////////////////////////////////////////
+
+			/////////////////////////////////////////////////////////////////
+			$LetterItem ="";
+			if($matchTemp==$dontUse){ $freezeTrigger = 1; }
+			if( `gmatch $allTemp[$eachInt] $match` != 1){$Trii=2; $CountFoundletters=0;}
+			print ($FirstLFindIndex + "\n");
+			print ($iixI + "\n");
+			$match0 = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $StringFromReducedArray`;
+			print ( $match0 + "\n");
+			//if(`size($StringFromReducedArray)`>4){
+			$match = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)(.)" $StringFromReducedArray`;
+			$matchii = `match "([a-zA-Z]+)([a-zA-Z0-9_])(.)(.)" $StringFromReducedArray`;
+			$matchi = `match "([a-zA-Z]+)([a-zA-Z0-9_])(\.)([a-zA-Z0-9_]+)" $StringFromReducedArray`;
+			$MatchStage2 = endString($match, 3);
+			$MatchStage3 = startString($match, `sizeBytes $match`-2);
+			$MatchStage3i = startString($match, `sizeBytes $matchii`-2);
+			$addBracktoMatch3 = ("\["+$MatchStage3+"\]");
+			//$addBracktoMatchD = ("\(["+"\"+$matchi+"\])+([a-zA-Z]+)([a-zA-Z0-9_])");
+			$matchMiddleDiff = `match $addBracktoMatch3  $MatchStage2`;
+			print ( $matchMiddleDiff + "\n");
+			if($matchMiddleDiff=="\."){
+				print"yes";
+				string $matchMaybeVec2 = `match "(\\.)([xyz][^a-zA-Z0-9_])" $MatchStage2`;
+				if($matchMaybeVec2!=""){
+					$MatchStage4 = startString($match, `sizeBytes $match`-1);
+					$match = $MatchStage4;
+				}else{ $dontUse = $matchi; $match=$matchi; }
+			}else{ if($match0==$MatchStage3i){$match =  $MatchStage3i;}else{$match =$match0;}//   
+			}
+		}
+	}else{$LetterItem ="";  }
+	///}else{$match = `match "([a-zA-Z]+)([a-zA-Z0-9_])*" $StringFromReducedArray`;}
+	$matchTemp = $match;
+	print ($match+ "\n");
+	$iixI++;
+}
+
+
+///////////////
+
+print $indexStartEnd;
+print $indexStart;
+string $printneat = stringArrayToString($FoundVariableItems, ",");
+string $printneati = stringArrayToString($FoundOtherItems, ",");
+
+string $FoundTerms[] = stringToStringArray($printneat, ",");
+
+if($sortN== 1){$FoundTerms = `sort $FoundTerms`;}
+
+return $FoundTerms;
+
+}
+
+
