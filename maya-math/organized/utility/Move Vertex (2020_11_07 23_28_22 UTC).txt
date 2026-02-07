@@ -1,0 +1,81 @@
+//move vertex
+
+ string $select[] = `ls -sl`;
+
+ //capture trans, rot, and scale of object to match
+        $outmmesh = ($select[0] + ".outMesh"); 
+        $inmmesh = ($select[1] + ".inMesh");
+{
+
+$connect = `connectAttr -f ($select[0] + ".outMesh") $inmmesh`;
+
+
+}
+
+
+select -r polySurface8 ;
+select -tgl polySurface9 ;
+ string $select[] = `ls -sl`;
+
+select -r $select[1];
+duplicate -rr -n duplicatepolySurface;
+
+select -r $select[1] duplicatepolySurface;
+ string $selectmatchVerts[] = `ls -sl`;
+select -r $selectmatchVerts[0];
+select -r $selectmatchVerts[1];
+select -r $selectmatchVerts;
+select -r duplicatepolySurface.vtx[0];
+
+
+select -r $MoveVertex_goodMeshName;
+  changeSelectMode -component;
+  setComponentPickMask "Point" true;
+  updateObjectSelectionMasks;
+  updateComponentSelectionMasks;
+select -r duplicatepolySurface.vtx["*"];
+
+
+  hilite -r $MoveVertex_goodMeshName;
+
+
+
+string $MoveVertex_selectedVerts[] = `ls -sl -fl`;
+
+
+string $MoveVertex_selectedVerts[] = `ls -sl -fl`;
+
+ string $MoveVertex_buffer[];
+ int $MoveVertex_numTokens = `tokenize $MoveVertex_selectedVerts[0] "e" $MoveVertex_buffer`;
+print $MoveVertex_buffer[2]; 
+
+select -r ( "polySurface9" + $MoveVertex_buffer[2] );
+
+
+  int $EachVertexCount = 0;
+  for ($EachVertex in $MoveVertex_selectedVerts)
+
+   {
+
+   //get point position
+
+   float $pointPosB[] = `pointPosition -w ($EachVertex )`;
+
+   //get name
+
+   clear $MoveVertex_buffer;
+
+   int $MoveVertex_numTokens = `tokenize $EachVertex  "." $MoveVertex_buffer`;
+   //replace name to build new string
+   string $MoveVertex_newV = ($MoveVertex_fixMesh+"."+$MoveVertex_buffer[1]);
+   //feedback
+   print ("\nFound good position of vert: "+$EachVertex +" and moving there the vert "+$MoveVertex_newV);
+
+
+   xform -ws -t $pointPosB[0] $pointPosB[1] $pointPosB[2] $MoveVertex_newV ;
+   $EachVertexCount ++;
+
+
+   }
+
+
