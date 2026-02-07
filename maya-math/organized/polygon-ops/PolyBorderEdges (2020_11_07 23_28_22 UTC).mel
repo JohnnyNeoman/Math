@@ -1,0 +1,1 @@
+global proc string[] PolyBorderEdges(string $polyZ[]){string $PolyFaceZ = ( $polyZ[0] +".f[*]");string $AllPolyFaceZ[] = `ls -fl $PolyFaceZ`;string $PolyEdgesFromFaceZ[] =  ls("-fl",polyListComponentConversion("-toEdge",$AllPolyFaceZ));select -r $PolyEdgesFromFaceZ;polyConvertToShellBorder;string $SelectedPolyBorderEdgeZ[] = `ls -sl -fl`;return $SelectedPolyBorderEdgeZ;}
