@@ -1,0 +1,14 @@
+
+string $object[] = `ls -sl`;
+
+
+
+shadingNode -asUtility plusMinusAverage;
+rename plusMinusAverageA;
+setAttr plusMinusAverageA.operation 3;
+                                              
+connectAttr -force plusMinusAverageA.output3D ( "|" + $object[1] + ".translate");
+
+connectAttr -f ( $object[0] + ".translate") plusMinusAverageA.input3D[1];
+
+connectAttr -f ( $object[2] + ".translate") plusMinusAverageA.input3D[0];
