@@ -1,0 +1,5 @@
+string $object[] = `ls -sl`;
+$objectszA =  ($object[0]);
+$setb =  ("setAttr" + " " + $objectszA + "." + "motionBlur" + "\n");
+
+setAttr $setb.motionBlur 0 ;
