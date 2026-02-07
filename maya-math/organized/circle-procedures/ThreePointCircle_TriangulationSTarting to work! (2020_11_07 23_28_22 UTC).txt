@@ -1,0 +1,528 @@
+proc  PrepareForGramScannVec(string $oneItemz[] , vector $FixVec[] ){
+	
+	int $IndeXxTrax1[] = CreateIntIndex(`size( $FixVec)`);
+	string $stringIndexTrack1[]= IntArrayToStringArray($IndeXxTrax1);
+	float $Xx, $Yy, $Zz;
+	float $XY[];
+	clear  $XY;
+	int $iVc=0;
+	for ($each in $FixVec){
+		//Loc $FixVec[$iVc];
+		vector $One = $FixVec[$iVc];
+		$XY[$iVc] = $One.x + $One.y +$One.z;
+		$Xx += $One.x;
+		$Yy += $One.y;
+		$Zz += $One.z;
+		$iVc++;
+	}
+	float $Floatlist[] = $XY;
+	string $EmptyStringNewOrderxyZA[];
+	clear $EmptyStringNewOrderxyZA;
+	float $NewfloatsZ[];
+	$NewfloatsZ = SortFloatArrayAndString($Floatlist, $stringIndexTrack1, $EmptyStringNewOrderxyZA);
+	//This does above^
+	string $newOrderStringA[] = NewArrayOrderWithIndexKey($EmptyStringNewOrderxyZA, $oneItemz);
+	vector $FixVec2[] =  NewVecOrderWithIndexKey($EmptyStringNewOrderxyZA, $FixVec);
+	$oneItemz = $newOrderStringA;
+	$FixVec = $FixVec2;
+}
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////
+global int $IndexPtsG[];
+global vector $AllVecsG[];
+global int $WorkingIndexPtsG[];
+global vector $WorkingAllVecsG[];
+proc vector [] VecArrayDiff(int $IndeXxz[]){
+	global vector $AllVecsG[];
+	global vector $WorkingAllVecsG[];
+	vector $VecS[]= $AllVecsG;
+	vector $newVec[];
+	int $Ixx = 0;
+	int $EIndex[];
+	$EIndex = $IndeXxz;
+	$EIndex = `sort $EIndex`;
+	int $Ii=0;
+	int $one;
+	for ($eachVc in $VecS){
+		$one =$EIndex[$Ii];
+		if(!($Ixx==$one)){
+			$newVec[`size($newVec)`] = $VecS[$Ixx];
+		}else{$Ii++;}
+		$Ixx++;
+	}
+	$WorkingAllVecsG = $newVec;
+	return $newVec;
+}
+////////////////
+proc int [] IntArrayDiff(int $IndeXxI[]){
+	global int $IndexPtsG[];
+	global int $WorkingIndexPtsG[];
+	global vector $AllVecsG[];
+	global vector $WorkingAllVecsG[];
+	int $VecS[];
+	$VecS= $IndexPtsG;
+	vector $VecSXX[];
+	$VecSXX = $AllVecsG;
+	vector $newVec[];
+	int $newInt[];
+	int $Ix = 0;
+	int $ii = 0;
+	int $Ixi = 0;
+	int $IndeXxz[];
+	$IndeXxz = `sort $IndeXxI`;
+	int $size = `size($IndeXxI)`-1;
+	for ($eachVc in $VecS){
+		if(($Ix != $IndeXxz[$Ixi])&&($eachVc != -2)){
+			$newInt[`size($newInt)`] = $Ix;
+			$newVec[`size($newVec)`] = $Ix;
+		}else{$Ixi++; if( $Ix > `size($IndeXxz)`){break;}
+		}
+		$Ix++;
+	}
+	$WorkingIndexPtsG= $newInt;
+	$WorkingAllVecsG = $newVec;
+	return $newInt;
+}
+proc int [] IntArrayDiff(int $IndeXxI[]){
+	global int $IndexPtsG[];
+	global int $WorkingIndexPtsG[];
+	global vector $AllVecsG[];
+	global vector $WorkingAllVecsG[];
+	int $VecS[];
+	$VecS= $IndexPtsG;
+	vector $VecSXX[];
+	$VecSXX = $AllVecsG;
+	vector $newVec[];
+	int $newInt[];
+	int $Ix = 0;
+	int $ii = 0;
+	int $Ixi = 0;
+	int $IndeXxz[];
+	$IndeXxz = `sort $IndeXxI`;
+	int $size = `size($IndeXxI)`-1;
+	for ($eachVc in $VecS){
+		if($VecS[$ii]>$IndeXxz[$Ixi]){
+			if($size==$Ixi){$Ixi=0;}
+			$Ixi++;
+		}
+		if(!($eachVc== $IndeXxz[$Ixi])){
+			$newInt[`size($newInt)`] = $eachVc;
+			$newVec[`size($newVec)`] = $VecSXX[$eachVc];
+			$ii=$Ix;
+		}else{$Ixi++; }
+		$Ix++;
+	}
+	$WorkingIndexPtsG= $newInt;
+	$WorkingAllVecsG = $newVec;
+	return $newInt;
+}
+/////////////////////////////////
+proc vector [] VecArrayInclude(int $IndeXxz[]){
+	global vector $AllVecsG[];
+	global vector $WorkingAllVecsG[];
+	vector $VecS[]= $AllVecsG;
+	vector $newVec[];
+	int $Ixx = 0;
+	int $EIndex[];
+	$EIndex = $IndeXxz;
+	$EIndex = `sort $EIndex`;
+	int $Ii=0;
+	int $one;
+	for ($eachVc in $VecS){
+		$one =$EIndex[$Ii];
+		if(($Ixx==$one)){
+			$newVec[`size($newVec)`] = $VecS[$Ixx];
+		}else{$Ii++;}
+		$Ixx++;
+	}
+	$WorkingAllVecsG = $newVec;
+	return $newVec;
+}
+////////////////
+proc int [] IntArrayInc(int $VecS[], int $IndeXxI[]){
+	int $newInt[];
+	int $Ix = 0;
+	int $ii = 0;
+	int $Ixi = 0;
+	int $IndeXxz[];
+	$IndeXxz = `sort $IndeXxI`;
+	int $size = `size($IndeXxI)`-1;
+	for ($eachVc in $VecS){
+		if($VecS[$ii]>$IndeXxz[$Ixi]){
+			if($size==$Ixi){$Ixi=0;}
+			$Ixi++;
+		}
+		if(($eachVc== $IndeXxz[$Ixi])){
+			$newInt[`size($newInt)`] = $eachVc;
+			$ii=$Ix;
+		}else{$Ixi++;}
+		$Ix++;
+	}
+	return $newInt;
+}
+
+proc int [] IntArrayInc(int $VecS[], int $IndeXxI[]){
+	int $newInt[];
+ $newInt = $VecS;
+
+	for ($eachVc in $IndeXxI){		
+			$newInt[`size($newInt)`] = $eachVc;
+			}
+	return $newInt;
+}
+
+
+/////////////
+proc int [] IntArrayInclude(int $IndeXxI[]){
+	global int $IndexPtsG[];
+	global int $WorkingIndexPtsG[];
+	int $VecS[] = $IndexPtsG;
+	int $newInt[];
+	int $Ix = 0;
+	int $ii = 0;
+	int $Ixi = 0;
+	int $IndeXxz[];
+	$IndeXxz = `sort $IndeXxI`;
+	int $size = `size($IndeXxI)`-1;
+	for ($eachVc in $VecS){
+		if($VecS[$ii]>$IndeXxz[$Ixi]){
+			if($size==$Ixi){$Ixi=0;}
+			$Ixi++;
+		}
+		if(($eachVc== $IndeXxz[$Ixi])){
+			$newInt[`size($newInt)`] = $eachVc;
+			$ii=$Ix;
+		}else{$Ixi++;}
+		$Ix++;
+	}
+	$WorkingIndexPtsG= $newInt;
+	return $newInt;
+}
+/////////////
+proc int IsPointArray_in_ThreePointCircle_Global(int $threeIndex[]){
+	///vector $AllVecs[]
+	global int $IndexPtsG[];
+	global vector $WorkingAllVecsG[];
+	vector $VecThreePts[];
+	vector $vectorRR[];
+	$VecThreePts = VecArrayInclude($threeIndex);
+	$vectorRR = VecArrayDiff($threeIndex);
+	int $IintIi[];
+	float $CentR[];
+	vector $cirPos;
+	
+	int $IfFound = 0;
+	int $trueOrFalse0;
+	int $trueOrFalse1;
+	int $trueOrFalse2;
+	$trueOrFalse0 = PtsEquivalentF( $VecThreePts[0], $VecThreePts[1], 0.001);
+	$trueOrFalse1 = PtsEquivalentF( $VecThreePts[1], $VecThreePts[2], 0.001);
+	$trueOrFalse2 = PtsEquivalentF( $VecThreePts[0], $VecThreePts[2], 0.001);
+	if($trueOrFalse0 !=1 && $trueOrFalse1 !=1 && $trueOrFalse2 !=1 ){
+		vector $VecLineDiri = PositiveDirectionLine($VecThreePts[0], $VecThreePts[1]);
+		vector $VecLineDir = PositiveDirectionLine($VecThreePts[0], $VecThreePts[2]);
+		vector $VecLineDirM = $VecLineDiri*$VecLineDir;
+		if($VecLineDirM.x !=1 && $VecLineDirM.y !=1 && $VecLineDirM.z !=1 ){
+			$CentR = Circle3PtZFloats($VecThreePts[0], $VecThreePts[1], $VecThreePts[2]);
+			$cirPos = `FloatToVec({$CentR[0],$CentR[1],$CentR[2]})`;
+			
+			
+			$IintIi = PointInCircle( $vectorRR, $cirPos, $CentR[3]);
+			if(`size($IintIi)`==0){
+				
+				$IfFound = 1;
+				//$FoundTriPointIndexII= $eachpointRS;
+				//$FoundAllZero[`size($FoundAllZero)`]= $eachpointRS;	
+				Circle3PtZFloatsI($VecThreePts[0], $VecThreePts[1], $VecThreePts[2]);
+			}
+			if($IfFound== 1){
+				curve2points($VecThreePts[0], $VecThreePts[1]);
+				ResetTransEachSL;
+				curve2points($VecThreePts[1], $VecThreePts[2]);
+				ResetTransEachSL;
+				curve2points($VecThreePts[2], $VecThreePts[0]);  
+				ResetTransEachSL; 
+			}
+		}
+	}
+	return $IfFound;
+}
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+////to try and save time write a script that.. for index X of Vectorarray which vec is closest minus itself
+// and any other argments ..other index
+// forget about index reduction
+//IntArrayInclude(
+//IntArrayDiff(
+//VecArrayInclude(
+//VecArrayDiff(
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+
+
+string $LocTest[];
+clear $LocTest;
+vector $AllVecs[];
+clear $AllVecs;
+$LocTest = `ls -sl`;
+$AllVecs = PointArrayT($LocTest);
+PrepareForGramScannVec($LocTest , $AllVecs );
+int $IndexPoints[];
+$IndexPoints = CreateIntIndex(`size($AllVecs)`);
+select -r $LocTest[0];
+//Loc $AllVecs[3]
+$IndexPtsG = $IndexPoints;
+int $IndexPtsGCycle[];
+$IndexPtsGCycle = $IndexPoints;
+$AllVecsG = $AllVecs;
+
+/*
+IntArrayInclude(
+IntArrayDiff(
+VecArrayInclude(
+VecArrayDiff(
+*/
+
+
+
+
+int $IntCurrentBest[];
+$IntCurrentBest= {0};
+//VecArrayDiff($IntCurrentBest);
+IntArrayDiff($IntCurrentBest);
+print $WorkingAllVecsG;
+int $NearIndex[];
+clear $NearIndex;
+$NearIndex = GetNearestINDEXint(2,$WorkingIndexPtsG, ($AllVecsG[$IntCurrentBest[0]]), $WorkingAllVecsG);
+int $IntCurrentBestPair[];
+int $FoundAllZeroA[];
+int $LoopMain = 0;
+int $FOUND_EdgePts[]; 
+clear $FOUND_EdgePts;
+int $IndexPtsGCycle[];
+clear $IndexPtsGCycle;
+int $PastEdgePts[];
+clear $PastEdgePts;
+
+int $CountLoopFoundEdge = 0;
+
+int $TriggerFoundEdge = 0;
+
+
+
+
+////////////////////////////////////////////////
+//Loop START
+/// if pair gets nothing twice remove form main index
+
+
+vector $ThreeVecsB[];
+int $Three0Index[];
+int $IintIii =0;
+int $IintIix[];
+int $FoundAllZero[];
+int $FoundAllOne[];
+clear $IintIix $FoundAllZero $FoundAllOne;
+int $SIze;
+///OTHERS
+int $IfFound = 0;
+int $IfFoundQuad =0;
+///
+
+int $TwoCurrentPastFirstBest[]; 
+if($LoopMain == 0){
+	$IntCurrentBestPair= {$IntCurrentBest[0],$NearIndex[0]};
+}
+
+/*
+int $TEMPpts[];
+clear $TEMPpts;
+if(`size($IndexPtsGCycle)` > 0){
+	$TEMPpts = $IndexPtsGCycle;
+	$TEMPpts = IntArrayInc($TEMPpts, $IntCurrentBestPair);
+	IntArrayDiff($TEMPpts);
+$TEMPpts = IntArrayInc($IntCurrentBestPair, $IndexPtsGCycle); 
+}else{IntArrayDiff($IntCurrentBestPair);}
+*/
+
+ // print $IntCurrentBestPair;
+IntArrayDiff($IntCurrentBestPair);
+
+int $tempWorkingIndexPtsGi[];
+$tempWorkingIndexPtsGi = $WorkingIndexPtsG;
+
+ //print $tempWorkingIndexPtsGi;
+
+
+int $eachpointRS;
+int $COUNTL = 0;
+
+for ($eachpointRS in $tempWorkingIndexPtsGi){
+	//int $xIN =0;
+	//$eachpointRS = $tempWorkingIndexPtsGi[$xIN];
+	//$ThreeVecsB = {$AllVecsG[$IntCurrentBestPair[0]], $AllVecsG[$IntCurrentBestPair[1]], $AllVecsG[$eachpointRS]};
+	//$Three0Index = {$IntCurrentBestPair[0], $IntCurrentBestPair[1], $eachpointRS};
+	if($LoopMain == 0){
+		$ThreeVecsB = {$AllVecsG[$IntCurrentBestPair[0]], $AllVecsG[$IntCurrentBestPair[1]], $AllVecsG[$eachpointRS]};
+		$Three0Index = {$IntCurrentBestPair[0], $IntCurrentBestPair[1], $eachpointRS};
+	}else{
+		$ThreeVecsB = {$AllVecsG[$IntCurrentBestPair[0]], $AllVecsG[$IntCurrentBestPair[1]], $AllVecsG[$IntCurrentBestPair[2]], $AllVecsG[$eachpointRS]};
+		$Three0Index = {$IntCurrentBestPair[0], $IntCurrentBestPair[1], $AllVecsG[$IntCurrentBestPair[2]], $eachpointRS};
+		//   IntArrayDiff($IntCurrentBestPair);
+	}
+	IntArrayDiff($Three0Index);
+
+	//VecArrayDiff($Three0Index);
+	//PAUSE;
+	//select -r $LocTest[$eachpointRS] $LocTest[$IntCurrentBestPair[0]] $LocTest[$IntCurrentBestPair[1]];
+	//PAUSE;
+	//$IintIii = IsPointArray_in_ThreePointCircle_Global($Three0Index);
+
+	float $CentRi[] = Circle3PtZFloats($AllVecsG[$IntCurrentBestPair[0]], $AllVecsG[$IntCurrentBestPair[1]], $AllVecsG[$eachpointRS]);
+	vector $cirPos = `FloatToVec({$CentRi[0],$CentRi[1],$CentRi[2]})`;	
+	$IintIix = PointInCircle( $WorkingAllVecsG, $cirPos, $CentRi[3]);
+	int $SIze = `size($IintIix)`;
+	if($SIze == 0){
+		$COUNTL++;
+		//could clear FoundallZero here..
+		if($COUNTL==1){clear $FoundAllZeroA;}
+		$IfFound = 1;	
+		$FoundAllZeroA[`size($FoundAllZeroA)`]= $eachpointRS;
+		$FoundAllZero[`size($FoundAllZero)`]= $eachpointRS;
+		Circle3PtZFloatsI($AllVecsG[$IntCurrentBestPair[0]], $AllVecsG[$IntCurrentBestPair[1]], $AllVecsG[$eachpointRS]);
+	}
+	/// QUAD 4 points (may need to take the found one point and run point in circ)
+	if($SIze == 1){print "found One";
+		$IfFoundQuad = 1;
+		$FoundAllOne[`size($FoundAllOne)`]= $eachpointRS;
+		$FoundAllOne[`size($FoundAllOne)`]= $IintIix[1];		
+	}
+	clear $IintIix;
+}
+
+if( `size($FoundAllZero)` == 1){
+	if($IfFound== 1){
+		float $angleSZ[];
+		$angleSZ = AnglesofTriangleThreeVec($AllVecsG[$IntCurrentBestPair[0]], $AllVecsG[$IntCurrentBestPair[1]], $AllVecsG[$FoundAllZero[0]]);
+		print ("\n");
+		print $angleSZ;
+		print ("\n");
+		float $anglesTwo =  $angleSZ[0]+ $angleSZ[1];
+		//if($anglesTwo < 165){
+		curve2points($AllVecsG[$IntCurrentBestPair[0]],$AllVecsG[$IntCurrentBestPair[1]]);
+		ResetTransEachSL;
+		curve2points($AllVecsG[$IntCurrentBestPair[1]],$AllVecsG[$FoundAllZero[0]]);
+		ResetTransEachSL;
+		curve2points($AllVecsG[$FoundAllZero[0]],$AllVecsG[$IntCurrentBestPair[0]]);  
+		ResetTransEachSL;
+
+		//}else//{$IfFound=0;}//
+		//$EachCurrentBest = $FoundTriPointIndexII;
+
+		select -r $LocTest[$FoundAllZero[0]];
+	}
+}
+
+$LoopMain++;
+
+// means Edge Points if found no third point>
+//select -r $LocTest[$FoundAllZeroA[0]] $LocTest[$IntCurrentBestPair[1]];
+
+if( `size($FoundAllZero)` == 2){select -r $LocTest;}
+vector $vectorRii[2];
+clear $vectorRii;
+int $Three[2];
+
+if($IfFound!= 0){
+	$Three = {$FoundAllZeroA[0], $IntCurrentBestPair[1], $IntCurrentBestPair[0]};
+	$vectorRii[0] = $AllVecsG[$FoundAllZeroA[0]];
+	$vectorRii[1] = $AllVecsG[$IntCurrentBestPair[1]];
+	$vectorRii[2] = $AllVecsG[$IntCurrentBestPair[0]];
+	int $MRindex[] = MostRightClockWiseTrackThree ($vectorRii, $Three);
+	$IntCurrentBestPair= {$FoundAllZeroA[0], $MRindex[1], $MRindex[0]};
+	//$IntCurrentBestPair= {$FoundAllZeroA[0], $IntCurrentBestPair[1], $IntCurrentBestPair[0]};
+}
+
+if($IfFound == 0){
+	//print $FOUND_EdgePts;
+	//print $PastEdgePts;
+	//print $IndexPtsGCycle;
+	print $CountLoopFoundEdge;
+	$FOUND_EdgePts[`size($FOUND_EdgePts)`] = $FoundAllZeroA[0];
+	$FOUND_EdgePts[`size($FOUND_EdgePts)`] = $IntCurrentBestPair[1];
+	$TriggerFoundEdge = 1;
+	$CountLoopFoundEdge++;
+}
+
+
+if($IfFound == 0){
+	print "  No Point FOund   ";
+	$Three = {$FoundAllZeroA[0], $IntCurrentBestPair[2], $IntCurrentBestPair[1]};
+	$vectorRii[0] = $AllVecsG[$FoundAllZeroA[0]];
+	$vectorRii[1] = $AllVecsG[$IntCurrentBestPair[2]];
+	$vectorRii[2] = $AllVecsG[$IntCurrentBestPair[1]];
+	int $MRindex[] = MostRightClockWiseTrackThree ($vectorRii, $Three);
+	//$IntCurrentBestPair= {$FoundAllZeroA[0], $MRindex[0], $MRindex[1]};
+	$IntCurrentBestPair= {$FoundAllZeroA[0], $IntCurrentBestPair[2], $IntCurrentBestPair[1]};
+}
+
+
+
+//print $TriggerFoundEdge;
+
+if($IfFound == 0){
+if($TriggerFoundEdge == 1){
+
+	if($CountLoopFoundEdge == 1){
+		$PastEdgePts = $FOUND_EdgePts;
+	}
+
+	if($CountLoopFoundEdge == 1){
+string $stringIndexTrack[];
+string $shorterList[];
+clear $stringIndexTrack $shorterList;
+		$stringIndexTrack= IntArrayToStringArray($PastEdgePts);
+		string $shorterList[] =  stringArrayRemoveDuplicates ($stringIndexTrack);
+		clear $PastEdgePts;
+		$PastEdgePts = ArrayToIntList($shorterList);
+		$IndexPtsGCycle = RemoveINTAtIndex($IndexPtsG, $PastEdgePts);
+
+print $FOUND_EdgePts;
+/*
+print $PastEdgePts;
+print $IndexPtsGCycle;
+print $IndexPtsG;
+*/
+clear $stringIndexTrack $shorterList;
+$IntCurrentBestPair = IntArrayInc($IntCurrentBestPair, $PastEdgePts);
+//print $IntCurrentBestPair;
+ 		 $stringIndexTrack = IntArrayToStringArray($IntCurrentBestPair);
+		 $shorterList = stringArrayRemoveDuplicates ($stringIndexTrack);		
+		$IntCurrentBestPair = ArrayToIntList($shorterList);
+
+		$CountLoopFoundEdge =0;
+		$TriggerFoundEdge = 0;
+	}
+}
+}
+
+//if(($IfFound == 0)&&($TriggerFoundEdge==1)){
+//print "  No Point FOund WHile LAST EDGE is still in remove index!! ";
+//}
+
+
+for ($eachIntPointV in $FOUND_EdgePts){
+
+select -add $LocTest[$eachIntPointV];
+PAUSE;
+
+}
+
+
+select -r $LocTest[$IntCurrentBestPair[0]] $LocTest[$IntCurrentBestPair[1]];    
+
+
+///YES!!!!!! it is working!!!!!!!!!!
